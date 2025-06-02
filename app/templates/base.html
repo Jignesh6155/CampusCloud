@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CampusCloud Dashboard</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="group flex flex-col bg-teal-800 bg-opacity-90 text-white transition-all duration-300 w-16 hover:w-64 overflow-hidden">
+    <h1 class="text-xl font-bold text-teal-200 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">CampusCloud</h1>
+
+    <nav class="flex-1 flex flex-col space-y-4 items-start">
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-comments text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Post Forums</span>
+      </a>
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-book text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Unit Chats</span>
+      </a>
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-university text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Committee Chats</span>
+      </a>
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-users text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
+      </a>
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-user text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Profile</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto text-center text-sm text-teal-200 pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      &copy; 2025 CampusCloud
+    </div>
+  </aside>
+
+  <!-- Main content area -->
+  <main class="flex-1 p-6 bg-white shadow-inner">
+    <h2 class="text-2xl font-bold text-teal-800 mb-4">Welcome to CampusCloud</h2>
+    <div class="bg-teal-50 p-4 rounded shadow text-gray-700">
+      <p>This is your main content area. Here you can display posts, unit chats, committee discussions, and more.</p>
+    </div>
+  </main>
+
+</div>
+
+</body>
+</html>
