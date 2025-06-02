@@ -9,7 +9,12 @@ def index():
 def base():
     return render_template('base.html')
 
-#route for the Post Forum page
+# Route for the Post Forum page
 @app.route('/post-forum')
 def post_forum():
     return render_template('post_forum.html')
+
+# Route for the Units Chat page
+@app.route('/units-chat')
+def units_chat():
+    return render_template('units_chat.html')
