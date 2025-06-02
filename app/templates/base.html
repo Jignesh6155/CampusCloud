@@ -12,7 +12,7 @@
 <body class="bg-slate-50 text-slate-800">
 
 <div class="flex min-h-screen">
-  <!-- Sidebar (now slightly darker grey for contrast) -->
+  <!-- Sidebar -->
   <aside class="group flex flex-col bg-slate-200 shadow-lg transition-all duration-300 w-16 hover:w-64 overflow-hidden border-r border-slate-300">
     <h1 class="text-2xl font-semibold text-slate-800 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">CampusCloud</h1>
 
@@ -48,10 +48,9 @@
     </div>
   </aside>
 
-  <!-- Main Content Area -->
-  <main class="flex-1 p-6 bg-slate-100 min-h-screen">
+  <!-- Main Content Area (no outer padding to let title bar reach edges) -->
+  <main class="flex-1 bg-slate-100 min-h-screen">
     {% block content %}
-    <!-- Child template content will be injected here -->
     {% endblock %}
   </main>
 </div>
