@@ -9,54 +9,51 @@
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-slate-50 text-slate-800">
 
 <div class="flex min-h-screen">
+  <!-- Sidebar (now slightly darker grey for contrast) -->
+  <aside class="group flex flex-col bg-slate-200 shadow-lg transition-all duration-300 w-16 hover:w-64 overflow-hidden border-r border-slate-300">
+    <h1 class="text-2xl font-semibold text-slate-800 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">CampusCloud</h1>
 
-  <!-- Sidebar -->
-  <aside class="group flex flex-col bg-teal-800 bg-opacity-90 text-white transition-all duration-300 w-16 hover:w-64 overflow-hidden">
-    <h1 class="text-xl font-bold text-teal-200 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">CampusCloud</h1>
-
-    <nav class="flex-1 flex flex-col space-y-4 items-start">
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+    <nav class="flex-1 flex flex-col space-y-2 items-start">
+      <a href="{{ url_for('post_forum') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-comments text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Post Forums</span>
       </a>
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-book text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Unit Chats</span>
       </a>
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-university text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Committee Chats</span>
       </a>
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-users text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
       </a>
-      <!-- New Group Assignments tab -->
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-tasks text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Group Assignments</span>
       </a>
-      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-user text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Profile</span>
       </a>
     </nav>
 
-    <div class="mt-auto text-center text-sm text-teal-200 pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+    <div class="mt-auto text-center text-xs text-slate-400 pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
       &copy; 2025 CampusCloud
     </div>
   </aside>
 
-  <!-- Main content area with tinted, semi-transparent overlay -->
-  <main class="flex-1 p-6 relative">
-    <!-- Background overlay -->
-    <div class="absolute inset-0 bg-teal-900 bg-opacity-30 rounded-lg"></div>
-
-
-
+  <!-- Main Content Area -->
+  <main class="flex-1 p-6 bg-slate-100 min-h-screen">
+    {% block content %}
+    <!-- Child template content will be injected here -->
+    {% endblock %}
+  </main>
 </div>
 
 </body>

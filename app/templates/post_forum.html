@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Title bar: full width, subtle tint, no border radius or shadow -->
+<div class="w-full bg-indigo-50 text-slate-800 py-4 flex items-center gap-2 px-6">
+  <h1 class="text-2xl font-bold">University General Forum</h1>
+  <span class="text-2xl">🚀</span>
+</div>
+
+<!-- Entire section area tinted grey -->
+<div class="p-4 bg-slate-100">
+
+  <!-- Main layout container -->
+  <div class="flex flex-col md:flex-row gap-6 p-4">
+
+    <!-- Feed (Posts) -->
+    <div class="flex-1 flex flex-col space-y-6">
+
+      <!-- New Post Button -->
+      <div class="flex justify-end">
+        <button class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition font-semibold shadow">
+          <i class="fas fa-plus mr-2"></i> New Post
+        </button>
+      </div>
+
+      <!-- Posts (grouped, spaced, consistent) -->
+      <div class="space-y-6">
+
+        <!-- Post Card 1 -->
+        <div class="rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-md bg-white">
+          <div class="flex items-center mb-3">
+            <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full mr-3 border border-slate-300">
+            <div>
+              <h3 class="font-semibold text-slate-800">X_AE_A-13</h3>
+              <p class="text-xs text-slate-500">Product Designer, slothUI</p>
+            </div>
+          </div>
+          <p class="text-slate-700 text-sm leading-relaxed mb-3">
+            Habitant morbi tristique senectus et netus et. Suspendisse sed nisi lacus sed viverra.
+            <span class="text-indigo-600">#amazing #great #lifetime #uiux #machinelearning</span>
+          </p>
+          <div class="rounded overflow-hidden border border-slate-200 mb-3">
+            <img src="https://via.placeholder.com/600x300" alt="post image" class="w-full object-cover">
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <div class="flex space-x-4">
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-heart"></i><span>12</span></button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-comment"></i><span>25</span></button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-share"></i><span>187</span></button>
+            </div>
+            <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
+          </div>
+        </div>
+
+        <!-- Post Card 2 -->
+        <div class="rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-md bg-white">
+          <div class="flex items-center mb-3">
+            <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full mr-3 border border-slate-300">
+            <div>
+              <h3 class="font-semibold text-slate-800">Amanda D. Gray</h3>
+              <p class="text-xs text-slate-500">Product Designer, slothUI</p>
+            </div>
+          </div>
+          <p class="text-slate-700 text-sm leading-relaxed mb-3">
+            Habitant morbi tristique senectus et netus et. Suspendisse sed nisi lacus sed viverra.
+            <span class="text-indigo-600">#amazing #great #lifetime #uiux #machinelearning</span>
+          </p>
+          <div class="flex justify-between text-xs text-slate-500">
+            <div class="flex space-x-4">
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-heart"></i><span>12</span></button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-comment"></i><span>25</span></button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-share"></i><span>187</span></button>
+            </div>
+            <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar / Forum Rules -->
+    <aside class="w-full md:w-72 sticky top-4 self-start rounded-xl shadow border border-slate-200 p-6 bg-white">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">Forum Rules</h2>
+      <ul class="list-disc list-inside text-sm text-slate-600 leading-relaxed space-y-1">
+        <li>Be respectful to all members</li>
+        <li>Stay on topic and relevant</li>
+        <li>No spam or self-promotion</li>
+        <li>Use clear and concise language</li>
+        <li>Report inappropriate content</li>
+      </ul>
+    </aside>
+
+  </div>
+</div>
+
+{% endblock %}
