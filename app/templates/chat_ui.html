@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Title bar -->
+<div class="w-full bg-slate-100 text-slate-800 py-4 px-6 flex items-center gap-2 shadow">
+  <h1 class="text-xl font-bold">{{ unit_code }} - Discussion Board</h1>
+  <span class="text-lg">💬</span>
+</div>
+
+<!-- Main Chat Interface -->
+<div class="flex h-[calc(100vh-4rem)] bg-slate-50">
+
+  <!-- Sidebar: Channels / Tabs -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
+    <div class="p-4 border-b font-semibold text-slate-700">Channels</div>
+    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="general">
+      <i class="fas fa-comments text-slate-600"></i>
+      <span class="font-medium text-slate-700">General</span>
+    </button>
+    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="assignments">
+      <i class="fas fa-tasks text-slate-600"></i>
+      <span class="font-medium text-slate-700">Assignments</span>
+    </button>
+    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="resources">
+      <i class="fas fa-folder-open text-slate-600"></i>
+      <span class="font-medium text-slate-700">Resources</span>
+    </button>
+  </aside>
+
+  <!-- Chat Content Area -->
+  <div class="flex-1 flex flex-col">
+
+    <!-- Messages container -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <!-- Messages loaded via AJAX -->
+    </div>
+
+    <!-- Message input area -->
+    <div class="p-4 border-t bg-white flex gap-2">
+      <textarea id="message-input" placeholder="Type a message, share code, or link resources..." rows="3" class="flex-1 px-4 py-2 rounded border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none"></textarea>
+      <button id="send-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">Send</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Chat logic -->
+<script>
+  const unitCode = "{{ unit_code }}";
+  let currentChannel = "general";
+  const messagesContainer = document.getElementById('chat-messages');
+  const input = document.getElementById('message-input');
+  const sendBtn = document.getElementById('send-btn');
+  const tabButtons = document.querySelectorAll('.tab-btn');
+
+  // Load messages for a channel
+  function loadMessages() {
+    fetch(`/units/${unitCode}/messages?channel=${currentChannel}`)
+      .then(res => res.json())
+      .then(data => {
+        messagesContainer.innerHTML = '';
+        data.forEach(msg => {
+          const post = document.createElement('div');
+          post.className = 'max-w-[75%] rounded-lg shadow bg-white p-3 text-slate-700 relative';
+          post.innerHTML = `
+            <div class="flex items-center gap-2 mb-1">
+              <div class="bg-slate-300 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold text-xs">A</div>
+              <div>
+                <div class="font-medium text-slate-800 text-sm">Anonymous User</div>
+                <div class="text-xs text-slate-400">${new Date().toLocaleString()}</div>
+              </div>
+            </div>
+          `;
+          const content = document.createElement('div');
+          content.className = 'text-sm whitespace-pre-wrap break-words';
+          content.textContent = msg;
+          post.appendChild(content);
+
+          const replyBtn = document.createElement('button');
+          replyBtn.className = 'text-xs text-indigo-600 hover:underline mt-2 block';
+          replyBtn.textContent = 'Reply';
+          post.appendChild(replyBtn);
+
+          messagesContainer.appendChild(post);
+        });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+  }
+
+  loadMessages();
+  setInterval(loadMessages, 5000);
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentChannel = btn.dataset.channel;
+      tabButtons.forEach(b => b.classList.remove('bg-slate-200'));
+      btn.classList.add('bg-slate-200');
+      loadMessages();
+    });
+  });
+
+  sendBtn.addEventListener('click', () => {
+    const message = input.value.trim();
+    if (!message) return;
+
+    fetch(`/units/${unitCode}/messages?channel=${currentChannel}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `message=${encodeURIComponent(message)}`
+    }).then(res => res.json()).then(data => {
+      if (data.status === 'success') {
+        input.value = '';
+        loadMessages();
+      }
+    });
+  });
+
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+</script>
+
+{% endblock %}
