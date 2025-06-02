@@ -34,6 +34,11 @@
         <i class="fas fa-users text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
       </a>
+      <!-- New Group Assignments tab -->
+      <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
+        <i class="fas fa-tasks text-lg"></i>
+        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Group Assignments</span>
+      </a>
       <a href="#" class="flex items-center space-x-2 pl-4 p-3 hover:bg-teal-600 transition rounded w-full">
         <i class="fas fa-user text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Profile</span>
@@ -45,13 +50,12 @@
     </div>
   </aside>
 
-  <!-- Main content area -->
-  <main class="flex-1 p-6 bg-white shadow-inner">
-    <h2 class="text-2xl font-bold text-teal-800 mb-4">Welcome to CampusCloud</h2>
-    <div class="bg-teal-50 p-4 rounded shadow text-gray-700">
-      <p>This is your main content area. Here you can display posts, unit chats, committee discussions, and more.</p>
-    </div>
-  </main>
+  <!-- Main content area with tinted, semi-transparent overlay -->
+  <main class="flex-1 p-6 relative">
+    <!-- Background overlay -->
+    <div class="absolute inset-0 bg-teal-900 bg-opacity-30 rounded-lg"></div>
+
+
 
 </div>
 
