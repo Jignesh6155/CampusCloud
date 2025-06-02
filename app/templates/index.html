@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CampusCloud Login</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome CDN for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="relative min-h-screen flex items-center justify-center bg-black">
+
+<!-- Background image -->
+<div class="absolute inset-0">
+  <img src="https://images.unsplash.com/photo-1616400619175-5beda3a17896?q=80&w=3174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="background" class="w-full h-full object-cover opacity-50" />
+</div>
+
+<!-- Overlay for dark effect -->
+<div class="absolute inset-0 bg-black bg-opacity-20"></div>
+
+<!-- Login form container -->
+<div class="relative z-10 w-full max-w-md p-8 bg-black bg-opacity-75 rounded-lg">
+<h1 class="text-3xl font-bold text-teal-400 text-center mb-6">CampusCloud</h1>
+  <form class="space-y-4">
+    <div class="relative">
+      <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      <input type="text" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500" required>
+    </div>
+    <div class="relative">
+      <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500" required>
+    </div>
+    <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-red-700 transition-colors font-medium text-white">Sign In</button>
+    <div class="flex justify-between items-center text-sm text-gray-400">
+      <label class="flex items-center space-x-1">
+        <input type="checkbox" class="accent-red-500" />
+        <span>Remember me</span>
+      </label>
+      <a href="#" class="hover:underline">Need help?</a>
+    </div>
+    <p class="text-center text-sm text-gray-400 mt-4">
+      New to UniChat? <a href="#" class="text-white hover:underline">Sign up now</a>
+    </p>
+  </form>
+</div>
+
+</body>
+</html>
