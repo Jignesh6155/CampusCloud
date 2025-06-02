@@ -19,31 +19,77 @@
 <!-- Overlay for dark effect -->
 <div class="absolute inset-0 bg-black bg-opacity-20"></div>
 
-<!-- Login form container -->
-<div class="relative z-10 w-full max-w-md p-8 bg-black bg-opacity-75 rounded-lg">
-<h1 class="text-3xl font-bold text-teal-400 text-center mb-6">CampusCloud</h1>
-  <form class="space-y-4">
-    <div class="relative">
-      <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-      <input type="text" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500" required>
+<!-- Form slider container -->
+<div class="relative z-10 w-full max-w-md h-[500px] overflow-hidden rounded-lg shadow-lg">
+  <!-- Forms wrapper -->
+  <div id="forms-wrapper" class="flex transition-transform duration-500 ease-in-out w-[200%]">
+    <!-- Login form -->
+    <div class="w-1/2 p-10 bg-black bg-opacity-75">
+      <h1 class="text-3xl font-bold text-teal-400 text-center mb-6">CampusCloud</h1>
+      <form class="space-y-4">
+        <div class="relative">
+          <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+        </div>
+        <div class="relative">
+          <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+        </div>
+        <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-teal-700 transition-colors font-medium text-white">Sign In</button>
+        <div class="flex justify-between items-center text-sm text-gray-400">
+          <label class="flex items-center space-x-1">
+            <input type="checkbox" class="accent-teal-500" />
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="hover:underline">Need help?</a>
+        </div>
+        <p class="text-center text-sm text-gray-400 mt-4">
+          New to CampusCloud? <a href="#" id="show-signup" class="text-white hover:underline">Sign up now</a>
+        </p>
+      </form>
     </div>
-    <div class="relative">
-      <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-      <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500" required>
+
+    <!-- Sign-up form -->
+    <div class="w-1/2 p-8 bg-black bg-opacity-75">
+      <h1 class="text-3xl font-bold text-teal-400 text-center mb-8">Sign Up</h1>
+      <form class="space-y-4">
+        <div class="relative">
+          <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" placeholder="Full Name" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+        </div>
+        <div class="relative">
+          <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="email" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+        </div>
+        <div class="relative">
+          <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+        </div>
+        <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-teal-700 transition-colors font-medium text-white">Create Account</button>
+        <p class="text-center text-sm text-gray-400 mt-4">
+          Already have an account? <a href="#" id="show-login" class="text-white hover:underline">Sign in here</a>
+        </p>
+      </form>
     </div>
-    <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-red-700 transition-colors font-medium text-white">Sign In</button>
-    <div class="flex justify-between items-center text-sm text-gray-400">
-      <label class="flex items-center space-x-1">
-        <input type="checkbox" class="accent-red-500" />
-        <span>Remember me</span>
-      </label>
-      <a href="#" class="hover:underline">Need help?</a>
-    </div>
-    <p class="text-center text-sm text-gray-400 mt-4">
-      New to UniChat? <a href="#" class="text-white hover:underline">Sign up now</a>
-    </p>
-  </form>
+  </div>
 </div>
+
+<!-- JavaScript to toggle forms -->
+<script>
+  const showSignup = document.getElementById('show-signup');
+  const showLogin = document.getElementById('show-login');
+  const formsWrapper = document.getElementById('forms-wrapper');
+
+  showSignup.addEventListener('click', (e) => {
+    e.preventDefault();
+    formsWrapper.classList.add('-translate-x-1/2');
+  });
+
+  showLogin.addEventListener('click', (e) => {
+    e.preventDefault();
+    formsWrapper.classList.remove('-translate-x-1/2');
+  });
+</script>
 
 </body>
 </html>
