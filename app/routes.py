@@ -1,6 +1,9 @@
-from flask import render_template, request, jsonify
-from app import app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from app.models import User
+from app import db
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+bp = Blueprint('routes', __name__)
 
 # In-memory chat storage for units
 chats = {
@@ -18,27 +21,72 @@ committee_chats = {
 # In-memory meetup storage for study groups/social groups
 meetups = []
 
-@app.route('/')
+@bp.route('/signup', methods=['POST'])
+def signup():
+    full_name = request.form.get('full_name')  # FIXED: match HTML form!
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    if not email or not password or not full_name:
+        flash('All fields are required.')
+        return redirect(url_for('routes.index'))
+
+    if User.query.filter_by(email=email).first():
+        flash('Email already registered!')
+        return redirect(url_for('routes.index'))
+
+    user = User(full_name=full_name, email=email)  # Save full_name!
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    flash('Account created! Please login.')
+    return redirect(url_for('routes.index'))
+
+@bp.route('/login', methods=['POST'])
+def login():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    print("Login attempt:", email, password)
+
+    user = User.query.filter_by(email=email).first()
+    print("User fetched:", user)
+
+    if user:
+        print("User exists. Checking password...")
+        if user.check_password(password):
+            print("Password is correct!")
+            session['user_id'] = user.id
+            flash('Login successful!')
+            return redirect(url_for('routes.profile_landing_page'))
+        else:
+            print("Password check failed!")
+    else:
+        print("No user with that email.")
+
+    flash('Invalid email or password')
+    return redirect(url_for('routes.index'))
+
+@bp.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/base')
+@bp.route('/base')
 def base():
     return render_template('base.html')
 
-@app.route('/post-forum')
+@bp.route('/post-forum')
 def post_forum():
     return render_template('post_forum.html')
 
-@app.route('/units-chat')
+@bp.route('/units-chat')
 def units_chat():
     return render_template('units_chat.html')
 
-@app.route('/units/<unit_code>')
+@bp.route('/units/<unit_code>')
 def unit_chat(unit_code):
     return render_template('chat_ui.html', unit_code=unit_code)
 
-@app.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
+@bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 def unit_messages(unit_code):
     channel = request.args.get('channel', 'general')
     if unit_code not in chats:
@@ -59,16 +107,16 @@ def unit_messages(unit_code):
 
     return jsonify(chats[unit_code][channel])
 
-@app.route('/committee-chat')
+@bp.route('/committee-chat')
 def committee_chat():
     return render_template('committee_chat_landing.html')
 
-@app.route('/committee/<committee_name>')
+@bp.route('/committee/<committee_name>')
 def committee_ui(committee_name):
     is_authorized = False  # Example toggle for testing
     return render_template('committee_ui.html', committee_name=committee_name, is_authorized=is_authorized)
 
-@app.route('/committee/<committee_name>/messages', methods=['GET', 'POST'])
+@bp.route('/committee/<committee_name>/messages', methods=['GET', 'POST'])
 def committee_messages(committee_name):
     channel = request.args.get('channel', 'general')
 
@@ -94,11 +142,11 @@ def committee_messages(committee_name):
 # --------------------
 # Study Groups / Meetups
 # --------------------
-@app.route('/study-groups')
+@bp.route('/study-groups')
 def study_groups():
     return render_template('study_group.html', meetups=meetups)
 
-@app.route('/study-groups/create', methods=['POST'])
+@bp.route('/study-groups/create', methods=['POST'])
 def create_meetup():
     topic = request.form.get('topic')
     location = request.form.get('location')
@@ -122,7 +170,7 @@ def create_meetup():
         return jsonify({"status": "success", "meetup": meetup})
     return jsonify({"status": "error", "message": "Missing required fields"})
 
-@app.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
+@bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
 def rsvp_meetup(meetup_id):
     for meetup in meetups:
         if meetup["id"] == meetup_id:
@@ -133,7 +181,7 @@ def rsvp_meetup(meetup_id):
 # --------------------
 # Profile Page
 # --------------------
-@app.route('/profile')
+@bp.route('/profile')
 def profile_landing_page():
     user_data = {
         "name": "John Doe",
@@ -163,12 +211,10 @@ def profile_landing_page():
 # --------------------
 # Group Assignments Page
 # --------------------
-@app.route('/group-assignments')
+@bp.route('/group-assignments')
 def group_assignments():
-    # Future: Fetch user's groups and members from the database
     return render_template('group_assignment.html')
 
-@app.route('/group-assignments/<group_name>')
+@bp.route('/group-assignments/<group_name>')
 def group_assignment_chat(group_name):
-    # Future: Fetch messages, files, members, etc. for the group
     return render_template('group_assignment_chatui.html', group_name=group_name)
