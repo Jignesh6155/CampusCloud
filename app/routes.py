@@ -130,3 +130,30 @@ def rsvp_meetup(meetup_id):
             return jsonify({"status": "success", "rsvp_count": meetup["rsvp_count"]})
     return jsonify({"status": "error", "message": "Meetup not found"})
 
+@app.route('/profile')
+def profile_landing_page():
+    user_data = {
+        "name": "John Doe",
+        "job_title": "Software Engineer at TechCorp",
+        "bio": "Passionate about technology and building great products. Coffee lover ☕️.",
+        "hobbies": ["Photography", "Traveling", "Coding challenges"],
+        "email": "johndoe@email.com",
+        "phone": "+1 (123) 456-7890",
+        "profile_picture": "/static/profile-picture.jpg",
+        "cover_picture": "/static/profile-cover.jpg",
+        "posts": [
+            {
+                "author": "John Doe",
+                "timestamp": "2 hours ago",
+                "text": "Excited to start a new coding project today! 🚀"
+            },
+            {
+                "author": "John Doe",
+                "timestamp": "Yesterday at 6:00 PM",
+                "text": "Throwback to my trip to the mountains last summer. 🏞️",
+                "image": "/static/mountains.jpg"
+            }
+        ]
+    }
+    return render_template('profile_landingpage.html', user=user_data)
+
