@@ -50,7 +50,7 @@
     <main class="flex-1 flex flex-col gap-4">
       <h2 class="text-lg font-semibold text-slate-800 mb-2">My Groups</h2>
 
-      <a href="{{ url_for('group_assignment_chat', group_name='Web Dev Project') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+      <a href="{{ url_for('routes.group_assignment_chat', group_name='Web Dev Project') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
         <div>
           <span class="text-sm text-slate-800 font-semibold block">Web Dev Project</span>
           <span class="text-xs text-slate-500">Due: 2025-06-10</span>
@@ -58,7 +58,7 @@
         <i class="fas fa-arrow-right text-slate-400"></i>
       </a>
 
-      <a href="{{ url_for('group_assignment_chat', group_name='Marketing Analysis') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+      <a href="{{ url_for('routes.group_assignment_chat', group_name='Marketing Analysis') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
         <div>
           <span class="text-sm text-slate-800 font-semibold block">Marketing Analysis</span>
           <span class="text-xs text-slate-500">Due: 2025-06-15</span>
@@ -66,7 +66,7 @@
         <i class="fas fa-arrow-right text-slate-400"></i>
       </a>
 
-      <a href="{{ url_for('group_assignment_chat', group_name='History Presentation') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+      <a href="{{ url_for('routes.group_assignment_chat', group_name='History Presentation') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
         <div>
           <span class="text-sm text-slate-800 font-semibold block">History Presentation</span>
           <span class="text-xs text-slate-500">Due: 2025-06-20</span>

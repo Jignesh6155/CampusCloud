@@ -4,9 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CampusCloud Login</title>
-<!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Font Awesome CDN for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body class="relative min-h-screen flex items-center justify-center bg-black">
@@ -17,23 +15,23 @@
 </div>
 
 <!-- Overlay for dark effect -->
-<div class="absolute inset-0 bg-black bg-opacity-20"></div>
+<div class="absolute inset-0 bg-black bg-opacity-30"></div>
 
 <!-- Form slider container -->
 <div class="relative z-10 w-full max-w-md h-[500px] overflow-hidden rounded-lg shadow-lg">
-  <!-- Forms wrapper -->
   <div id="forms-wrapper" class="flex transition-transform duration-500 ease-in-out w-[200%]">
+
     <!-- Login form -->
-    <div class="w-1/2 p-10 bg-black bg-opacity-75">
+    <div class="w-1/2 p-10 bg-black bg-opacity-75 flex flex-col justify-center">
       <h1 class="text-3xl font-bold text-teal-400 text-center mb-6">CampusCloud</h1>
-      <form class="space-y-4">
+      <form action="{{ url_for('routes.login') }}" method="POST" class="space-y-4">
         <div class="relative">
           <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-          <input type="text" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+          <input name="email" type="email" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
         </div>
         <div class="relative">
           <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-          <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+          <input name="password" type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
         </div>
         <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-teal-700 transition-colors font-medium text-white">Sign In</button>
         <div class="flex justify-between items-center text-sm text-gray-400">
@@ -50,20 +48,20 @@
     </div>
 
     <!-- Sign-up form -->
-    <div class="w-1/2 p-8 bg-black bg-opacity-75">
-      <h1 class="text-3xl font-bold text-teal-400 text-center mb-8">Sign Up</h1>
-      <form class="space-y-4">
+    <div class="w-1/2 p-10 bg-black bg-opacity-75 flex flex-col justify-center">
+      <h1 class="text-3xl font-bold text-teal-400 text-center mb-6">Sign Up</h1>
+      <form action="{{ url_for('routes.signup') }}" method="POST" class="space-y-4">
         <div class="relative">
           <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-          <input type="text" placeholder="Full Name" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+          <input name="full_name" type="text" placeholder="Full Name" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
         </div>
         <div class="relative">
           <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-          <input type="email" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+          <input name="email" type="email" placeholder="Email" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
         </div>
         <div class="relative">
           <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-          <input type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
+          <input name="password" type="password" placeholder="Password" class="w-full pl-10 p-3 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-teal-500" required>
         </div>
         <button type="submit" class="w-full p-3 rounded bg-teal-600 hover:bg-teal-700 transition-colors font-medium text-white">Create Account</button>
         <p class="text-center text-sm text-gray-400 mt-4">
@@ -74,7 +72,6 @@
   </div>
 </div>
 
-<!-- JavaScript to toggle forms -->
 <script>
   const showSignup = document.getElementById('show-signup');
   const showLogin = document.getElementById('show-login');
