@@ -130,6 +130,9 @@ def rsvp_meetup(meetup_id):
             return jsonify({"status": "success", "rsvp_count": meetup["rsvp_count"]})
     return jsonify({"status": "error", "message": "Meetup not found"})
 
+# --------------------
+# Profile Page
+# --------------------
 @app.route('/profile')
 def profile_landing_page():
     user_data = {
@@ -157,3 +160,15 @@ def profile_landing_page():
     }
     return render_template('profile_landingpage.html', user=user_data)
 
+# --------------------
+# Group Assignments Page
+# --------------------
+@app.route('/group-assignments')
+def group_assignments():
+    # Future: Fetch user's groups and members from the database
+    return render_template('group_assignment.html')
+
+@app.route('/group-assignments/<group_name>')
+def group_assignment_chat(group_name):
+    # Future: Fetch messages, files, members, etc. for the group
+    return render_template('group_assignment_chatui.html', group_name=group_name)

@@ -13,7 +13,7 @@
 
     <!-- Left Sidebar: Post a Meetup -->
     <div class="w-1/3 -ml-10 bg-white border border-slate-200 rounded-xl shadow p-4 flex flex-col gap-4 sticky top-6 h-auto overflow-auto">
-        <h2 class="text-lg font-semibold text-slate-700">Post a Meetup</h2>
+      <h2 class="text-lg font-semibold text-slate-700">Post a Meetup</h2>
       <form class="flex flex-col gap-3 text-sm">
         <input type="text" placeholder="Topic / Subject" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm" />
         <input type="text" placeholder="Location" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm" />
@@ -25,6 +25,13 @@
           <option value="other">Other</option>
         </select>
         <textarea placeholder="Description..." rows="4" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm"></textarea>
+
+        <!-- Anonymous Posting Checkbox -->
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="anonymous" name="anonymous" class="h-4 w-4 text-indigo-600 border-slate-300 rounded">
+          <label for="anonymous" class="text-sm text-slate-600">Post anonymously</label>
+        </div>
+
         <button type="submit" class="bg-indigo-600 text-white px-3 py-2 rounded-full hover:bg-indigo-700 transition font-semibold shadow-sm">
           Post Meetup
         </button>
@@ -39,6 +46,8 @@
           <h3 class="text-lg font-semibold text-slate-800">Calculus Study Group</h3>
           <span class="px-2 py-1 text-xs bg-indigo-100 text-indigo-600 rounded-full">Study</span>
         </div>
+        <!-- Username profile link with margin below -->
+        <a href="#" class="text-xs text-indigo-600 hover:underline mb-1">Jane Doe</a>
         <p class="text-xs text-slate-600">📍 Library Room 203 | 🕒 May 5, 3:00 PM</p>
         <p class="text-slate-700 text-sm">We’re going through exam questions together—bring your notes!</p>
         <div class="flex items-center justify-between mt-2 text-xs text-slate-600">
@@ -58,6 +67,8 @@
           <h3 class="text-lg font-semibold text-slate-800">Coffee Catchup!</h3>
           <span class="px-2 py-1 text-xs bg-green-100 text-green-600 rounded-full">Social</span>
         </div>
+        <!-- Username profile link with margin below -->
+        <a href="#" class="text-xs text-indigo-600 hover:underline mb-1">John Smith</a>
         <p class="text-xs text-slate-600">📍 Campus Café | 🕒 May 6, 11:00 AM</p>
         <p class="text-slate-700 text-sm">Casual meet and chat over coffee ☕</p>
         <div class="flex items-center justify-between mt-2 text-xs text-slate-600">
