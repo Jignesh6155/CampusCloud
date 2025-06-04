@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from app import app
 from datetime import datetime
 
-# In-memory chat storage with channels for each unit
+# In-memory chat storage for units
 chats = {
     "ENG101": {
         "general": [],
@@ -18,6 +18,18 @@ chats = {
         "general": [],
         "assignments": [],
         "resources": []
+    }
+}
+
+# In-memory chat storage for committees
+committee_chats = {
+    "TechCommittee": {
+        "main": [],
+        "general": []
+    },
+    "MarketingCommittee": {
+        "main": [],
+        "general": []
     }
 }
 
@@ -43,33 +55,63 @@ def unit_chat(unit_code):
 
 @app.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 def unit_messages(unit_code):
-    # Get the requested channel from the query params
     channel = request.args.get('channel', 'general')
 
-    # Ensure the unit and channel exist
     if unit_code not in chats:
-        # Initialize unit with empty channels if not present
         chats[unit_code] = {
             "general": [],
             "assignments": [],
             "resources": []
         }
     if channel not in chats[unit_code]:
-        # Initialize the requested channel if not present
         chats[unit_code][channel] = []
 
     if request.method == 'POST':
         new_msg = request.form.get('message')
         if new_msg:
-            # Create a message object with a timestamp
             msg_obj = {
                 "message": new_msg,
                 "author": "Anonymous User",
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }
-            # Append the new message to the correct channel
             chats[unit_code][channel].append(msg_obj)
             return jsonify({"status": "success"})
 
-    # GET request: return the list of messages for the requested channel
     return jsonify(chats[unit_code][channel])
+
+# Committee chat landing page
+@app.route('/committee-chat')
+def committee_chat():
+    return render_template('committee_chat_landing.html')
+
+# Committee chat UI
+@app.route('/committee/<committee_name>')
+def committee_ui(committee_name):
+    is_authorized = False  # Example toggle for testing
+    return render_template('committee_ui.html', committee_name=committee_name, is_authorized=is_authorized)
+
+@app.route('/committee/<committee_name>/messages', methods=['GET', 'POST'])
+def committee_messages(committee_name):
+    channel = request.args.get('channel', 'general')
+
+    if committee_name not in committee_chats:
+        committee_chats[committee_name] = {
+            "announcements": [],
+            "general": []
+        }
+
+    if channel not in committee_chats[committee_name]:
+        committee_chats[committee_name][channel] = []
+
+    if request.method == 'POST':
+        new_msg = request.form.get('message')
+        if new_msg:
+            msg_obj = {
+                "message": new_msg,
+                "author": "Anonymous User",
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            }
+            committee_chats[committee_name][channel].append(msg_obj)
+            return jsonify({"status": "success"})
+
+    return jsonify(committee_chats[committee_name][channel])
