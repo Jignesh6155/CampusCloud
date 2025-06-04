@@ -4,34 +4,19 @@ from datetime import datetime
 
 # In-memory chat storage for units
 chats = {
-    "ENG101": {
-        "general": [],
-        "assignments": [],
-        "resources": []
-    },
-    "CSC202": {
-        "general": [],
-        "assignments": [],
-        "resources": []
-    },
-    "MKT305": {
-        "general": [],
-        "assignments": [],
-        "resources": []
-    }
+    "ENG101": {"general": [], "assignments": [], "resources": []},
+    "CSC202": {"general": [], "assignments": [], "resources": []},
+    "MKT305": {"general": [], "assignments": [], "resources": []}
 }
 
 # In-memory chat storage for committees
 committee_chats = {
-    "TechCommittee": {
-        "main": [],
-        "general": []
-    },
-    "MarketingCommittee": {
-        "main": [],
-        "general": []
-    }
+    "TechCommittee": {"main": [], "general": []},
+    "MarketingCommittee": {"main": [], "general": []}
 }
+
+# In-memory meetup storage for study groups/social groups
+meetups = []
 
 @app.route('/')
 def index():
@@ -56,13 +41,8 @@ def unit_chat(unit_code):
 @app.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 def unit_messages(unit_code):
     channel = request.args.get('channel', 'general')
-
     if unit_code not in chats:
-        chats[unit_code] = {
-            "general": [],
-            "assignments": [],
-            "resources": []
-        }
+        chats[unit_code] = {"general": [], "assignments": [], "resources": []}
     if channel not in chats[unit_code]:
         chats[unit_code][channel] = []
 
@@ -79,12 +59,10 @@ def unit_messages(unit_code):
 
     return jsonify(chats[unit_code][channel])
 
-# Committee chat landing page
 @app.route('/committee-chat')
 def committee_chat():
     return render_template('committee_chat_landing.html')
 
-# Committee chat UI
 @app.route('/committee/<committee_name>')
 def committee_ui(committee_name):
     is_authorized = False  # Example toggle for testing
@@ -95,10 +73,7 @@ def committee_messages(committee_name):
     channel = request.args.get('channel', 'general')
 
     if committee_name not in committee_chats:
-        committee_chats[committee_name] = {
-            "announcements": [],
-            "general": []
-        }
+        committee_chats[committee_name] = {"announcements": [], "general": []}
 
     if channel not in committee_chats[committee_name]:
         committee_chats[committee_name][channel] = []
@@ -115,3 +90,43 @@ def committee_messages(committee_name):
             return jsonify({"status": "success"})
 
     return jsonify(committee_chats[committee_name][channel])
+
+# --------------------
+# Study Groups / Meetups
+# --------------------
+@app.route('/study-groups')
+def study_groups():
+    return render_template('study_group.html', meetups=meetups)
+
+@app.route('/study-groups/create', methods=['POST'])
+def create_meetup():
+    topic = request.form.get('topic')
+    location = request.form.get('location')
+    datetime_str = request.form.get('datetime')
+    mtype = request.form.get('type')
+    description = request.form.get('description')
+    tags = request.form.get('tags', '').split(',')
+
+    if topic and location and datetime_str and mtype:
+        meetup = {
+            "id": len(meetups) + 1,
+            "topic": topic,
+            "location": location,
+            "datetime": datetime_str,
+            "type": mtype,
+            "description": description,
+            "tags": [tag.strip() for tag in tags if tag.strip()],
+            "rsvp_count": 0
+        }
+        meetups.append(meetup)
+        return jsonify({"status": "success", "meetup": meetup})
+    return jsonify({"status": "error", "message": "Missing required fields"})
+
+@app.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
+def rsvp_meetup(meetup_id):
+    for meetup in meetups:
+        if meetup["id"] == meetup_id:
+            meetup["rsvp_count"] += 1
+            return jsonify({"status": "success", "rsvp_count": meetup["rsvp_count"]})
+    return jsonify({"status": "error", "message": "Meetup not found"})
+
