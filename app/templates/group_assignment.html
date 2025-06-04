@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Title bar -->
+<div class="w-full bg-slate-100 text-slate-800 py-6 px-6 flex items-center gap-2">
+  <h1 class="text-2xl font-bold">Group Assignments</h1>
+  <span class="text-2xl">📚</span>
+</div>
+
+<!-- Main page layout -->
+<div class="p-4 bg-slate-100">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-4">
+
+    <!-- Create Group Sidebar -->
+    <aside class="w-full md:w-1/3 bg-white rounded-xl shadow p-6 flex flex-col gap-4">
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">Create a Group</h2>
+      <form class="flex flex-col gap-4 text-sm">
+
+        <div class="flex flex-col gap-1">
+          <label for="group-name" class="text-xs font-semibold text-slate-700">Group Name</label>
+          <input type="text" id="group-name" placeholder="Enter group name" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="group-desc" class="text-xs font-semibold text-slate-700">Group Description</label>
+          <textarea id="group-desc" placeholder="Describe your group..." rows="3" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm resize-none"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="due-date" class="text-xs font-semibold text-slate-700">Due Date</label>
+          <input type="date" id="due-date" class="border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="add-student" class="text-xs font-semibold text-slate-700">Add Students</label>
+          <div class="flex gap-2">
+            <input type="text" id="add-student" placeholder="Enter email or ID" class="flex-1 border border-slate-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" />
+            <button type="button" class="bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow-sm">Add</button>
+          </div>
+        </div>
+
+        <button type="submit" class="bg-green-600 text-white px-3 py-2 rounded-full hover:bg-green-700 transition font-semibold shadow shadow-md mt-2">
+          Create Group
+        </button>
+      </form>
+    </aside>
+
+    <!-- Group List as White Bubble Boxes with Arrows -->
+    <main class="flex-1 flex flex-col gap-4">
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">My Groups</h2>
+
+      <a href="{{ url_for('group_assignment_chat', group_name='Web Dev Project') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+        <div>
+          <span class="text-sm text-slate-800 font-semibold block">Web Dev Project</span>
+          <span class="text-xs text-slate-500">Due: 2025-06-10</span>
+        </div>
+        <i class="fas fa-arrow-right text-slate-400"></i>
+      </a>
+
+      <a href="{{ url_for('group_assignment_chat', group_name='Marketing Analysis') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+        <div>
+          <span class="text-sm text-slate-800 font-semibold block">Marketing Analysis</span>
+          <span class="text-xs text-slate-500">Due: 2025-06-15</span>
+        </div>
+        <i class="fas fa-arrow-right text-slate-400"></i>
+      </a>
+
+      <a href="{{ url_for('group_assignment_chat', group_name='History Presentation') }}" class="bg-white rounded-xl shadow p-4 flex justify-between items-center hover:shadow-md transition">
+        <div>
+          <span class="text-sm text-slate-800 font-semibold block">History Presentation</span>
+          <span class="text-xs text-slate-500">Due: 2025-06-20</span>
+        </div>
+        <i class="fas fa-arrow-right text-slate-400"></i>
+      </a>
+    </main>
+
+  </div>
+</div>
+
+{% endblock %}
