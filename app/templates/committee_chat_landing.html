@@ -1,35 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="p-6 space-y-4">
-  <!-- Title and Search -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-      <i class="fas fa-university text-indigo-600"></i> Committee Chats
-    </h1>
 
-    <!-- Prettier search box -->
-    <div class="relative flex items-center w-full sm:w-72 rounded-2xl overflow-hidden border border-slate-300 bg-white shadow focus-within:ring-2 focus-within:ring-indigo-500 transition">
-      <input type="text" placeholder="Search committees..." class="flex-1 px-4 py-2 text-slate-800 placeholder-slate-400 focus:outline-none bg-transparent" />
-      <button class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 transition rounded-r-2xl">
-        <i class="fas fa-search"></i>
-      </button>
-    </div>
-  </div>
+<!-- Title bar -->
+<div class="w-full bg-slate-100 text-slate-800 py-6 px-6 flex items-center gap-2">
+  <h1 class="text-2xl font-bold">Committee Chats</h1>
+  <span class="text-2xl">👥</span>
+</div>
 
-  <p class="text-slate-700">Find and join a committee to collaborate and discuss with your peers.</p>
-
-  <!-- Committees List -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-    <a href="{{ url_for('committee_ui', committee_name='TechCommittee') }}" class="block bg-white border border-slate-200 p-4 rounded shadow hover:shadow-md hover:bg-indigo-50 transition">
-      <h2 class="font-semibold text-slate-800 text-lg">Tech Committee</h2>
-      <p class="text-sm text-slate-600 mt-1">Discuss technical initiatives and new innovations.</p>
-    </a>
-    <a href="{{ url_for('committee_ui', committee_name='MarketingCommittee') }}" class="block bg-white border border-slate-200 p-4 rounded shadow hover:shadow-md hover:bg-indigo-50 transition">
-      <h2 class="font-semibold text-slate-800 text-lg">Marketing Committee</h2>
-      <p class="text-sm text-slate-600 mt-1">Plan and strategize marketing campaigns and events.</p>
-    </a>
-    <!-- Additional committees can be added here -->
+<!-- Search bar -->
+<div class="p-4 bg-slate-100">
+  <div class="max-w-4xl mx-auto">
+    <input
+      type="text"
+      placeholder="Search for a committee..."
+      class="w-full px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
+    />
   </div>
 </div>
+
+<div class="p-4 bg-slate-100">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+  
+      <!-- Tech Committee card -->
+      <a href="{{ url_for('committee_ui', committee_name='TechCommittee') }}"
+         class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+          <i class="fas fa-laptop-code"></i> <!-- Tech-themed logo -->
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-slate-800 mb-1">Tech Committee</h3>
+          <p class="text-sm text-slate-500">Discuss technical initiatives and new innovations.</p>
+        </div>
+      </a>
+  
+      <!-- Marketing Committee card -->
+      <a href="{{ url_for('committee_ui', committee_name='MarketingCommittee') }}"
+         class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+          <i class="fas fa-bullhorn"></i> <!-- Marketing logo -->
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-slate-800 mb-1">Marketing Committee</h3>
+          <p class="text-sm text-slate-500">Plan and strategize marketing campaigns and events.</p>
+        </div>
+      </a>
+  
+      <!-- Example: Events Committee -->
+      <a href="{{ url_for('committee_ui', committee_name='EventsCommittee') }}"
+         class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+          <i class="fas fa-calendar-alt"></i> <!-- Events logo -->
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-slate-800 mb-1">Events Committee</h3>
+          <p class="text-sm text-slate-500">Organize campus events and gatherings.</p>
+        </div>
+      </a>
+  
+      <!-- More committees as needed -->
+    </div>
+  </div>
+  
+  
+
 {% endblock %}
