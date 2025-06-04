@@ -29,7 +29,7 @@
         <i class="fas fa-university text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Committee Chats</span>
       </a>
-      <a href="#" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+      <a href="{{ url_for('study_groups') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
         <i class="fas fa-users text-lg"></i>
         <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
       </a>
@@ -48,7 +48,7 @@
     </div>
   </aside>
 
-  <!-- Main Content Area (no outer padding to let title bar reach edges) -->
+  <!-- Main Content Area -->
   <main class="flex-1 bg-slate-100 min-h-screen">
     {% block content %}
     {% endblock %}
