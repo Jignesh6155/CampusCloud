@@ -2,11 +2,23 @@ from flask import render_template, request, jsonify
 from app import app
 from datetime import datetime
 
-# In-memory chat storage
+# In-memory chat storage with channels for each unit
 chats = {
-    "ENG101": [],
-    "CSC202": [],
-    "MKT305": []
+    "ENG101": {
+        "general": [],
+        "assignments": [],
+        "resources": []
+    },
+    "CSC202": {
+        "general": [],
+        "assignments": [],
+        "resources": []
+    },
+    "MKT305": {
+        "general": [],
+        "assignments": [],
+        "resources": []
+    }
 }
 
 @app.route('/')
@@ -31,17 +43,33 @@ def unit_chat(unit_code):
 
 @app.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 def unit_messages(unit_code):
+    # Get the requested channel from the query params
+    channel = request.args.get('channel', 'general')
+
+    # Ensure the unit and channel exist
+    if unit_code not in chats:
+        # Initialize unit with empty channels if not present
+        chats[unit_code] = {
+            "general": [],
+            "assignments": [],
+            "resources": []
+        }
+    if channel not in chats[unit_code]:
+        # Initialize the requested channel if not present
+        chats[unit_code][channel] = []
+
     if request.method == 'POST':
         new_msg = request.form.get('message')
         if new_msg:
-            # Create a proper message object
+            # Create a message object with a timestamp
             msg_obj = {
                 "message": new_msg,
-                "author": "Anonymous User",  # default
-                "timestamp": datetime.utcnow().isoformat() + "Z"  # UTC ISO format
+                "author": "Anonymous User",
+                "timestamp": datetime.utcnow().isoformat() + "Z"
             }
-            chats.setdefault(unit_code, []).append(msg_obj)
+            # Append the new message to the correct channel
+            chats[unit_code][channel].append(msg_obj)
             return jsonify({"status": "success"})
 
-    # GET request: return list of message objects
-    return jsonify(chats.get(unit_code, []))
+    # GET request: return the list of messages for the requested channel
+    return jsonify(chats[unit_code][channel])
