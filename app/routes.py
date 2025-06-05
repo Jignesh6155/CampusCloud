@@ -219,3 +219,38 @@ def group_assignments():
 @bp.route('/group-assignments/<group_name>')
 def group_assignment_chat(group_name):
     return render_template('group_assignment_chatui.html', group_name=group_name)
+
+@bp.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    # Grab form data
+    full_name = request.form.get('full_name')
+    job_title = request.form.get('job_title')
+    bio = request.form.get('bio')
+    hobbies = request.form.get('hobbies', '').split(',')
+    profile_picture = request.files.get('profile_picture')
+    cover_picture = request.files.get('cover_picture')
+
+    # Update the current_user object
+    current_user.full_name = full_name
+    current_user.job_title = job_title
+    current_user.bio = bio
+    current_user.hobbies = [h.strip() for h in hobbies if h.strip()]
+
+    # Example: Just log filenames now; real file handling can be added
+    if profile_picture:
+        print("New profile picture:", profile_picture.filename)
+    if cover_picture:
+        print("New cover picture:", cover_picture.filename)
+
+    # Save updates
+    db.session.commit()
+    flash('Profile updated successfully!')
+
+    return redirect(url_for('routes.profile_landing_page'))
+
+@bp.route('/edit-profile', methods=['GET'])
+@login_required
+def edit_profile():
+    # This simply renders the editprofile.html template
+    return render_template('editprofile.html', user=current_user)
