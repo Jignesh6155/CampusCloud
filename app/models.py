@@ -9,10 +9,14 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+
     bio = db.Column(db.Text)
-    hobbies = db.Column(db.Text)  # Store as a comma-separated string
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
+
+    university = db.Column(db.String(100))  # New field for University
+    faculty = db.Column(db.String(100))     # New field for Faculty
+
     profile_picture = db.Column(db.String(255))  # URL/path to the profile picture
     cover_picture = db.Column(db.String(255))  # URL/path to the cover image
     created_at = db.Column(db.DateTime, default=db.func.now())
@@ -29,7 +33,7 @@ class User(db.Model, UserMixin):
         return f'<User {self.email}>'
 
     def hobbies_list(self):
-        """Returns hobbies as a list for Jinja2 templates."""
+        """Returns hobbies as a list for Jinja2 templates (if still used)."""
         if self.hobbies:
             return [h.strip() for h in self.hobbies.split(',') if h.strip()]
         return []

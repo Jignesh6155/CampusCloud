@@ -209,10 +209,18 @@ def update_profile():
     profile_picture = request.files.get('profile_picture')
     cover_picture = request.files.get('cover_picture')
 
+    # New fields
+    university = request.form.get('university')
+    faculty = request.form.get('faculty')
+
     # Update user profile fields
     current_user.full_name = full_name
     current_user.job_title = job_title
     current_user.bio = bio
+    current_user.university = university
+    current_user.faculty = faculty
+
+    # Update hobbies (optional)
     current_user.hobbies = ', '.join([h.strip() for h in hobbies if h.strip()])
 
     # Upload new profile picture if provided
