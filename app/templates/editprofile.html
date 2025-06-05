@@ -54,6 +54,16 @@
       </div>
 
       <div class="flex flex-col">
+        <label class="text-slate-700 font-medium mb-1">Phone</label>
+        <input type="text" name="phone" value="{{ user.phone }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+      </div>
+
+      <div class="flex flex-col">
+        <label class="text-slate-700 font-medium mb-1">Student Number</label>
+        <input type="text" name="student_number" value="{{ user.student_number }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+      </div>
+
+      <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Profile Picture</label>
         <input type="file" name="profile_picture" accept="image/*" class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
