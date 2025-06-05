@@ -252,28 +252,38 @@ def edit_profile():
     return render_template('editprofile.html', user=current_user)
 
 
-
 @bp.route('/create-post', methods=['POST'])
 @login_required
 def create_post():
-    data = request.get_json()
-    content = data.get('content', '').strip()
-    title = data.get('title', '').strip()
-    if not content:
-        return jsonify({"error": "Content is required."}), 400
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    image_file = request.files.get('image')
 
-    post = Post(content=content, title=title, author=current_user)
+    if not content:
+        flash('Content is required.', 'error')
+        return redirect(url_for('routes.post_forum'))
+
+    image_url = None
+    if image_file and image_file.filename != '':
+        # Save the uploaded image to static/uploads
+        filename = secure_filename(image_file.filename)
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+        os.makedirs(upload_folder, exist_ok=True)  # Ensure folder exists
+        image_path = os.path.join(upload_folder, filename)
+        image_file.save(image_path)
+        image_url = f'static/uploads/{filename}'
+
+    post = Post(
+        title=title,
+        content=content,
+        author=current_user,
+        image_url=image_url
+    )
     db.session.add(post)
     db.session.commit()
 
-    return jsonify({
-        "status": "success",
-        "title": post.title,
-        "content": post.content,
-        "author_name": current_user.full_name,
-        "author_major": current_user.major or "N/A",
-        "author_university": current_user.university or "N/A"
-    })
+    flash('Post created!', 'success')
+    return redirect(url_for('routes.post_forum'))
     
 @bp.route('/post/<int:post_id>')
 def post_thread(post_id):
@@ -340,3 +350,15 @@ def delete_comment(comment_id):
 def post_forum():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     return render_template('post_forum.html', posts=posts)
+
+@bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+
+    if post.author.id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({'status': 'success'})
