@@ -5,8 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Association table for many-to-many relationship between users and committees
 user_committees = db.Table(
     'user_committees',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('committee_id', db.Integer, db.ForeignKey('committees.id'), primary_key=True)
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_usercommittees_user_id'), primary_key=True),
+    db.Column('committee_id', db.Integer, db.ForeignKey('committees.id', ondelete='CASCADE', name='fk_usercommittees_committee_id'), primary_key=True)
 )
 
 class User(db.Model, UserMixin):
@@ -32,9 +32,9 @@ class User(db.Model, UserMixin):
     # Many-to-many relationship to committees
     committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
 
-    # One-to-many
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
-    comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    # One-to-many relationships
+    posts = db.relationship('Post', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
+    comments = db.relationship('Comment', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -62,14 +62,14 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
     content = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.String(255))  # uploaded image file path
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    committee_id = db.Column(db.Integer, db.ForeignKey('committees.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_posts_user_id'), nullable=False)
+    committee_id = db.Column(db.Integer, db.ForeignKey('committees.id', ondelete='SET NULL', name='fk_posts_committee_id'), nullable=True)
     committee = db.relationship('Committee', backref='posts', lazy='joined')
 
-    # One-to-many
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
 
     def __repr__(self):
         return f'<Post {self.id} by User {self.user_id}>'
@@ -81,15 +81,15 @@ class Comment(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE', name='fk_comments_post_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_comments_user_id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='CASCADE', name='fk_comments_parent_id'), nullable=True)
 
-    # One-to-many: replies
     replies = db.relationship(
         'Comment',
         backref=db.backref('parent', remote_side=[id]),
-        cascade='all, delete'
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
 
     def __repr__(self):
