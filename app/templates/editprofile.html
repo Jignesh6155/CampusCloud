@@ -5,14 +5,18 @@
   <!-- Sidebar -->
   <aside class="w-64 bg-slate-100 text-slate-800 flex flex-col p-4">
     <div class="flex items-center mb-6">
-      <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}" alt="Profile picture" class="w-12 h-12 rounded-full object-cover">
+      <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
+           alt="Profile picture"
+           class="w-12 h-12 rounded-full object-cover">
       <h2 class="text-lg font-bold ml-3">{{ user.full_name }}</h2>
     </div>
     <nav class="flex flex-col space-y-2">
-      <a href="{{ url_for('routes.profile_landing_page') }}" class="flex items-center gap-2 p-2 rounded hover:bg-slate-200 transition">
+      <a href="{{ url_for('routes.profile_landing_page') }}"
+         class="flex items-center gap-2 p-2 rounded hover:bg-slate-200 transition">
         <i class="fas fa-user"></i> Profile
       </a>
-      <a href="#" class="flex items-center gap-2 p-2 bg-slate-200 rounded font-semibold">
+      <a href="#"
+         class="flex items-center gap-2 p-2 bg-slate-200 rounded font-semibold">
         <i class="fas fa-edit"></i> Edit Profile
       </a>
     </nav>
@@ -21,61 +25,82 @@
   <!-- Edit Profile Form -->
   <main class="flex-1 p-10 bg-white">
     <h1 class="text-3xl font-bold mb-6">Edit Profile</h1>
-    <form action="{{ url_for('routes.update_profile') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form action="{{ url_for('routes.update_profile') }}" method="POST"
+          enctype="multipart/form-data"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Full Name</label>
-        <input type="text" name="full_name" value="{{ user.full_name }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400" required>
+        <input type="text" name="full_name" value="{{ user.full_name }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400" required>
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Job Title</label>
-        <input type="text" name="job_title" value="{{ user.job_title }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="job_title" value="{{ user.job_title }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="md:col-span-2 flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Bio</label>
-        <textarea name="bio" rows="4" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.bio }}</textarea>
+        <textarea name="bio" rows="4"
+                  class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.bio }}</textarea>
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">University</label>
-        <input type="text" name="university" value="{{ user.university }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="university" value="{{ user.university }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Faculty</label>
-        <input type="text" name="faculty" value="{{ user.faculty }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="faculty" value="{{ user.faculty }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Major</label>
-        <input type="text" name="major" value="{{ user.major }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="major" value="{{ user.major }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Phone</label>
-        <input type="text" name="phone" value="{{ user.phone }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="phone" value="{{ user.phone }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Student Number</label>
-        <input type="text" name="student_number" value="{{ user.student_number }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="text" name="student_number" value="{{ user.student_number }}"
+               class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+      </div>
+
+      <!-- Motivational Quote Field -->
+      <div class="md:col-span-2 flex flex-col">
+        <label class="text-slate-700 font-medium mb-1">Motivational Quote</label>
+        <textarea name="motivational_quote" rows="2"
+                  class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.motivational_quote }}</textarea>
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Profile Picture</label>
-        <input type="file" name="profile_picture" accept="image/*" class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="file" name="profile_picture" accept="image/*"
+               class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Cover Picture</label>
-        <input type="file" name="cover_picture" accept="image/*" class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
+        <input type="file" name="cover_picture" accept="image/*"
+               class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="md:col-span-2 flex justify-end gap-4 mt-4">
-        <a href="{{ url_for('routes.profile_landing_page') }}" class="bg-slate-400 hover:bg-slate-500 text-white font-semibold px-6 py-2 rounded transition">Cancel</a>
-        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded transition">Save</button>
+        <a href="{{ url_for('routes.profile_landing_page') }}"
+           class="bg-slate-400 hover:bg-slate-500 text-white font-semibold px-6 py-2 rounded transition">Cancel</a>
+        <button type="submit"
+                class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded transition">Save</button>
       </div>
     </form>
   </main>

@@ -2,6 +2,13 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Association table for many-to-many relationship between users and committees
+user_committees = db.Table(
+    'user_committees',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('committee_id', db.Integer, db.ForeignKey('committees.id'), primary_key=True)
+)
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -14,29 +21,35 @@ class User(db.Model, UserMixin):
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
 
-    university = db.Column(db.String(100))  # Field for University
-    faculty = db.Column(db.String(100))     # Field for Faculty
-    major = db.Column(db.String(100))       # Field for Major (if desired)
-    student_number = db.Column(db.String(50))  # New field for Student Number
+    university = db.Column(db.String(100))  
+    faculty = db.Column(db.String(100))    
+    major = db.Column(db.String(100))      
+    student_number = db.Column(db.String(50))  
+    motivational_quote = db.Column(db.Text)  # New field for motivational quote
 
-    profile_picture = db.Column(db.String(255))  # URL/path to the profile picture
-    cover_picture = db.Column(db.String(255))    # URL/path to the cover image
+    profile_picture = db.Column(db.String(255))  
+    cover_picture = db.Column(db.String(255))    
     created_at = db.Column(db.DateTime, default=db.func.now())
 
+    # Many-to-many relationship to committees
+    committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
+
     def set_password(self, password):
-        """Hashes and sets the password."""
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        """Verifies the password against the stored hash."""
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
         return f'<User {self.email}>'
 
-    def hobbies_list(self):
-        """Returns hobbies as a list for Jinja2 templates (if still used)."""
-        if self.hobbies:
-            return [h.strip() for h in self.hobbies.split(',') if h.strip()]
-        return []
+class Committee(db.Model):
+    __tablename__ = 'committees'
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    def __repr__(self):
+        return f'<Committee {self.name}>'

@@ -49,15 +49,15 @@
     </div>
   </aside>
 
-  <!-- Main Feed -->
-  <main class="flex-1 space-y-4">
-    <!-- Motivational Quote -->
-    <div class="bg-slate-100 rounded-xl shadow p-6">
+    <!-- Main Feed -->
+    <main class="flex-1 space-y-4">
+        <!-- Motivational Quote -->
+        <div class="bg-slate-100 rounded-xl shadow p-6">
         <h2 class="text-lg font-semibold text-slate-800 mb-1">Motivational Quote</h2>
         <p class="text-sm text-slate-600 italic">
-        "Success is not final, failure is not fatal: it is the courage to continue that counts."
+            {{ user.motivational_quote or "No motivational quote set yet. Feel free to edit your profile to add one!" }}
         </p>
-    </div>
+        </div>
 
     <!-- Groups / Committees -->
     <div class="bg-white rounded-xl shadow p-6">
