@@ -214,6 +214,7 @@ def update_profile():
     faculty = request.form.get('faculty')
     major = request.form.get('major')
     student_number = request.form.get('student_number')
+    phone = request.form.get('phone')
 
     # Update user profile fields
     current_user.full_name = full_name
@@ -223,6 +224,7 @@ def update_profile():
     current_user.faculty = faculty
     current_user.major = major
     current_user.student_number = student_number
+    current_user.phone = phone
 
     # Update hobbies (optional)
     current_user.hobbies = ', '.join([h.strip() for h in hobbies if h.strip()])
@@ -245,6 +247,7 @@ def update_profile():
     db.session.commit()
     flash('Profile updated successfully!')
     return redirect(url_for('routes.profile_landing_page'))
+
 
 @bp.route('/edit-profile', methods=['GET'])
 @login_required
