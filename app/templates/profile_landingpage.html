@@ -26,30 +26,51 @@
 <!-- Main Content Area -->
 <div class="max-w-6xl mx-auto mt-4 flex gap-4 px-4">
   <!-- Left Sidebar: Profile Info -->
-  <aside class="w-1/3 bg-white rounded-xl shadow p-4">
-    <h2 class="text-lg font-semibold mb-2 text-slate-800">Profile</h2>
-    <p class="text-sm text-slate-600 mb-2">{{ user.bio }}</p>
+  <aside class="w-1/3 bg-white rounded-xl shadow p-6 flex flex-col gap-4">
+    <div>
+      <h2 class="text-xl font-semibold text-slate-800 mb-1">About Me</h2>
+      <p class="text-sm text-slate-600">{{ user.bio or "No bio available." }}</p>
+    </div>
 
-    <h3 class="text-md font-semibold text-slate-800 mt-4">University & Faculty</h3>
-    <ul class="list-disc list-inside text-sm text-slate-600">
-      <li>University: {{ user.university or 'Not specified' }}</li>
-      <li>Faculty: {{ user.faculty or 'Not specified' }}</li>
-      <li>Major: {{ user.major or 'Not specified' }}</li>
-    </ul>
+    <div>
+      <h3 class="text-md font-semibold text-slate-800">University & Faculty</h3>
+      <ul class="text-sm text-slate-600 mt-1 space-y-1">
+        <li>🎓 <strong>University:</strong> {{ user.university or 'Not specified' }}</li>
+        <li>🏛️ <strong>Faculty:</strong> {{ user.faculty or 'Not specified' }}</li>
+        <li>📚 <strong>Major:</strong> {{ user.major or 'Not specified' }}</li>
+      </ul>
+    </div>
 
-    <h3 class="text-md font-semibold text-slate-800 mt-4">Contact</h3>
-    <p class="text-sm text-slate-600">📧 {{ user.email }}</p>
-    <p class="text-sm text-slate-600">📞 {{ user.phone or 'Not provided' }}</p>
-
-    <h3 class="text-md font-semibold text-slate-800 mt-4">Student Number</h3>
-    <p class="text-sm text-slate-600">{{ user.student_number or 'Not provided' }}</p>
+    <div>
+      <h3 class="text-md font-semibold text-slate-800">Contact</h3>
+      <p class="text-sm text-slate-600">📧 {{ user.email }}</p>
+      <p class="text-sm text-slate-600">📞 {{ user.phone or 'Not provided' }}</p>
+      <p class="text-sm text-slate-600">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
+    </div>
   </aside>
 
   <!-- Main Feed -->
   <main class="flex-1 space-y-4">
-    <div class="bg-white rounded-xl shadow p-4">
-      <h2 class="text-lg font-semibold text-slate-800 mb-2">Upcoming Events</h2>
-      <p class="text-sm text-slate-600">No upcoming events. Check the <a href="https://student.uwa.edu.au" class="text-indigo-600 hover:underline">university portal</a> for updates.</p>
+    <!-- Motivational Quote -->
+    <div class="bg-slate-100 rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold text-slate-800 mb-1">Motivational Quote</h2>
+        <p class="text-sm text-slate-600 italic">
+        "Success is not final, failure is not fatal: it is the courage to continue that counts."
+        </p>
+    </div>
+
+    <!-- Groups / Committees -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">Groups & Committees</h2>
+      {% if user.committees %}
+      <ul class="list-disc list-inside text-sm text-slate-600">
+        {% for committee in user.committees %}
+        <li>{{ committee }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-sm text-slate-600">You are not part of any groups or committees yet.</p>
+      {% endif %}
     </div>
 
     <!-- Recent Updates -->
