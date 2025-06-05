@@ -3,28 +3,44 @@
 {% block content %}
 <div class="w-full bg-slate-100 min-h-screen py-6">
   <div class="mx-auto my-4 p-4 w-full max-w-6xl bg-white rounded-xl shadow overflow-hidden">
+
+    <!-- Back to Forum Button -->
+    <div class="mb-4">
+      <a href="{{ url_for('routes.post_forum') }}"
+         class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+        <i class="fas fa-arrow-left"></i> Back to Forum
+      </a>
+    </div>
+
     <div class="p-6 flex flex-col gap-3 border-b border-slate-200">
       <div class="flex items-center gap-3">
-        <img src="{{ post.author.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}" alt="Profile picture" class="w-12 h-12 rounded-full object-cover" />
+        <img src="{{ post.author.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
+             alt="Profile picture"
+             class="w-12 h-12 rounded-full object-cover" />
         <div>
           <h3 class="text-lg font-semibold text-slate-800">{{ post.author.full_name }}</h3>
           <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
         </div>
       </div>
+
       <h2 class="text-xl font-bold text-slate-800">{{ post.title or 'Untitled Post' }}</h2>
       <p class="text-slate-700 text-base">{{ post.content }}</p>
 
       {% if post.image_url %}
       <div class="flex justify-center mt-4">
-        <img src="{{ '/' + post.image_url }}" alt="Post Image" class="w-2/5 rounded" />
+        <img src="{{ '/' + post.image_url }}" alt="Post Image" class="w-2/5 rounded shadow" />
       </div>
       {% endif %}
+    </div>
 
     <div class="p-6 flex flex-col gap-4">
       <h2 class="text-lg font-semibold text-slate-800">Comments</h2>
       <form id="commentForm" class="flex flex-col gap-2">
-        <textarea id="commentContent" name="content" rows="3" placeholder="Add your thoughts..." class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
-        <button type="submit" class="self-end bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded shadow-sm transition">Post Comment</button>
+        <textarea id="commentContent" name="content" rows="3" placeholder="Add your thoughts..."
+          class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
+        <button type="submit"
+          class="self-end bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded shadow-sm transition">Post
+          Comment</button>
       </form>
 
       <div id="commentsContainer" class="space-y-4">
@@ -45,18 +61,22 @@
                 {% endif %}
               </div>
               <form class="replyForm mt-2 hidden flex flex-col gap-2">
-                <textarea rows="2" placeholder="Reply to this comment..." class="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
-                <button type="button" onclick="postReply(this, {{ comment.id }})" class="self-end bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-xs">Post Reply</button>
+                <textarea rows="2" placeholder="Reply to this comment..."
+                  class="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
+                <button type="button" onclick="postReply(this, {{ comment.id }})"
+                  class="self-end bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-xs">Post
+                  Reply</button>
               </form>
 
               {% if comment.replies %}
               <div class="ml-2 mt-2 border-l-2 border-slate-200 pl-2">
-                <button class="toggle-replies-btn text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition" onclick="toggleReplies(this)">
+                <button class="toggle-replies-btn text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition"
+                  onclick="toggleReplies(this)">
                   <i class="fas fa-chevron-right transition-transform"></i>
                 </button>
                 <div class="replies space-y-2 mt-2 hidden">
                   {% for reply in comment.replies|sort(attribute='created_at') %}
-                    {{ render_comment(reply, level + 2) }}
+                  {{ render_comment(reply, level + 2) }}
                   {% endfor %}
                 </div>
               </div>
@@ -67,7 +87,7 @@
         {% endmacro %}
 
         {% for comment in comments %}
-          {{ render_comment(comment) }}
+        {{ render_comment(comment) }}
         {% endfor %}
       </div>
     </div>
