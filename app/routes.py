@@ -2,10 +2,11 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from app.models import User, Post, Committee  # ✅ Make sure Post is included!
+from app.models import Post, Comment, User, Committee  # Make sure Comment is imported!
 from app import db
 from datetime import datetime
 import os
+
 
 bp = Blueprint('routes', __name__)
 
@@ -290,4 +291,26 @@ def delete_post(post_id):
 @bp.route('/post/<int:post_id>')
 def post_thread(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template('post_threadUI.html', post=post)
+    # Fetch the comments ordered by created_at directly
+    comments = post.comments.order_by(Comment.created_at.asc()).all()
+    return render_template('post_threadUI.html', post=post, comments=comments)
+
+@bp.route('/post/<int:post_id>/comment', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    data = request.get_json()
+    content = data.get('content', '').strip()
+
+    if not content:
+        return jsonify({"error": "Content is required."}), 400
+
+    comment = Comment(content=content, post_id=post_id, user_id=current_user.id)
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "author_name": current_user.full_name,
+        "timestamp": comment.created_at.strftime('%b %d, %Y %I:%M %p'),
+        "content": comment.content
+    })

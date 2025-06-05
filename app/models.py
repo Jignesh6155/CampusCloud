@@ -20,7 +20,6 @@ class User(db.Model, UserMixin):
     bio = db.Column(db.Text)
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-
     university = db.Column(db.String(100))  
     faculty = db.Column(db.String(100))    
     major = db.Column(db.String(100))      
@@ -34,8 +33,9 @@ class User(db.Model, UserMixin):
     # Many-to-many relationship to committees
     committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
 
-    # One-to-many relationship: a user can have many posts
+    # One-to-many relationships
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -65,12 +65,25 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    # Foreign key to user
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    # Optional: posts can be linked to a committee (if applicable)
     committee_id = db.Column(db.Integer, db.ForeignKey('committees.id'), nullable=True)
     committee = db.relationship('Committee', backref='posts', lazy='joined')
 
+    # One-to-many relationship: a post can have many comments
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
+
     def __repr__(self):
         return f'<Post {self.id} by User {self.user_id}>'
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Comment {self.id} by User {self.user_id} on Post {self.post_id}>'
