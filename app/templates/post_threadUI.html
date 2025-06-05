@@ -58,6 +58,35 @@
             </div>
           </div>
           <p class="text-slate-700 text-sm">{{ comment.content }}</p>
+
+          <!-- Reply Button -->
+          <button onclick="toggleReplyForm(this)" class="text-xs text-indigo-600 hover:underline">Reply</button>
+
+          <!-- Reply Form (hidden initially) -->
+          <form class="replyForm mt-2 hidden flex flex-col gap-2">
+            <textarea rows="2" placeholder="Reply to this comment..." 
+                      class="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
+            <button type="button" onclick="postReply(this, {{ comment.id }})" 
+                    class="self-end bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-xs">Post Reply</button>
+          </form>
+
+          <!-- Replies (nested comments) -->
+          <div class="ml-6 mt-2 space-y-2">
+            {% for reply in comment.replies|sort(attribute='created_at') %}
+            <div class="bg-white border border-slate-200 rounded p-2 text-sm">
+              <div class="flex items-center gap-2 mb-1">
+                <div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-xs text-indigo-600 border border-slate-300">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-semibold text-slate-800">{{ reply.author.full_name }}</h4>
+                  <p class="text-[10px] text-slate-500">{{ reply.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+                </div>
+              </div>
+              <p class="text-slate-700">{{ reply.content }}</p>
+            </div>
+            {% endfor %}
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -67,13 +96,51 @@
 
 <style>
   body { animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <script>
+  function toggleReplyForm(button) {
+    const form = button.nextElementSibling;
+    form.classList.toggle('hidden');
+  }
+
+  async function postReply(button, commentId) {
+    const form = button.closest('.replyForm');
+    const textarea = form.querySelector('textarea');
+    const content = textarea.value.trim();
+    if (!content) return;
+
+    const response = await fetch(`/comment/${commentId}/reply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const newReply = `
+        <div class="bg-white border border-slate-200 rounded p-2 text-sm">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-xs text-indigo-600 border border-slate-300">
+              <i class="fas fa-user"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-800">${data.author_name}</h4>
+              <p class="text-[10px] text-slate-500">${data.timestamp}</p>
+            </div>
+          </div>
+          <p class="text-slate-700">${data.content}</p>
+        </div>`;
+      form.nextElementSibling.insertAdjacentHTML('beforeend', newReply);
+      textarea.value = '';
+      form.classList.add('hidden');
+    } else {
+      alert('Error posting reply!');
+    }
+  }
+
+  // Comment form submission as before
   const commentForm = document.getElementById('commentForm');
   const commentsContainer = document.getElementById('commentsContainer');
   const postId = {{ post.id }};
@@ -89,22 +156,7 @@
       });
 
       if (response.ok) {
-        const data = await response.json();
-        const newComment = `
-          <div class="bg-slate-50 rounded-lg p-3 shadow-sm">
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-sm border border-slate-300">
-                <i class="fas fa-user"></i>
-              </div>
-              <div>
-                <h4 class="text-sm font-semibold text-slate-800">${data.author_name}</h4>
-                <p class="text-xs text-slate-500">${data.timestamp}</p>
-              </div>
-            </div>
-            <p class="text-slate-700 text-sm">${data.content}</p>
-          </div>`;
-        commentsContainer.insertAdjacentHTML('beforeend', newComment);
-        document.getElementById('commentContent').value = '';
+        window.location.reload();
       } else {
         alert('Error posting comment!');
       }
