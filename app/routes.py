@@ -314,3 +314,32 @@ def add_comment(post_id):
         "timestamp": comment.created_at.strftime('%b %d, %Y %I:%M %p'),
         "content": comment.content
     })
+
+@bp.route('/comment/<int:comment_id>/reply', methods=['POST'])
+@login_required
+def add_reply(comment_id):
+    data = request.get_json()
+    content = data.get('content', '').strip()
+
+    if not content:
+        return jsonify({"error": "Content is required."}), 400
+
+    # Find the parent comment
+    parent_comment = Comment.query.get_or_404(comment_id)
+
+    # Create the reply, linking to the same post as parent and parent_id
+    reply = Comment(
+        content=content,
+        post_id=parent_comment.post_id,
+        user_id=current_user.id,
+        parent_id=parent_comment.id
+    )
+    db.session.add(reply)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "author_name": current_user.full_name,
+        "timestamp": reply.created_at.strftime('%b %d, %Y %I:%M %p'),
+        "content": reply.content
+    })
