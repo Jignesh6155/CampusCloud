@@ -251,10 +251,7 @@ def edit_profile():
     # This simply renders the editprofile.html template
     return render_template('editprofile.html', user=current_user)
 
-@bp.route('/post-forum')
-def post_forum():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-    return render_template('post_forum.html', posts=posts)
+
 
 @bp.route('/create-post', methods=['POST'])
 @login_required
@@ -278,21 +275,10 @@ def create_post():
         "author_university": current_user.university or "N/A"
     })
     
-@bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
-@login_required
-def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author.id != current_user.id:
-        return jsonify({"error": "Unauthorized"}), 403
-    db.session.delete(post)
-    db.session.commit()
-    return jsonify({"status": "success"})
-
 @bp.route('/post/<int:post_id>')
 def post_thread(post_id):
     post = Post.query.get_or_404(post_id)
-    # Fetch the comments ordered by created_at directly
-    comments = post.comments.order_by(Comment.created_at.asc()).all()
+    comments = Comment.query.filter_by(post_id=post_id, parent_id=None).order_by(Comment.created_at.asc()).all()
     return render_template('post_threadUI.html', post=post, comments=comments)
 
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
@@ -300,19 +286,18 @@ def post_thread(post_id):
 def add_comment(post_id):
     data = request.get_json()
     content = data.get('content', '').strip()
-
     if not content:
-        return jsonify({"error": "Content is required."}), 400
+        return jsonify({'error': 'Content is required.'}), 400
 
     comment = Comment(content=content, post_id=post_id, user_id=current_user.id)
     db.session.add(comment)
     db.session.commit()
 
     return jsonify({
-        "status": "success",
-        "author_name": current_user.full_name,
-        "timestamp": comment.created_at.strftime('%b %d, %Y %I:%M %p'),
-        "content": comment.content
+        'status': 'success',
+        'author_name': current_user.full_name,
+        'timestamp': comment.created_at.strftime('%b %d, %Y %I:%M %p'),
+        'content': comment.content
     })
 
 @bp.route('/comment/<int:comment_id>/reply', methods=['POST'])
@@ -320,26 +305,38 @@ def add_comment(post_id):
 def add_reply(comment_id):
     data = request.get_json()
     content = data.get('content', '').strip()
-
     if not content:
-        return jsonify({"error": "Content is required."}), 400
+        return jsonify({'error': 'Content is required.'}), 400
 
-    # Find the parent comment
     parent_comment = Comment.query.get_or_404(comment_id)
-
-    # Create the reply, linking to the same post as parent and parent_id
     reply = Comment(
         content=content,
         post_id=parent_comment.post_id,
         user_id=current_user.id,
-        parent_id=parent_comment.id
+        parent_id=comment_id
     )
     db.session.add(reply)
     db.session.commit()
 
     return jsonify({
-        "status": "success",
-        "author_name": current_user.full_name,
-        "timestamp": reply.created_at.strftime('%b %d, %Y %I:%M %p'),
-        "content": reply.content
+        'status': 'success',
+        'author_name': current_user.full_name,
+        'timestamp': reply.created_at.strftime('%b %d, %Y %I:%M %p'),
+        'content': reply.content
     })
+
+@bp.route('/comment/<int:comment_id>/delete', methods=['DELETE'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+@bp.route('/post-forum')
+def post_forum():
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template('post_forum.html', posts=posts)

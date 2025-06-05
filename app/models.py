@@ -2,6 +2,7 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Association table for many-to-many relationship between users and committees
 user_committees = db.Table(
     'user_committees',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -33,6 +34,7 @@ class User(db.Model, UserMixin):
 
     # One-to-many
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -74,18 +76,21 @@ class Post(db.Model):
 
 class Comment(db.Model):
     __tablename__ = 'comments'
+
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
+
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
 
-    # User who authored the comment
-    author = db.relationship('User', backref='authored_comments')
-
-    # Replies for threaded comments
-    replies = db.relationship('Comment', backref=db.backref('parent', remote_side=[id]))
+    # One-to-many: replies
+    replies = db.relationship(
+        'Comment',
+        backref=db.backref('parent', remote_side=[id]),
+        cascade='all, delete'
+    )
 
     def __repr__(self):
         return f'<Comment {self.id} by User {self.user_id}>'
