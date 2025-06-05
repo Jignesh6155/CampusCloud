@@ -205,7 +205,6 @@ def update_profile():
     full_name = request.form.get('full_name')
     job_title = request.form.get('job_title')
     bio = request.form.get('bio')
-    hobbies = request.form.get('hobbies', '').split(',')
     profile_picture = request.files.get('profile_picture')
     cover_picture = request.files.get('cover_picture')
 
@@ -215,6 +214,7 @@ def update_profile():
     major = request.form.get('major')
     student_number = request.form.get('student_number')
     phone = request.form.get('phone')
+    motivational_quote = request.form.get('motivational_quote')  # New field
 
     # Update user profile fields
     current_user.full_name = full_name
@@ -225,9 +225,7 @@ def update_profile():
     current_user.major = major
     current_user.student_number = student_number
     current_user.phone = phone
-
-    # Update hobbies (optional)
-    current_user.hobbies = ', '.join([h.strip() for h in hobbies if h.strip()])
+    current_user.motivational_quote = motivational_quote
 
     # Upload new profile picture if provided
     if profile_picture and profile_picture.filename != '':
