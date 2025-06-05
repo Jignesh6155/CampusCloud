@@ -12,6 +12,8 @@
       <p class="text-sm text-white">{{ user.job_title }}</p>
       <p class="text-xs text-slate-100 mt-1">{{ user.hobbies | length }} Hobbies</p>
     </div>
+    <!-- Edit Profile Link -->
+    <a href="{{ url_for('routes.edit_profile') }}" class="ml-auto bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">Edit</a>
   </div>
 </div>
 
@@ -61,3 +63,4 @@
 </div>
 
 {% endblock %}
+
