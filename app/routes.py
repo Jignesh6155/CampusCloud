@@ -362,3 +362,11 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({'status': 'success'})
+
+@bp.route('/like-post/<int:post_id>', methods=['POST'])
+@login_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    post.likes = (post.likes or 0) + 1
+    db.session.commit()
+    return jsonify({'likes': post.likes})
