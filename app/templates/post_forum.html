@@ -40,9 +40,13 @@
           {% endif %}
           <div class="flex justify-between text-xs text-slate-500 mt-2">
             <div class="flex space-x-4">
-              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-heart"></i><span>0</span></button>
-              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-comment"></i><span>0</span></button>
-              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"><i class="fas fa-share"></i><span>0</span></button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition"
+                      onclick="likePost(event, {{ post.id }})">
+                <i class="fas fa-heart"></i><span id="like-count-{{ post.id }}">{{ post.likes or 0 }}</span>
+              </button>
+              <button class="flex items-center space-x-1 hover:text-indigo-600 transition">
+                <i class="fas fa-comment"></i><span>{{ post.comments.count() }}</span>
+              </button>
             </div>
             <div class="flex space-x-2">
               <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
@@ -132,6 +136,15 @@
     const postCard = document.getElementById(`post-${postId}`);
     postCard.classList.add('expanding');
     setTimeout(() => { window.location.href = `/post/${postId}`; }, 300);
+  }
+
+  async function likePost(event, postId) {
+    event.stopPropagation();
+    const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById(`like-count-${postId}`).textContent = data.likes;
+    }
   }
 </script>
 {% endblock %}
