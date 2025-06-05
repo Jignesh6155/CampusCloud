@@ -24,13 +24,10 @@
     <h2 class="text-lg font-semibold mb-2 text-slate-800">Profile</h2>
     <p class="text-sm text-slate-600 mb-2">{{ user.bio }}</p>
 
-    <h3 class="text-md font-semibold text-slate-800 mt-4">Hobbies</h3>
+    <h3 class="text-md font-semibold text-slate-800 mt-4">University & Faculty</h3>
     <ul class="list-disc list-inside text-sm text-slate-600">
-      {% for hobby in user.hobbies_list() %}
-      <li>{{ hobby }}</li>
-      {% else %}
-      <li>No hobbies listed</li>
-      {% endfor %}
+      <li>University: {{ user.university or 'Not specified' }}</li>
+      <li>Faculty: {{ user.faculty or 'Not specified' }}</li>
     </ul>
 
     <h3 class="text-md font-semibold text-slate-800 mt-4">Contact</h3>

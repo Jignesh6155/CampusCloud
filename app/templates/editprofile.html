@@ -3,16 +3,16 @@
 {% block content %}
 <div class="flex min-h-screen">
   <!-- Sidebar -->
-  <aside class="w-64 bg-orange-100 text-slate-800 flex flex-col p-4">
+  <aside class="w-64 bg-slate-100 text-slate-800 flex flex-col p-4">
     <div class="flex items-center mb-6">
       <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}" alt="Profile picture" class="w-12 h-12 rounded-full object-cover">
       <h2 class="text-lg font-bold ml-3">{{ user.full_name }}</h2>
     </div>
     <nav class="flex flex-col space-y-2">
-      <a href="{{ url_for('routes.profile_landing_page') }}" class="flex items-center gap-2 p-2 rounded hover:bg-orange-200 transition">
+      <a href="{{ url_for('routes.profile_landing_page') }}" class="flex items-center gap-2 p-2 rounded hover:bg-slate-200 transition">
         <i class="fas fa-user"></i> Profile
       </a>
-      <a href="#" class="flex items-center gap-2 p-2 bg-orange-200 rounded font-semibold">
+      <a href="#" class="flex items-center gap-2 p-2 bg-slate-200 rounded font-semibold">
         <i class="fas fa-edit"></i> Edit Profile
       </a>
     </nav>
@@ -38,9 +38,14 @@
         <textarea name="bio" rows="4" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.bio }}</textarea>
       </div>
 
-      <div class="md:col-span-2 flex flex-col">
-        <label class="text-slate-700 font-medium mb-1">Hobbies (comma-separated)</label>
-        <input type="text" name="hobbies" value="{{ (user.hobbies_list() or []) | join(', ') }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+      <div class="flex flex-col">
+        <label class="text-slate-700 font-medium mb-1">University</label>
+        <input type="text" name="university" value="{{ user.university }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
+      </div>
+
+      <div class="flex flex-col">
+        <label class="text-slate-700 font-medium mb-1">Faculty</label>
+        <input type="text" name="faculty" value="{{ user.faculty }}" class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
       <div class="flex flex-col">
