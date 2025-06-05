@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from app.models import User
+from app.models import User, Post, Committee  # ✅ Make sure Post is included!
 from app import db
 from datetime import datetime
 import os
@@ -74,9 +74,6 @@ def index():
 def base():
     return render_template('base.html')
 
-@bp.route('/post-forum')
-def post_forum():
-    return render_template('post_forum.html')
 
 @bp.route('/units-chat')
 def units_chat():
@@ -252,3 +249,40 @@ def update_profile():
 def edit_profile():
     # This simply renders the editprofile.html template
     return render_template('editprofile.html', user=current_user)
+
+@bp.route('/post-forum')
+def post_forum():
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template('post_forum.html', posts=posts)
+
+@bp.route('/create-post', methods=['POST'])
+@login_required
+def create_post():
+    data = request.get_json()
+    content = data.get('content', '').strip()
+    title = data.get('title', '').strip()
+    if not content:
+        return jsonify({"error": "Content is required."}), 400
+
+    post = Post(content=content, title=title, author=current_user)
+    db.session.add(post)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "title": post.title,
+        "content": post.content,
+        "author_name": current_user.full_name,
+        "author_major": current_user.major or "N/A",
+        "author_university": current_user.university or "N/A"
+    })
+    
+@bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author.id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({"status": "success"})
