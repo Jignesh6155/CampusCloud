@@ -25,7 +25,7 @@ class User(db.Model, UserMixin):
     faculty = db.Column(db.String(100))    
     major = db.Column(db.String(100))      
     student_number = db.Column(db.String(50))  
-    motivational_quote = db.Column(db.Text)  # New field for motivational quote
+    motivational_quote = db.Column(db.Text)  
 
     profile_picture = db.Column(db.String(255))  
     cover_picture = db.Column(db.String(255))    
@@ -33,6 +33,9 @@ class User(db.Model, UserMixin):
 
     # Many-to-many relationship to committees
     committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
+
+    # One-to-many relationship: a user can have many posts
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -53,3 +56,21 @@ class Committee(db.Model):
 
     def __repr__(self):
         return f'<Committee {self.name}>'
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    # Foreign key to user
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Optional: posts can be linked to a committee (if applicable)
+    committee_id = db.Column(db.Integer, db.ForeignKey('committees.id'), nullable=True)
+    committee = db.relationship('Committee', backref='posts', lazy='joined')
+
+    def __repr__(self):
+        return f'<Post {self.id} by User {self.user_id}>'
