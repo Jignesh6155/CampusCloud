@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import login_required, current_user, login_user  # Added login_user here!
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
+from flask_login import login_required, current_user, login_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from app.models import User
 from app import db
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 bp = Blueprint('routes', __name__)
 
@@ -182,31 +184,7 @@ def rsvp_meetup(meetup_id):
 @bp.route('/profile')
 @login_required
 def profile_landing_page():
-    # Example user data – in real use, you’d pull this from current_user
-    user_data = {
-        "name": current_user.full_name,
-        "job_title": "Software Engineer at TechCorp",  # Example field
-        "bio": "Passionate about technology and building great products. Coffee lover ☕️.",
-        "hobbies": ["Photography", "Traveling", "Coding challenges"],
-        "email": current_user.email,
-        "phone": "+1 (123) 456-7890",
-        "profile_picture": "/static/profile-picture.jpg",
-        "cover_picture": "/static/profile-cover.jpg",
-        "posts": [
-            {
-                "author": current_user.full_name,
-                "timestamp": "2 hours ago",
-                "text": "Excited to start a new coding project today! 🚀"
-            },
-            {
-                "author": current_user.full_name,
-                "timestamp": "Yesterday at 6:00 PM",
-                "text": "Throwback to my trip to the mountains last summer. 🏞️",
-                "image": "/static/mountains.jpg"
-            }
-        ]
-    }
-    return render_template('profile_landingpage.html', user=user_data)
+    return render_template('profile_landingpage.html', user=current_user)
 
 
 # --------------------
@@ -223,7 +201,7 @@ def group_assignment_chat(group_name):
 @bp.route('/update-profile', methods=['POST'])
 @login_required
 def update_profile():
-    # Grab form data
+    # Basic fields
     full_name = request.form.get('full_name')
     job_title = request.form.get('job_title')
     bio = request.form.get('bio')
@@ -231,22 +209,29 @@ def update_profile():
     profile_picture = request.files.get('profile_picture')
     cover_picture = request.files.get('cover_picture')
 
-    # Update the current_user object
+    # Update user profile fields
     current_user.full_name = full_name
     current_user.job_title = job_title
     current_user.bio = bio
-    current_user.hobbies = [h.strip() for h in hobbies if h.strip()]
+    current_user.hobbies = ', '.join([h.strip() for h in hobbies if h.strip()])
 
-    # Example: Just log filenames now; real file handling can be added
-    if profile_picture:
-        print("New profile picture:", profile_picture.filename)
-    if cover_picture:
-        print("New cover picture:", cover_picture.filename)
+    # Upload new profile picture if provided
+    if profile_picture and profile_picture.filename != '':
+        filename = secure_filename(profile_picture.filename)
+        profile_path = os.path.join(current_app.root_path, 'static', 'uploads', filename)
+        profile_picture.save(profile_path)
+        current_user.profile_picture = f'/static/uploads/{filename}'
 
-    # Save updates
+    # Upload new cover picture if provided
+    if cover_picture and cover_picture.filename != '':
+        filename = secure_filename(cover_picture.filename)
+        cover_path = os.path.join(current_app.root_path, 'static', 'uploads', filename)
+        cover_picture.save(cover_path)
+        current_user.cover_picture = f'/static/uploads/{filename}'
+
+    # Save to the database
     db.session.commit()
     flash('Profile updated successfully!')
-
     return redirect(url_for('routes.profile_landing_page'))
 
 @bp.route('/edit-profile', methods=['GET'])

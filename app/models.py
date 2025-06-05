@@ -6,11 +6,15 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(100), nullable=False)  # Full name of the user
-    email = db.Column(db.String(120), unique=True, nullable=False)  # Unique email
-    password_hash = db.Column(db.String(128), nullable=False)  # Hashed password
-
-    # Timestamp for account creation, automatically set to current time
+    full_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    bio = db.Column(db.Text)
+    hobbies = db.Column(db.Text)  # Store as a comma-separated string
+    job_title = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    profile_picture = db.Column(db.String(255))  # URL/path to the profile picture
+    cover_picture = db.Column(db.String(255))  # URL/path to the cover image
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     def set_password(self, password):
@@ -23,3 +27,9 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+    def hobbies_list(self):
+        """Returns hobbies as a list for Jinja2 templates."""
+        if self.hobbies:
+            return [h.strip() for h in self.hobbies.split(',') if h.strip()]
+        return []
