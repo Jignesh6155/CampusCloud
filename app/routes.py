@@ -212,6 +212,8 @@ def update_profile():
     # New fields
     university = request.form.get('university')
     faculty = request.form.get('faculty')
+    major = request.form.get('major')
+    student_number = request.form.get('student_number')
 
     # Update user profile fields
     current_user.full_name = full_name
@@ -219,6 +221,8 @@ def update_profile():
     current_user.bio = bio
     current_user.university = university
     current_user.faculty = faculty
+    current_user.major = major
+    current_user.student_number = student_number
 
     # Update hobbies (optional)
     current_user.hobbies = ', '.join([h.strip() for h in hobbies if h.strip()])

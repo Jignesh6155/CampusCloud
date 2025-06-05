@@ -14,11 +14,13 @@ class User(db.Model, UserMixin):
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
 
-    university = db.Column(db.String(100))  # New field for University
-    faculty = db.Column(db.String(100))     # New field for Faculty
+    university = db.Column(db.String(100))  # Field for University
+    faculty = db.Column(db.String(100))     # Field for Faculty
+    major = db.Column(db.String(100))       # Field for Major (if desired)
+    student_number = db.Column(db.String(50))  # New field for Student Number
 
     profile_picture = db.Column(db.String(255))  # URL/path to the profile picture
-    cover_picture = db.Column(db.String(255))  # URL/path to the cover image
+    cover_picture = db.Column(db.String(255))    # URL/path to the cover image
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     def set_password(self, password):
@@ -37,3 +39,4 @@ class User(db.Model, UserMixin):
         if self.hobbies:
             return [h.strip() for h in self.hobbies.split(',') if h.strip()]
         return []
+
