@@ -286,3 +286,8 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({"status": "success"})
+
+@bp.route('/post/<int:post_id>')
+def post_thread(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post_threadUI.html', post=post)
