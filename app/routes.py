@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from flask_login import login_required, current_user, login_user  # Added login_user here!
 from app.models import User
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+
 bp = Blueprint('routes', __name__)
 
 # In-memory chat storage for units
@@ -51,17 +53,13 @@ def login():
     user = User.query.filter_by(email=email).first()
     print("User fetched:", user)
 
-    if user:
-        print("User exists. Checking password...")
-        if user.check_password(password):
-            print("Password is correct!")
-            session['user_id'] = user.id
-            flash('Login successful!')
-            return redirect(url_for('routes.profile_landing_page'))
-        else:
-            print("Password check failed!")
+    if user and user.check_password(password):
+        print("Password is correct!")
+        login_user(user)  # Use Flask-Login's login_user!
+        flash('Login successful!')
+        return redirect(url_for('routes.profile_landing_page'))
     else:
-        print("No user with that email.")
+        print("Invalid email or password.")
 
     flash('Invalid email or password')
     return redirect(url_for('routes.index'))
@@ -182,24 +180,26 @@ def rsvp_meetup(meetup_id):
 # Profile Page
 # --------------------
 @bp.route('/profile')
+@login_required
 def profile_landing_page():
+    # Example user data – in real use, you’d pull this from current_user
     user_data = {
-        "name": "John Doe",
-        "job_title": "Software Engineer at TechCorp",
+        "name": current_user.full_name,
+        "job_title": "Software Engineer at TechCorp",  # Example field
         "bio": "Passionate about technology and building great products. Coffee lover ☕️.",
         "hobbies": ["Photography", "Traveling", "Coding challenges"],
-        "email": "johndoe@email.com",
+        "email": current_user.email,
         "phone": "+1 (123) 456-7890",
         "profile_picture": "/static/profile-picture.jpg",
         "cover_picture": "/static/profile-cover.jpg",
         "posts": [
             {
-                "author": "John Doe",
+                "author": current_user.full_name,
                 "timestamp": "2 hours ago",
                 "text": "Excited to start a new coding project today! 🚀"
             },
             {
-                "author": "John Doe",
+                "author": current_user.full_name,
                 "timestamp": "Yesterday at 6:00 PM",
                 "text": "Throwback to my trip to the mountains last summer. 🏞️",
                 "image": "/static/mountains.jpg"
@@ -207,6 +207,7 @@ def profile_landing_page():
         ]
     }
     return render_template('profile_landingpage.html', user=user_data)
+
 
 # --------------------
 # Group Assignments Page
