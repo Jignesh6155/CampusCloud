@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
-from flask_login import login_required, current_user, login_user
+from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -7,7 +7,6 @@ import os
 
 from app import db
 from app.models import Post, Comment, User, Committee  # Added Comment and Committee
-
 
 
 bp = Blueprint('routes', __name__)
@@ -398,3 +397,10 @@ def search_users():
     ).all()
 
     return render_template('search_results.html', query=query, results=results)
+
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('routes.index'))
