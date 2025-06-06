@@ -100,15 +100,15 @@
 
     <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Groups & Committees</h2>
-      <div class="bg-white rounded-xl shadow p-3 h-36 overflow-y-auto">
-        {% if user.committees %}
+      <div class="bg-white rounded-xl shadow p-3 h-36 overflow-y-auto flex flex-col justify-center">
+        {% if user.committees.count() > 0 %}
         <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
           {% for committee in user.committees %}
           <li class="break-words">{{ committee }}</li>
           {% endfor %}
         </ul>
         {% else %}
-        <p class="text-sm text-slate-600">You are not part of any groups or committees yet.</p>
+        <p class="text-sm text-slate-600 italic text-center">The committees you join will be visible here.</p>
         {% endif %}
       </div>
     </section>
