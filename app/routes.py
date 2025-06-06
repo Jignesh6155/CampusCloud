@@ -212,7 +212,8 @@ def update_profile():
     major = request.form.get('major')
     student_number = request.form.get('student_number')
     phone = request.form.get('phone')
-    motivational_quote = request.form.get('motivational_quote')  # New field
+    quote = request.form.get('quote')  # Use correct form field name
+    skills_raw = request.form.get('skills', '')
 
     # Update user profile fields
     current_user.full_name = full_name
@@ -223,7 +224,11 @@ def update_profile():
     current_user.major = major
     current_user.student_number = student_number
     current_user.phone = phone
-    current_user.motivational_quote = motivational_quote
+    current_user.quote = quote
+
+    # Process skills
+    skills_list = [skill.strip() for skill in skills_raw.split(',') if skill.strip()]
+    current_user.skills_list = skills_list
 
     # Upload new profile picture if provided
     if profile_picture and profile_picture.filename != '':
@@ -243,6 +248,8 @@ def update_profile():
     db.session.commit()
     flash('Profile updated successfully!')
     return redirect(url_for('routes.profile_landing_page'))
+
+
 
 
 @bp.route('/edit-profile', methods=['GET'])

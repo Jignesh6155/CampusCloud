@@ -1,101 +1,127 @@
-<!-- profile_landingpage.html -->
 {% extends "base.html" %}
 
 {% block content %}
-
 <!-- Profile Cover -->
-<div class="w-full h-64 bg-slate-300 relative">
+<div class="relative w-full h-64 bg-slate-300 rounded-t-xl">
   <img src="{{ user.cover_picture or 'https://images.unsplash.com/photo-1548883151-3b92dbd284dc?q=80&w=3133&auto=format&fit=crop' }}"
-       alt="Profile cover" class="object-cover w-full h-full" />
-  <div class="absolute inset-0 bg-black bg-opacity-60 flex items-end gap-4 p-4">
+       alt="Profile cover"
+       class="object-cover w-full h-full rounded-t-xl" />
+  <div class="absolute inset-0 bg-black bg-opacity-50 flex items-end gap-4 p-4 rounded-t-xl">
     <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
-         alt="Profile picture" class="rounded-full border-4 border-white w-32 h-32 object-cover shadow-md" />
+         alt="Profile picture"
+         class="rounded-full border-4 border-white w-32 h-32 object-cover shadow" />
     <div>
       <h1 class="text-2xl font-bold text-white">{{ user.full_name }}</h1>
-      <p class="text-sm text-white">{{ user.job_title }}</p>
-      <p class="text-xs text-slate-100 mt-1">{{ user.followers_count or 0 }} Followers</p>
+      <p class="text-sm text-slate-200">{{ user.job_title }}</p>
+      <p class="text-xs text-slate-300 mt-1">{{ user.followers_count or 0 }} Followers</p>
     </div>
+    <a href="{{ url_for('routes.edit_profile') }}"
+       class="absolute top-4 right-4 bg-white text-slate-700 rounded-full p-2 shadow hover:bg-indigo-600 hover:text-white transition">
+      <i class="fas fa-pencil-alt"></i>
+    </a>
   </div>
-
-  <!-- Edit Profile Link: top-right corner -->
-  <a href="{{ url_for('routes.edit_profile') }}"
-     class="absolute top-4 right-4 bg-white text-slate-700 rounded-full p-2 shadow hover:bg-indigo-600 hover:text-white transition">
-    <i class="fas fa-pencil-alt"></i>
-  </a>
 </div>
 
-<!-- Main Content Area -->
-<div class="max-w-6xl mx-auto mt-4 flex gap-4 px-4">
-  <!-- Left Sidebar: Profile Info -->
-  <aside class="w-1/3 bg-white rounded-xl shadow p-6 flex flex-col gap-4">
-    <div>
-      <h2 class="text-xl font-semibold text-slate-800 mb-1">About Me</h2>
-      <p class="text-sm text-slate-600">{{ user.bio or "No bio available." }}</p>
+<!-- Main Content -->
+<div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 items-start">
+  <!-- Sidebar -->
+  <aside class="md:col-span-1 flex flex-col gap-4 self-start h-fit">
+    <!-- About Me -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold text-slate-800 mb-3 border-b border-slate-200 pb-1">About Me</h2>
+      <p class="text-sm text-slate-700 leading-relaxed break-words">{{ user.bio or "No bio available." }}</p>
     </div>
 
-    <div>
-      <h3 class="text-md font-semibold text-slate-800">University & Faculty</h3>
-      <ul class="text-sm text-slate-600 mt-1 space-y-1">
+    <!-- Skills & Interests -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Skills & Interests</h3>
+      {% if user.skills %}
+      <div class="flex flex-wrap gap-2">
+        {% for skill in user.skills.split(',') %}
+        <span class="bg-indigo-100 text-indigo-700 rounded-full px-3 py-1 text-xs font-medium">{{ skill.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-600">No skills added yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- University & Faculty -->
+    <div class="bg-white rounded-xl shadow p-6 space-y-2">
+      <h3 class="text-md font-semibold text-slate-800 border-b border-slate-200 pb-1">University & Faculty</h3>
+      <ul class="text-sm text-slate-700 space-y-1">
         <li>🎓 <strong>University:</strong> {{ user.university or 'Not specified' }}</li>
         <li>🏛️ <strong>Faculty:</strong> {{ user.faculty or 'Not specified' }}</li>
         <li>📚 <strong>Major:</strong> {{ user.major or 'Not specified' }}</li>
       </ul>
     </div>
 
-    <div>
-      <h3 class="text-md font-semibold text-slate-800">Contact</h3>
-      <p class="text-sm text-slate-600">📧 {{ user.email }}</p>
-      <p class="text-sm text-slate-600">📞 {{ user.phone or 'Not provided' }}</p>
-      <p class="text-sm text-slate-600">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
+    <!-- Contact -->
+    <div class="bg-white rounded-xl shadow p-6 space-y-1">
+      <h3 class="text-md font-semibold text-slate-800 border-b border-slate-200 pb-1">Contact</h3>
+      <p class="text-sm text-slate-700 break-words">📧 {{ user.email }}</p>
+      <p class="text-sm text-slate-700 break-words">📞 {{ user.phone or 'Not provided' }}</p>
+      <p class="text-sm text-slate-700 break-words">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
     </div>
   </aside>
 
-    <!-- Main Feed -->
-    <main class="flex-1 space-y-4">
-        <!-- Motivational Quote -->
-        <div class="bg-slate-100 rounded-xl shadow p-6">
-        <h2 class="text-lg font-semibold text-slate-800 mb-1">Motivational Quote</h2>
-        <p class="text-sm text-slate-600 italic">
-            {{ user.motivational_quote or "No motivational quote set yet. Feel free to edit your profile to add one!" }}
+  <!-- Main Feed -->
+  <main class="md:col-span-2 flex flex-col gap-6">
+    <!-- Quote -->
+    <section>
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">Quote</h2>
+      <div class="bg-slate-50 rounded-xl shadow p-4 h-28 flex items-center justify-center">
+        <p class="text-sm text-slate-600 italic break-words leading-relaxed text-center">
+          {{ user.quote or "No motivational quote set yet. Feel free to edit your profile to add one!" }}
         </p>
-        </div>
-
-    <!-- Groups / Committees -->
-    <div class="bg-white rounded-xl shadow p-6">
-      <h2 class="text-lg font-semibold text-slate-800 mb-2">Groups & Committees</h2>
-      {% if user.committees %}
-      <ul class="list-disc list-inside text-sm text-slate-600">
-        {% for committee in user.committees %}
-        <li>{{ committee }}</li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-sm text-slate-600">You are not part of any groups or committees yet.</p>
-      {% endif %}
-    </div>
-
-<!-- Recent Updates -->
-{% if user.posts %}
-  {% for post in user.posts %}
-  <div class="bg-white rounded-xl shadow p-4">
-    <div class="flex items-center gap-2">
-      <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
-           alt="Profile picture" class="rounded-full w-10 h-10 object-cover" />
-      <div>
-        <h3 class="text-sm font-semibold text-slate-800">{{ user.full_name }}</h3>
-        <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
       </div>
-    </div>
-    {% if post.title %}
-    <h4 class="mt-2 text-base font-semibold text-slate-800">{{ post.title }}</h4>
-    {% endif %}
-    <p class="mt-1 text-slate-700 text-sm">{{ post.content }}</p>
-  </div>
-  {% endfor %}
-{% else %}
-  <div class="bg-white rounded-xl shadow p-4 text-center text-slate-500">
-    No posts yet!
-  </div>
-{% endif %}
+    </section>
 
+    <!-- Groups & Committees -->
+    <section>
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">Groups & Committees</h2>
+      <div class="bg-white rounded-xl shadow p-4 h-40 overflow-y-auto">
+        {% if user.committees %}
+        <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+          {% for committee in user.committees %}
+          <li class="break-words">{{ committee }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-600">You are not part of any groups or committees yet.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Recent Updates -->
+    <section>
+      <h2 class="text-lg font-semibold text-slate-800 mb-2">Recent Updates</h2>
+      <div class="bg-white rounded-xl shadow p-4 h-64 overflow-y-auto flex flex-col gap-4">
+        {% if user.posts %}
+          {% for post in user.posts %}
+          <div class="bg-slate-50 rounded-lg p-3 shadow-sm hover:shadow transition duration-300">
+            <div class="flex items-center gap-2">
+              <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
+                   alt="Profile picture"
+                   class="rounded-full w-10 h-10 object-cover" />
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800">{{ user.full_name }}</h3>
+                <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+              </div>
+            </div>
+            {% if post.title %}
+            <h4 class="mt-1 text-base font-semibold text-slate-800 break-words">{{ post.title }}</h4>
+            {% endif %}
+            <p class="text-slate-700 text-sm break-words">{{ post.content }}</p>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center text-slate-500 flex items-center justify-center h-full">
+            No posts yet!
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+</div>
 {% endblock %}

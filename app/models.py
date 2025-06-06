@@ -24,7 +24,8 @@ class User(db.Model, UserMixin):
     faculty = db.Column(db.String(100))    
     major = db.Column(db.String(100))      
     student_number = db.Column(db.String(50))  
-    motivational_quote = db.Column(db.Text)  
+    quote = db.Column(db.Text)
+    skills = db.Column(db.Text)  # NEW: store skills as a comma-separated string
     profile_picture = db.Column(db.String(255))  
     cover_picture = db.Column(db.String(255))    
     created_at = db.Column(db.DateTime, default=db.func.now())
@@ -44,6 +45,16 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+    @property
+    def skills_list(self):
+        # Returns a list of skills from the comma-separated string
+        return [skill.strip() for skill in self.skills.split(',')] if self.skills else []
+
+    @skills_list.setter
+    def skills_list(self, skills_list):
+        # Takes a list and converts it to a comma-separated string
+        self.skills = ', '.join(skills_list)
 
 class Committee(db.Model):
     __tablename__ = 'committees'
