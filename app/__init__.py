@@ -10,7 +10,7 @@ login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'yoursecretkey'
+    app.config['SECRET_KEY'] = 'w$$a9#^b2av#m2#jQ$s*G831!!6kgY@'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 
     # Initialize extensions with app
