@@ -20,7 +20,31 @@
       <i class="fas fa-pencil-alt"></i>
     </a>
   </div>
-</div>
+
+ <!-- Integrated Search Bar (improved subtle background) -->
+ <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4">
+    <form action="{{ url_for('routes.search_users') }}" method="GET" class="relative">
+      <label for="search-users" class="mb-2 text-sm font-medium text-white sr-only">Search</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <svg class="w-4 h-4 text-white opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+        </div>
+        <input type="search"
+               id="search-users"
+               name="query"
+               class="block w-full p-2 pl-10 text-sm text-white border border-white/30 rounded-lg bg-white/20 backdrop-blur-sm focus:ring-indigo-400 focus:border-indigo-400 placeholder-white placeholder-opacity-70 transition"
+               placeholder="Search users by name or email..."
+               required>
+        <button type="submit"
+                class="absolute right-2.5 bottom-1.5 bg-white/30 hover:bg-white/40 text-white px-3 py-1 rounded-lg text-xs font-medium transition">
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
 
 <!-- Main Content -->
 <div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 items-start">
