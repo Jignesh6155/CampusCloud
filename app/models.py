@@ -13,19 +13,24 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(100), nullable=False)
+    
+    # Editable display name (non-unique, optional)
+    display_name = db.Column(db.String(100))
+
+    # Unique and required fields for login and student verification
+    student_number = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
+    # Additional user details
     bio = db.Column(db.Text)
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
     university = db.Column(db.String(100))  
     faculty = db.Column(db.String(100))    
     major = db.Column(db.String(100))      
-    student_number = db.Column(db.String(50))  
     quote = db.Column(db.Text)
-    skills = db.Column(db.Text)  # NEW: store skills as a comma-separated string
+    skills = db.Column(db.Text)  # comma-separated skills
     profile_picture = db.Column(db.String(255))  
     cover_picture = db.Column(db.String(255))    
     created_at = db.Column(db.DateTime, default=db.func.now())
@@ -44,16 +49,14 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f'<User {self.email} | Student {self.student_number}>'
 
     @property
     def skills_list(self):
-        # Returns a list of skills from the comma-separated string
         return [skill.strip() for skill in self.skills.split(',')] if self.skills else []
 
     @skills_list.setter
     def skills_list(self, skills_list):
-        # Takes a list and converts it to a comma-separated string
         self.skills = ', '.join(skills_list)
 
 class Committee(db.Model):
@@ -73,7 +76,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(255))  # uploaded image file path
+    image_url = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=db.func.now())
     likes = db.Column(db.Integer, default=0)
 

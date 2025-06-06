@@ -8,7 +8,7 @@
       <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
            alt="Profile picture"
            class="w-12 h-12 rounded-full object-cover">
-      <h2 class="text-lg font-bold ml-3">{{ user.full_name }}</h2>
+      <h2 class="text-lg font-bold ml-3">{{ user.display_name }}</h2>
     </div>
     <nav class="flex flex-col space-y-2">
       <a href="{{ url_for('routes.profile_landing_page') }}"
@@ -25,86 +25,95 @@
   <!-- Edit Profile Form -->
   <main class="flex-1 p-10 bg-white">
     <h1 class="text-3xl font-bold mb-6">Edit Profile</h1>
-    <form action="{{ url_for('routes.update_profile') }}" method="POST"
-          enctype="multipart/form-data"
+    <form action="{{ url_for('routes.update_profile') }}" method="POST" enctype="multipart/form-data"
           class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <!-- Display Name -->
       <div class="flex flex-col">
-        <label class="text-slate-700 font-medium mb-1">Full Name</label>
-        <input type="text" name="full_name" value="{{ user.full_name }}"
+        <label class="text-slate-700 font-medium mb-1">Display Name</label>
+        <input type="text" name="display_name" value="{{ user.display_name }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400" required>
       </div>
 
+      <!-- Job Title -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Job Title</label>
         <input type="text" name="job_title" value="{{ user.job_title }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Bio -->
       <div class="md:col-span-2 flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Bio</label>
         <textarea name="bio" rows="4"
                   class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.bio }}</textarea>
       </div>
 
+      <!-- University -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">University</label>
         <input type="text" name="university" value="{{ user.university }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Faculty -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Faculty</label>
         <input type="text" name="faculty" value="{{ user.faculty }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Major -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Major</label>
         <input type="text" name="major" value="{{ user.major }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Phone -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Phone</label>
         <input type="text" name="phone" value="{{ user.phone }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Student Number -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Student Number</label>
         <input type="text" name="student_number" value="{{ user.student_number }}"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
-      <!-- Quote Field -->
+      <!-- Quote -->
       <div class="md:col-span-2 flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Quote</label>
         <textarea name="quote" rows="2"
                   class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">{{ user.quote }}</textarea>
       </div>
 
-      <!-- Skills & Interests Field -->
+      <!-- Skills -->
       <div class="md:col-span-2 flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Skills & Interests (comma-separated)</label>
-        <input type="text" name="skills"
-               value="{{ user.skills }}"
+        <input type="text" name="skills" value="{{ user.skills }}"
                placeholder="e.g. Python, Photography, UI/UX"
                class="border border-slate-300 rounded px-4 py-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Profile Picture -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Profile Picture</label>
         <input type="file" name="profile_picture" accept="image/*"
                class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Cover Picture -->
       <div class="flex flex-col">
         <label class="text-slate-700 font-medium mb-1">Cover Picture</label>
         <input type="file" name="cover_picture" accept="image/*"
                class="text-sm text-slate-500 border border-slate-300 rounded p-2 focus:outline-none focus:ring focus:border-orange-400">
       </div>
 
+      <!-- Buttons -->
       <div class="md:col-span-2 flex justify-end gap-4 mt-4">
         <a href="{{ url_for('routes.profile_landing_page') }}"
            class="bg-slate-400 hover:bg-slate-500 text-white font-semibold px-6 py-2 rounded transition">Cancel</a>
