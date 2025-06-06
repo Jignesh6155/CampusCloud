@@ -2,18 +2,21 @@
 
 {% block content %}
 <!-- Profile Cover -->
-<div class="relative w-full h-64 bg-slate-300 rounded-t-xl">
+<div class="relative w-full h-64 bg-slate-300 rounded-t-xl overflow-hidden">
   <img src="{{ user.cover_picture or 'https://images.unsplash.com/photo-1548883151-3b92dbd284dc?q=80&w=3133&auto=format&fit=crop' }}"
        alt="Profile cover"
-       class="object-cover w-full h-full rounded-t-xl" />
-  <div class="absolute inset-0 bg-black bg-opacity-50 flex items-end gap-4 p-4 rounded-t-xl">
+       class="object-cover w-full h-full" />
+  <div class="absolute inset-0 bg-black bg-opacity-50 flex items-end gap-4 p-4">
     <img src="{{ user.profile_picture or 'avatar.png' }}"
          alt="Avatar"
          class="avatar rounded-full border-4 border-white w-32 h-32 object-cover shadow" />
     <div>
       <h1 class="text-2xl font-bold text-white">{{ user.full_name }}</h1>
       <p class="text-sm text-slate-200">{{ user.job_title }}</p>
-      <p class="text-xs text-slate-300 mt-1">{{ user.followers_count or 0 }} Followers</p>
+      <div class="flex gap-4 mt-1 text-xs text-slate-300">
+        <p>🌍 Followers: <span class="font-semibold text-white">{{ user.followers_count or 0 }}</span></p>
+        <p>🏫 Campus Followers: <span class="font-semibold text-white">{{ user.campus_followers_count or 0 }}</span></p>
+      </div>
     </div>
     <a href="{{ url_for('routes.edit_profile') }}"
        class="absolute top-4 right-4 bg-white text-slate-700 rounded-full p-2 shadow hover:bg-indigo-600 hover:text-white transition">
@@ -35,7 +38,7 @@
         <input type="search"
                id="search-users"
                name="query"
-               class="block w-full p-2 pl-10 text-sm text-white border border-white/30 rounded-lg bg-white/20 backdrop-blur-sm focus:ring-indigo-400 focus:border-indigo-400 placeholder-white placeholder-opacity-70 transition"
+               class="block w-full p-2 pl-10 text-sm text-white border border-white/30 rounded-lg bg-white/20 backdrop-blur-sm focus:ring-indigo-400 focus:border-indigo-400 placeholder-white/70 transition"
                placeholder="Search users by name or email..."
                required>
         <button type="submit"
@@ -48,9 +51,9 @@
 </div>
 
 <!-- Main Content Grid -->
-<div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 items-start">
+<div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
   <!-- Sidebar -->
-  <aside class="md:col-span-1 flex flex-col gap-4 self-start h-fit">
+  <aside class="md:col-span-1 flex flex-col gap-4">
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">About Me</h3>
       <p class="text-sm text-slate-700 leading-relaxed break-words">{{ user.bio or "No bio available." }}</p>
@@ -69,8 +72,8 @@
       {% endif %}
     </div>
 
-    <div class="bg-white rounded-xl shadow p-6 space-y-2">
-      <h3 class="text-md font-semibold text-slate-800 border-b border-slate-200 pb-1">University & Faculty</h3>
+    <div class="bg-white rounded-xl shadow p-6">
+      <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">University & Faculty</h3>
       <ul class="text-sm text-slate-700 space-y-1">
         <li>🎓 <strong>University:</strong> {{ user.university or 'Not specified' }}</li>
         <li>🏛️ <strong>Faculty:</strong> {{ user.faculty or 'Not specified' }}</li>
@@ -78,8 +81,8 @@
       </ul>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-6 space-y-1">
-      <h3 class="text-md font-semibold text-slate-800 border-b border-slate-200 pb-1">Contact</h3>
+    <div class="bg-white rounded-xl shadow p-6">
+      <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
       <p class="text-sm text-slate-700 break-words">📧 {{ user.email }}</p>
       <p class="text-sm text-slate-700 break-words">📞 {{ user.phone or 'Not provided' }}</p>
       <p class="text-sm text-slate-700 break-words">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
@@ -88,18 +91,14 @@
 
   <!-- Main Feed -->
   <main class="md:col-span-2 flex flex-col gap-4">
-    <!-- Quote -->
-    <section class="mt-0">
+    <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Quote</h2>
       <div class="bg-slate-50 rounded-xl shadow p-3 h-24 flex items-center justify-center">
-        <p class="text-sm text-slate-600 italic break-words leading-relaxed text-center">
-          {{ user.quote or "No motivational quote set yet. Feel free to edit your profile to add one!" }}
-        </p>
+        <p class="text-sm text-slate-600 italic text-center">{{ user.quote or "Add a Quote!" }}</p>
       </div>
     </section>
 
-    <!-- Groups & Committees -->
-    <section class="mt-0">
+    <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Groups & Committees</h2>
       <div class="bg-white rounded-xl shadow p-3 h-36 overflow-y-auto">
         {% if user.committees %}
@@ -114,42 +113,36 @@
       </div>
     </section>
 
-    <!-- Recent Updates (last 5 posts) with soft gradient -->
-    <section class="mt-0">
-        <h2 class="text-lg font-semibold text-slate-800 mb-1">Recent Updates</h2>
-        <div class="bg-white rounded-xl shadow p-3 h-60 overflow-y-auto flex flex-col gap-2">
-        {% set shades = ['bg-slate-200', 'bg-slate-100', 'bg-slate-50', 'bg-slate-50', 'bg-white'] %}
+    <section>
+      <h2 class="text-lg font-semibold text-slate-800 mb-1">Recent Updates</h2>
+      <div class="bg-white rounded-xl shadow p-3 h-60 overflow-y-auto flex flex-col gap-2">
+        {% set shades = ['bg-slate-100', 'bg-slate-50', 'bg-slate-50', 'bg-white', 'bg-white'] %}
         {% set posts = user.posts.order_by(Post.created_at.desc()).limit(5).all() %}
         {% if posts %}
-            {% for post in posts %}
-            {% set idx = loop.index0 %}
-            <a href="{{ url_for('routes.post_thread', post_id=post.id) }}" class="block hover:scale-[1.02] transition duration-300">
-            <div class="{{ shades[idx] }} rounded-lg p-2 shadow-sm hover:shadow transition duration-300 text-sm">
-                <div class="flex items-center gap-2">
-                <img src="{{ user.profile_picture or 'avatar.png' }}"
-                    alt="Avatar"
-                    class="avatar rounded-full w-8 h-8 object-cover" />
+          {% for post in posts %}
+          {% set idx = loop.index0 %}
+          <a href="{{ url_for('routes.post_thread', post_id=post.id) }}" class="block hover:scale-[1.02] transition duration-300">
+            <div class="{{ shades[idx] }} rounded-lg p-3 shadow hover:shadow-md transition text-sm">
+              <div class="flex items-center gap-2 mb-1">
+                <img src="{{ user.profile_picture or 'avatar.png' }}" alt="Avatar" class="rounded-full w-8 h-8 object-cover" />
                 <div>
-                    <h3 class="font-semibold text-slate-800">{{ user.full_name }}</h3>
-                    <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+                  <h3 class="font-semibold text-slate-800">{{ user.full_name }}</h3>
+                  <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
                 </div>
-                </div>
-                {% if post.title %}
-                <h4 class="mt-1 font-semibold text-slate-800 text-sm break-words">{{ post.title }}</h4>
-                {% endif %}
-                <p class="text-slate-700 text-xs break-words">{{ post.content }}</p>
-                <p class="text-xs text-slate-400 italic mt-1">Posted in General Forum</p>
+              </div>
+              {% if post.title %}
+              <h4 class="font-semibold text-slate-800 text-sm mb-1">{{ post.title }}</h4>
+              {% endif %}
+              <p class="text-slate-700 text-xs break-words">{{ post.content }}</p>
+              <p class="text-xs text-slate-400 italic mt-1">Posted in General Forum</p>
             </div>
-            </a>
-            {% endfor %}
+          </a>
+          {% endfor %}
         {% else %}
-        <div class="text-center text-slate-500 flex items-center justify-center h-full">
-            No posts yet!
-        </div>
+        <div class="text-center text-slate-500 flex items-center justify-center h-full">No posts yet!</div>
         {% endif %}
-        </div>
+      </div>
     </section>
   </main>
 </div>
 {% endblock %}
-
