@@ -377,3 +377,19 @@ def like_post(post_id):
     post.likes = (post.likes or 0) + 1
     db.session.commit()
     return jsonify({'likes': post.likes})
+
+@bp.route('/search-users', methods=['GET'])
+@login_required
+def search_users():
+    query = request.args.get('query', '').strip()
+    if not query:
+        flash('Please enter a search query.', 'warning')
+        return redirect(url_for('routes.profile_landing_page'))
+
+    # Search users by full name or email (case-insensitive)
+    search_pattern = f"%{query}%"
+    results = User.query.filter(
+        (User.full_name.ilike(search_pattern)) | (User.email.ilike(search_pattern))
+    ).all()
+
+    return render_template('search_results.html', query=query, results=results)
