@@ -368,11 +368,10 @@ def add_reply(comment_id):
 
     return jsonify({
         'status': 'success',
-        'author_name': current_user.full_name,
+        'author_name': current_user.display_name,  # FIXED: use display_name
         'timestamp': reply.created_at.strftime('%b %d, %Y %I:%M %p'),
         'content': reply.content
     })
-
 @bp.route('/comment/<int:comment_id>/delete', methods=['DELETE'])
 @login_required
 def delete_comment(comment_id):
