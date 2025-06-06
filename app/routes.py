@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
 from flask_login import login_required, current_user, login_user, logout_user
+from app.forms import LoginForm, SignupForm  # Import your WTForms
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -29,48 +30,75 @@ meetups = []
 
 @bp.route('/signup', methods=['POST'])
 def signup():
-    full_name = request.form.get('full_name')  # FIXED: match HTML form!
-    email = request.form.get('email')
-    password = request.form.get('password')
+    form = SignupForm()
+    if form.validate_on_submit():
+        student_number = form.student_number.data.strip()
+        email = form.email.data.strip()
+        password = form.password.data
+        display_name = form.full_name.data.strip() or student_number  # Use student_number as fallback
 
-    if not email or not password or not full_name:
-        flash('All fields are required.')
+        # Check for existing user by email
+        if User.query.filter_by(email=email).first():
+            flash('Student email already registered!', 'danger')
+            return redirect(url_for('routes.index'))
+
+        # Create user (NOTE: using display_name, not full_name)
+        user = User(
+            display_name=display_name,
+            email=email,
+            student_number=student_number
+        )
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('routes.index'))
 
-    if User.query.filter_by(email=email).first():
-        flash('Email already registered!')
-        return redirect(url_for('routes.index'))
-
-    user = User(full_name=full_name, email=email)  # Save full_name!
-    user.set_password(password)
-    db.session.add(user)
-    db.session.commit()
-    flash('Account created! Please login.')
+    flash('Please fix the errors in the form.', 'danger')
     return redirect(url_for('routes.index'))
 
 @bp.route('/login', methods=['POST'])
 def login():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    print("Login attempt:", email, password)
+    form = LoginForm()
+    print('Form errors:', form.errors)  # Debugging
 
-    user = User.query.filter_by(email=email).first()
-    print("User fetched:", user)
+    if form.validate_on_submit():
+        student_number = form.student_number.data.strip()
+        password = form.password.data
 
-    if user and user.check_password(password):
-        print("Password is correct!")
-        login_user(user)  # Use Flask-Login's login_user!
-        flash('Login successful!')
-        return redirect(url_for('routes.profile_landing_page'))
-    else:
-        print("Invalid email or password.")
+        user = User.query.filter_by(student_number=student_number).first()
+        if user and user.check_password(password):
+            login_user(user)
+            flash('Login successful!', 'success')
 
-    flash('Invalid email or password')
+            # ✅ Check if "next" param is safe
+            next_page = request.args.get('next')
+            if not next_page or not is_safe_url(next_page):
+                next_page = url_for('routes.profile_landing_page')
+            return redirect(next_page)
+
+        else:
+            flash('Invalid student number or password.', 'danger')
+            return redirect(url_for('routes.index'))
+
+    flash('Please fix the errors in the form.', 'danger')
     return redirect(url_for('routes.index'))
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return (
+        test_url.scheme in ('http', 'https') and
+        ref_url.netloc == test_url.netloc
+    )
 
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    login_form = LoginForm()
+    signup_form = SignupForm()
+    return render_template('index.html', login_form=login_form, signup_form=signup_form)
+
 
 @bp.route('/base')
 def base():
@@ -185,7 +213,6 @@ from app.models import Post  # make sure to import Post at the top
 @bp.route('/profile')
 @login_required
 def profile_landing_page():
-    # Render profile page, passing Post for template use
     return render_template('profile_landingpage.html', user=current_user, Post=Post)
 
 
@@ -204,7 +231,7 @@ def group_assignment_chat(group_name):
 @login_required
 def update_profile():
     # Basic fields
-    full_name = request.form.get('full_name')
+    display_name = request.form.get('display_name')  # <-- updated field name!
     job_title = request.form.get('job_title')
     bio = request.form.get('bio')
     profile_picture = request.files.get('profile_picture')
@@ -220,7 +247,7 @@ def update_profile():
     skills_raw = request.form.get('skills', '')
 
     # Update user profile fields
-    current_user.full_name = full_name
+    current_user.display_name = display_name  # <-- updated field assignment!
     current_user.job_title = job_title
     current_user.bio = bio
     current_user.university = university
@@ -390,10 +417,10 @@ def search_users():
         flash('Please enter a search query.', 'warning')
         return redirect(url_for('routes.profile_landing_page'))
 
-    # Search users by full name or email (case-insensitive)
+    # Search users by display name or email (case-insensitive)
     search_pattern = f"%{query}%"
     results = User.query.filter(
-        (User.full_name.ilike(search_pattern)) | (User.email.ilike(search_pattern))
+        (User.display_name.ilike(search_pattern)) | (User.email.ilike(search_pattern))
     ).all()
 
     return render_template('search_results.html', query=query, results=results)
