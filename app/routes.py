@@ -9,6 +9,7 @@ from app import db
 from app.models import Post, Comment, User, Committee  # Added Comment and Committee
 
 
+
 bp = Blueprint('routes', __name__)
 
 # In-memory chat storage for units
@@ -185,6 +186,7 @@ from app.models import Post  # make sure to import Post at the top
 @bp.route('/profile')
 @login_required
 def profile_landing_page():
+    # Render profile page, passing Post for template use
     return render_template('profile_landingpage.html', user=current_user, Post=Post)
 
 
