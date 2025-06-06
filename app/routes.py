@@ -2,10 +2,11 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from app.models import Post, Comment, User, Committee  # Make sure Comment is imported!
-from app import db
 from datetime import datetime
 import os
+
+from app import db
+from app.models import Post, Comment, User, Committee  # Added Comment and Committee
 
 
 bp = Blueprint('routes', __name__)
@@ -179,10 +180,12 @@ def rsvp_meetup(meetup_id):
 # --------------------
 # Profile Page
 # --------------------
+from app.models import Post  # make sure to import Post at the top
+
 @bp.route('/profile')
 @login_required
 def profile_landing_page():
-    return render_template('profile_landingpage.html', user=current_user)
+    return render_template('profile_landingpage.html', user=current_user, Post=Post)
 
 
 # --------------------

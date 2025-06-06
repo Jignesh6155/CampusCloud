@@ -114,37 +114,37 @@
       </div>
     </section>
 
-    <!-- Recent Updates -->
+    <!-- Recent Updates (last 5 posts) -->
     <section class="mt-0">
-        <h2 class="text-lg font-semibold text-slate-800 mb-1">Recent Updates</h2>
-        <div class="bg-white rounded-xl shadow p-3 h-60 overflow-y-auto flex flex-col gap-2"> <!-- gap reduced to 2 -->
-        {% if user.posts %}
-            {% for post in user.posts %}
-            <a href="{{ url_for('routes.post_thread', post_id=post.id) }}" class="block hover:scale-[1.02] transition duration-300">
-            <div class="bg-slate-50 rounded-lg p-2 shadow-sm hover:shadow transition duration-300 text-sm"> <!-- reduced p-3 to p-2, added text-sm -->
-                <div class="flex items-center gap-2">
+      <h2 class="text-lg font-semibold text-slate-800 mb-1">Recent Updates</h2>
+      <div class="bg-white rounded-xl shadow p-3 h-60 overflow-y-auto flex flex-col gap-2">
+        {% if user.posts.count() > 0 %}
+          {% for post in user.posts.order_by(Post.created_at.desc()).limit(5) %}
+          <a href="{{ url_for('routes.post_thread', post_id=post.id) }}" class="block hover:scale-[1.02] transition duration-300">
+            <div class="bg-slate-50 rounded-lg p-2 shadow-sm hover:shadow transition duration-300 text-sm">
+              <div class="flex items-center gap-2">
                 <img src="{{ user.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
-                    alt="Profile picture"
-                    class="rounded-full w-8 h-8 object-cover" /> <!-- smaller image -->
+                     alt="Profile picture"
+                     class="rounded-full w-8 h-8 object-cover" />
                 <div>
-                    <h3 class="font-semibold text-slate-800">{{ user.full_name }}</h3>
-                    <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+                  <h3 class="font-semibold text-slate-800">{{ user.full_name }}</h3>
+                  <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
                 </div>
-                </div>
-                {% if post.title %}
-                <h4 class="mt-1 font-semibold text-slate-800 text-sm break-words">{{ post.title }}</h4> <!-- smaller text -->
-                {% endif %}
-                <p class="text-slate-700 text-xs break-words">{{ post.content }}</p> <!-- smaller text -->
-                <p class="text-xs text-slate-400 italic mt-1">Posted in General Forum</p>
+              </div>
+              {% if post.title %}
+              <h4 class="mt-1 font-semibold text-slate-800 text-sm break-words">{{ post.title }}</h4>
+              {% endif %}
+              <p class="text-slate-700 text-xs break-words">{{ post.content }}</p>
+              <p class="text-xs text-slate-400 italic mt-1">Posted in General Forum</p>
             </div>
-            </a>
-            {% endfor %}
+          </a>
+          {% endfor %}
         {% else %}
         <div class="text-center text-slate-500 flex items-center justify-center h-full">
-            No posts yet!
+          No posts yet!
         </div>
         {% endif %}
-        </div>
+      </div>
     </section>
   </main>
 </div>
