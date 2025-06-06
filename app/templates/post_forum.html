@@ -1,4 +1,3 @@
-<!-- post_forum.html -->
 {% extends "base.html" %}
 
 {% block content %}
@@ -103,12 +102,12 @@
 
 <style>
   .post-card {
-    transition: transform 0.70s ease, box-shadow 0.15s ease;
+    transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
   }
   .post-card.expanding {
     transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    z-index: 10;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    opacity: 0.8;
   }
 </style>
 
@@ -136,7 +135,7 @@
   function expandAndRedirect(postId) {
     const postCard = document.getElementById(`post-${postId}`);
     postCard.classList.add('expanding');
-    setTimeout(() => { window.location.href = `/post/${postId}`; }, 300);
+    setTimeout(() => { window.location.href = `/post/${postId}`; }, 350);
   }
 
   async function likePost(event, postId) {
