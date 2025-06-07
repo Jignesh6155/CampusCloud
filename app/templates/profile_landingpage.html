@@ -3,7 +3,7 @@
 {% block content %}
 <!-- Profile Cover -->
 <div class="relative w-full h-64 bg-slate-300 rounded-t-xl overflow-hidden">
-  <img src="{{ user.cover_picture or 'https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}"
+  <img src="{{ user.cover_picture or 'https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?q=80&w=3079&auto=format&fit=crop' }}"
        alt="Profile cover"
        class="object-cover w-full h-full" />
   <div class="absolute inset-0 bg-black bg-opacity-50 flex items-end gap-4 p-4">
@@ -45,12 +45,14 @@
 </div>
 
 <div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+  <!-- Sidebar -->
   <aside class="md:col-span-1 flex flex-col gap-4">
+    <!-- About Me -->
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">About Me</h3>
       <p class="text-sm text-slate-700 leading-relaxed break-words">{{ user.bio or "No bio available." }}</p>
     </div>
-
+    <!-- Skills -->
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Skills & Interests</h3>
       {% if user.skills %}
@@ -63,7 +65,7 @@
       <p class="text-sm text-slate-600">No skills added yet.</p>
       {% endif %}
     </div>
-
+    <!-- University -->
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">University & Faculty</h3>
       <ul class="text-sm text-slate-700 space-y-1">
@@ -72,7 +74,7 @@
         <li>📚 <strong>Major:</strong> {{ user.major or 'Not specified' }}</li>
       </ul>
     </div>
-
+    <!-- Contact -->
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
       <p class="text-sm text-slate-700 break-words">📧 {{ user.email }}</p>
@@ -81,14 +83,16 @@
     </div>
   </aside>
 
+  <!-- Main -->
   <main class="md:col-span-2 flex flex-col gap-4">
+    <!-- Quote -->
     <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Quote</h2>
       <div class="bg-slate-50 rounded-xl shadow p-3 h-24 flex items-center justify-center">
         <p class="text-sm text-slate-600 italic text-center">{{ user.quote or "Add a Quote!" }}</p>
       </div>
     </section>
-
+    <!-- Groups -->
     <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Groups & Committees</h2>
       <div class="bg-white rounded-xl shadow p-3 h-36 overflow-y-auto flex flex-col justify-center">
@@ -103,7 +107,7 @@
         {% endif %}
       </div>
     </section>
-
+    <!-- Updates -->
     <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Recent Updates</h2>
       <div class="bg-white rounded-xl shadow p-3 h-60 overflow-y-auto flex flex-col gap-2">
@@ -139,6 +143,7 @@
   </main>
 </div>
 
+<!-- JS for search -->
 <script>
 const searchInput = document.getElementById('search-users');
 const dropdown = document.getElementById('search-dropdown');
@@ -160,12 +165,15 @@ searchInput.addEventListener('input', async () => {
     return;
   }
 
-  dropdown.innerHTML = users.map(user => `
-    <a href="/profile/${user.id}" class="flex items-center gap-2 p-2 hover:bg-indigo-100 transition">
-      <img src="${user.profile_picture}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
-      <span>${user.display_name}</span>
+    dropdown.innerHTML = users.map(user => `
+    <a href="/profile/${user.id}" class="flex flex-col gap-1 p-2 hover:bg-indigo-100 transition rounded">
+        <div class="flex items-center gap-2">
+        <img src="${user.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+        <span class="font-medium text-slate-800">${user.display_name}</span>
+        </div>
+        <div class="pl-4 text-xs text-slate-600 italic">${user.university || 'No university info'}</div>
     </a>
-  `).join('');
+    `).join('');
   dropdown.classList.remove('hidden');
 });
 
