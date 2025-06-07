@@ -24,35 +24,27 @@
     </a>
   </div>
 
-  <!-- Integrated Search Bar -->
   <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4">
-    <form action="{{ url_for('routes.search_users') }}" method="GET" class="relative">
-      <label for="search-users" class="sr-only">Search</label>
-      <div class="relative">
-        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <svg class="w-4 h-4 text-white opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-          </svg>
-        </div>
-        <input type="search"
-               id="search-users"
-               name="query"
-               class="block w-full p-2 pl-10 text-sm text-white border border-white/30 rounded-lg bg-white/20 backdrop-blur-sm focus:ring-indigo-400 focus:border-indigo-400 placeholder-white/70 transition"
-               placeholder="Search users by name or email..."
-               required>
-        <button type="submit"
-                class="absolute right-2.5 bottom-1.5 bg-white/30 hover:bg-white/40 text-white px-3 py-1 rounded-lg text-xs font-medium transition">
-          Search
-        </button>
+    <div class="relative">
+      <input type="search"
+             id="search-users"
+             name="query"
+             class="block w-full p-2 pl-10 text-sm text-white border border-white/30 rounded-lg bg-white/20 backdrop-blur-sm focus:ring-indigo-400 focus:border-indigo-400 placeholder-white/70 transition"
+             placeholder="Search users by name or email..."
+             autocomplete="off">
+      <div id="search-dropdown"
+           class="absolute top-full left-0 w-full mt-1 bg-white/90 rounded shadow text-sm z-50 hidden"></div>
+      <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <svg class="w-4 h-4 text-white opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+        </svg>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 
-<!-- Main Content Grid -->
 <div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-  <!-- Sidebar -->
   <aside class="md:col-span-1 flex flex-col gap-4">
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">About Me</h3>
@@ -89,7 +81,6 @@
     </div>
   </aside>
 
-  <!-- Main Feed -->
   <main class="md:col-span-2 flex flex-col gap-4">
     <section>
       <h2 class="text-lg font-semibold text-slate-800 mb-1">Quote</h2>
@@ -147,4 +138,41 @@
     </section>
   </main>
 </div>
+
+<script>
+const searchInput = document.getElementById('search-users');
+const dropdown = document.getElementById('search-dropdown');
+
+searchInput.addEventListener('input', async () => {
+  const query = searchInput.value.trim();
+  if (query.length < 2) {
+    dropdown.classList.add('hidden');
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  const response = await fetch(`/api/search-users?query=${encodeURIComponent(query)}`);
+  const users = await response.json();
+
+  if (users.length === 0) {
+    dropdown.classList.add('hidden');
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  dropdown.innerHTML = users.map(user => `
+    <a href="/profile/${user.id}" class="flex items-center gap-2 p-2 hover:bg-indigo-100 transition">
+      <img src="${user.profile_picture}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
+      <span>${user.display_name}</span>
+    </a>
+  `).join('');
+  dropdown.classList.remove('hidden');
+});
+
+document.addEventListener('click', (e) => {
+  if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
+</script>
 {% endblock %}

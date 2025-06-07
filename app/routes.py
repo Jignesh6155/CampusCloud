@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
+from app.models import Post  # Import at the top of routes.py
 
 from app import db
 from app.models import Post, Comment, User, Committee  # Added Comment and Committee
@@ -430,3 +431,28 @@ def logout():
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('routes.index'))
+
+@bp.route('/api/search-users')
+@login_required
+def api_search_users():
+    query = request.args.get('query', '').strip()
+    users = []
+    if query:
+        users = User.query \
+            .filter(User.display_name.ilike(f'%{query}%')) \
+            .limit(10).all()  # limit for performance
+
+    results = [
+        {
+            'id': u.id,
+            'display_name': u.display_name or '(No Name)',
+            'profile_picture': u.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+        } for u in users
+    ]
+    return jsonify(results)
+
+@bp.route('/profile/<int:user_id>')
+@login_required
+def profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('profile_landingpage.html', user=user, Post=Post)
