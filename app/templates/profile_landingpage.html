@@ -166,12 +166,13 @@ searchInput.addEventListener('input', async () => {
   }
 
     dropdown.innerHTML = users.map(user => `
-    <a href="/profile/${user.id}" class="flex flex-col gap-1 p-2 hover:bg-indigo-100 transition rounded">
-        <div class="flex items-center gap-2">
+    <a href="/profile/${user.id}" class="flex items-center gap-2 p-2 hover:bg-indigo-100 transition rounded">
         <img src="${user.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" alt="Avatar" class="w-6 h-6 rounded-full object-cover" />
-        <span class="font-medium text-slate-800">${user.display_name}</span>
+        <div class="flex flex-col">
+        <span class="font-medium text-slate-800 text-sm">${user.display_name}
+            <span class="text-slate-500 text-xs">• ${user.university || 'No university info'}</span>
+        </span>
         </div>
-        <div class="pl-4 text-xs text-slate-600 italic">${user.university || 'No university info'}</div>
     </a>
     `).join('');
   dropdown.classList.remove('hidden');
