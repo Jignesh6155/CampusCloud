@@ -172,6 +172,9 @@
       // Append to body
       document.body.appendChild(clone);
   
+      // Hide original box so it doesn’t show behind the expanding clone
+      postCard.style.visibility = 'hidden';
+  
       // Animate
       setTimeout(() => {
         clone.style.transform = 'scale(1.05)';
