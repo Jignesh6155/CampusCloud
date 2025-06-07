@@ -13,11 +13,15 @@
 
     <div class="p-6 flex flex-col gap-3 border-b border-slate-200">
       <div class="flex items-center gap-3">
-        <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-             alt="Profile picture"
-             class="w-12 h-12 rounded-full object-cover border border-slate-300" />
+        <a href="{{ url_for('routes.profile', user_id=post.author.id) }}">
+          <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+               alt="Profile picture"
+               class="w-12 h-12 rounded-full object-cover border border-slate-300" />
+        </a>
         <div>
-          <h3 class="text-lg font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
+          <a href="{{ url_for('routes.profile', user_id=post.author.id) }}" class="hover:underline">
+            <h3 class="text-lg font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
+          </a>
           <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
         </div>
       </div>
@@ -46,11 +50,15 @@
         {% macro render_comment(comment, level=0, is_reply=False) %}
         <div class="pl-{{ (level + 2) ~ '' }} py-2 border-l border-slate-200">
           <div class="flex gap-2 items-start">
-            <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-                 alt="Profile picture"
-                 class="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0" />
+            <a href="{{ url_for('routes.profile', user_id=comment.author.id) }}">
+              <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                   alt="Profile picture"
+                   class="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0" />
+            </a>
             <div class="flex-1 rounded-xl p-3 transition {{ level == 0 and 'bg-white shadow-lg hover:shadow-2xl' or 'bg-white shadow hover:shadow-md' }}">
-              <h4 class="text-sm font-semibold text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</h4>
+              <a href="{{ url_for('routes.profile', user_id=comment.author.id) }}" class="hover:underline">
+                <h4 class="text-sm font-semibold text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</h4>
+              </a>
               <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
               <p class="text-slate-700 text-sm mt-1">
                 {% if is_reply %} <span class="text-slate-500">Replying to {{ comment.parent.author.display_name }}</span> <br>{% endif %}
