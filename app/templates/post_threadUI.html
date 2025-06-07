@@ -1,11 +1,9 @@
-<!-- post_threadUI.html -->
 {% extends "base.html" %}
 
 {% block content %}
 <div class="w-full bg-slate-100 min-h-screen py-6">
   <div class="mx-auto my-4 p-4 w-full max-w-6xl bg-white rounded-xl shadow overflow-hidden">
 
-    <!-- Back to Forum Button -->
     <div class="mb-4">
       <a href="{{ url_for('routes.post_forum') }}"
          class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
@@ -15,9 +13,9 @@
 
     <div class="p-6 flex flex-col gap-3 border-b border-slate-200">
       <div class="flex items-center gap-3">
-        <img src="{{ post.author.profile_picture or 'https://randomuser.me/api/portraits/men/44.jpg' }}"
+        <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
              alt="Profile picture"
-             class="w-12 h-12 rounded-full object-cover" />
+             class="w-12 h-12 rounded-full object-cover border border-slate-300" />
         <div>
           <h3 class="text-lg font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
           <p class="text-xs text-slate-500">{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
@@ -48,9 +46,9 @@
         {% macro render_comment(comment, level=0) %}
         <div class="pl-{{ (level + 2) ~ '' }} py-2 border-l border-slate-200">
           <div class="flex gap-2 items-start">
-            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-sm shrink-0 border border-slate-300">
-              <i class="fas fa-user"></i>
-            </div>
+            <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                 alt="Profile picture"
+                 class="w-8 h-8 rounded-full object-cover border border-slate-300 shrink-0" />
             <div class="flex-1 rounded-xl p-3 transition {{ level == 0 and 'bg-white shadow-lg hover:shadow-2xl' or 'bg-white shadow hover:shadow-md' }}">
               <h4 class="text-sm font-semibold text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</h4>
               <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
