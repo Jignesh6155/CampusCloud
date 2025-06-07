@@ -15,48 +15,52 @@
         </button>
       </div>
 
-      <div id="postsContainer" class="space-y-6 overflow-y-auto h-[calc(100vh-250px)] pr-2">
-        {% for post in posts %}
-        <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
-             onclick="expandAndRedirect({{ post.id }})">
-          <div class="flex items-center mb-3">
-            <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-                 alt="Avatar"
-                 class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
-            <div>
-              <h3 class="font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
-              <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
+      <!-- Wrapper for scrollable container -->
+      <div class="relative h-[calc(100vh-250px)] overflow-y-auto pr-2">
+        <!-- Posts container with visible overflow for expanding effect -->
+        <div id="postsContainer" class="space-y-6 overflow-visible">
+          {% for post in posts %}
+          <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
+               onclick="expandAndRedirect({{ post.id }})">
+            <div class="flex items-center mb-3">
+              <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                   alt="Avatar"
+                   class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
+              <div>
+                <h3 class="font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
+                <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
+              </div>
+            </div>
+            {% if post.title %}
+            <h4 class="text-base font-semibold text-slate-800 mb-1">{{ post.title }}</h4>
+            {% endif %}
+            <p class="text-slate-700 text-sm leading-relaxed mb-3">{{ post.content }}</p>
+            {% if post.image_url %}
+            <div class="flex justify-center mt-3">
+              <img src="{{ '/' + post.image_url }}" alt="Post Image" class="w-2/5 rounded" />
+            </div>
+            {% endif %}
+            <div class="flex justify-between text-xs text-slate-500 mt-2">
+              <div class="flex space-x-4">
+                <button id="like-btn-{{ post.id }}" class="flex items-center space-x-1 transition"
+                        onclick="likePost(event, {{ post.id }})">
+                  <i id="heart-icon-{{ post.id }}" class="fas fa-heart {% if current_user.is_authenticated and current_user in post.likers.all() %}liked{% endif %}"></i>
+                  <span id="like-count-{{ post.id }}">{{ post.likers.all()|length }}</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-indigo-600 transition">
+                  <i class="fas fa-comment"></i><span>{{ post.comments.count() }}</span>
+                </button>
+              </div>
+              <div class="flex space-x-2">
+                <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
+                {% if current_user.is_authenticated and post.author.id == current_user.id %}
+                <button onclick="event.stopPropagation(); deletePost({{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                {% endif %}
+              </div>
             </div>
           </div>
-          {% if post.title %}
-          <h4 class="text-base font-semibold text-slate-800 mb-1">{{ post.title }}</h4>
-          {% endif %}
-          <p class="text-slate-700 text-sm leading-relaxed mb-3">{{ post.content }}</p>
-          {% if post.image_url %}
-          <div class="flex justify-center mt-3">
-            <img src="{{ '/' + post.image_url }}" alt="Post Image" class="w-2/5 rounded" />
-          </div>
-          {% endif %}
-          <div class="flex justify-between text-xs text-slate-500 mt-2">
-            <div class="flex space-x-4">
-              <button id="like-btn-{{ post.id }}" class="flex items-center space-x-1 transition"
-                      onclick="likePost(event, {{ post.id }})">
-                <i id="heart-icon-{{ post.id }}" class="fas fa-heart {% if current_user.is_authenticated and current_user in post.likers.all() %}liked{% endif %}"></i>
-                <span id="like-count-{{ post.id }}">{{ post.likers.all()|length }}</span>
-              </button>
-              <button class="flex items-center space-x-1 hover:text-indigo-600 transition">
-                <i class="fas fa-comment"></i><span>{{ post.comments.count() }}</span>
-              </button>
-            </div>
-            <div class="flex space-x-2">
-              <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
-              {% if current_user.is_authenticated and post.author.id == current_user.id %}
-              <button onclick="event.stopPropagation(); deletePost({{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
-              {% endif %}
-            </div>
-          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
     </div>
 
@@ -102,60 +106,101 @@
 <style>
   .post-card {
     transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+    position: relative;   /* important to allow z-index to work */
+    z-index: 1;            /* default stacking order */
   }
   .post-card.expanding {
     transform: scale(1.05);
     box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     opacity: 0.8;
+    z-index: 10;           /* bring it above everything else */
   }
   .liked {
     color: #3b82f6 !important;
   }
-</style>
-
-<script>
-  const openModal = document.getElementById('openModal');
-  const closeModal = document.getElementById('closeModal');
-  const closeModalTop = document.getElementById('closeModalTop');
-  const postModal = document.getElementById('postModal');
-
-  openModal.addEventListener('click', () => postModal.classList.remove('hidden'));
-  closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
-  closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
-
-  async function deletePost(postId) {
-    if (confirm('Are you sure you want to delete this post?')) {
-      const response = await fetch(`/delete-post/${postId}`, { method: 'DELETE' });
-      if (response.ok) {
-        document.getElementById(`post-${postId}`).remove();
-      } else {
-        alert('Error deleting post!');
+  <style>
+    .post-card {
+      transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+      position: relative;   /* ensure stacking context */
+      z-index: 1;            /* default stacking order */
+    }
+    .post-card.expanding {
+      transform: scale(1.05);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+      opacity: 0.8;
+    }
+    .liked {
+      color: #3b82f6 !important;
+    }
+  </style>
+  
+  <script>
+    const openModal = document.getElementById('openModal');
+    const closeModal = document.getElementById('closeModal');
+    const closeModalTop = document.getElementById('closeModalTop');
+    const postModal = document.getElementById('postModal');
+  
+    openModal.addEventListener('click', () => postModal.classList.remove('hidden'));
+    closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
+    closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
+  
+    async function deletePost(postId) {
+      if (confirm('Are you sure you want to delete this post?')) {
+        const response = await fetch(`/delete-post/${postId}`, { method: 'DELETE' });
+        if (response.ok) {
+          document.getElementById(`post-${postId}`).remove();
+        } else {
+          alert('Error deleting post!');
+        }
       }
     }
-  }
-
-  function expandAndRedirect(postId) {
-    const postCard = document.getElementById(`post-${postId}`);
-    postCard.classList.add('expanding');
-    setTimeout(() => { window.location.href = `/post/${postId}`; }, 350);
-  }
-
-  async function likePost(event, postId) {
-    event.stopPropagation();
-    const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
-    if (res.ok) {
-      const data = await res.json();
-      document.getElementById(`like-count-${postId}`).textContent = data.likes;
-
-      const icon = document.getElementById(`heart-icon-${postId}`);
-      if (data.liked) {
-        icon.classList.add('liked');
-      } else {
-        icon.classList.remove('liked');
-      }
-    } else {
-      alert('Error liking/unliking post!');
+  
+    function expandAndRedirect(postId) {
+      const postCard = document.getElementById(`post-${postId}`);
+      const rect = postCard.getBoundingClientRect();
+  
+      // Clone the post card and style it
+      const clone = postCard.cloneNode(true);
+      clone.style.position = 'fixed';
+      clone.style.top = rect.top + 'px';
+      clone.style.left = rect.left + 'px';
+      clone.style.width = rect.width + 'px';
+      clone.style.height = rect.height + 'px';
+      clone.style.zIndex = 50;  // high z-index for on-top effect
+      clone.style.transition = 'transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease';
+  
+      // Append to body
+      document.body.appendChild(clone);
+  
+      // Animate
+      setTimeout(() => {
+        clone.style.transform = 'scale(1.05)';
+        clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
+        clone.style.opacity = 0.8;
+      }, 0);
+  
+      // Redirect after animation
+      setTimeout(() => {
+        window.location.href = `/post/${postId}`;
+      }, 350);
     }
-  }
-</script>
-{% endblock %}
+  
+    async function likePost(event, postId) {
+      event.stopPropagation();
+      const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById(`like-count-${postId}`).textContent = data.likes;
+  
+        const icon = document.getElementById(`heart-icon-${postId}`);
+        if (data.liked) {
+          icon.classList.add('liked');
+        } else {
+          icon.classList.remove('liked');
+        }
+      } else {
+        alert('Error liking/unliking post!');
+      }
+    }
+  </script>
+  {% endblock %}
