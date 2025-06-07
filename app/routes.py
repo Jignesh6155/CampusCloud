@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
 from flask_login import login_required, current_user, login_user, logout_user
 from app.forms import LoginForm, SignupForm  # Import your WTForms
+from sqlalchemy.orm import joinedload
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -385,6 +386,7 @@ def delete_comment(comment_id):
     return jsonify({'status': 'success'})
 
 @bp.route('/post-forum')
+@login_required
 def post_forum():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     return render_template('post_forum.html', posts=posts)
@@ -405,9 +407,25 @@ def delete_post(post_id):
 @login_required
 def like_post(post_id):
     post = Post.query.get_or_404(post_id)
-    post.likes = (post.likes or 0) + 1
+
+    if current_user in post.likers:
+        # Unlike the post
+        post.likers.remove(current_user)
+        liked = False
+    else:
+        # Like the post
+        post.likers.append(current_user)
+        liked = True
+
     db.session.commit()
-    return jsonify({'likes': post.likes})
+
+    # Get the updated number of likes
+    like_count = post.likers.count()
+
+    return jsonify({
+        'likes': like_count,
+        'liked': liked
+    })
 
 @bp.route('/search-users', methods=['GET'])
 @login_required

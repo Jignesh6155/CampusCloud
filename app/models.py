@@ -9,20 +9,22 @@ user_committees = db.Table(
     db.Column('committee_id', db.Integer, db.ForeignKey('committees.id', ondelete='CASCADE', name='fk_usercommittees_committee_id'), primary_key=True)
 )
 
+# Association table for many-to-many relationship between users and posts (likes)
+post_likes = db.Table(
+    'post_likes',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE'), primary_key=True)
+)
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    
-    # Editable display name (non-unique, optional)
     display_name = db.Column(db.String(100))
-
-    # Unique and required fields for login and student verification
     student_number = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
-    # Additional user details
     bio = db.Column(db.Text)
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
@@ -30,17 +32,18 @@ class User(db.Model, UserMixin):
     faculty = db.Column(db.String(100))    
     major = db.Column(db.String(100))      
     quote = db.Column(db.Text)
-    skills = db.Column(db.Text)  # comma-separated skills
+    skills = db.Column(db.Text)
     profile_picture = db.Column(db.String(255))  
     cover_picture = db.Column(db.String(255))    
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    # Many-to-many relationship to committees
+    # Relationships
     committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
-
-    # One-to-many relationships
     posts = db.relationship('Post', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     comments = db.relationship('Comment', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
+
+    # Relationship for liked posts
+    liked_posts = db.relationship('Post', secondary=post_likes, backref=db.backref('likers', lazy='dynamic'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -59,6 +62,7 @@ class User(db.Model, UserMixin):
     def skills_list(self, skills_list):
         self.skills = ', '.join(skills_list)
 
+
 class Committee(db.Model):
     __tablename__ = 'committees'
 
@@ -70,6 +74,7 @@ class Committee(db.Model):
     def __repr__(self):
         return f'<Committee {self.name}>'
 
+
 class Post(db.Model):
     __tablename__ = 'posts'
 
@@ -78,7 +83,6 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=db.func.now())
-    likes = db.Column(db.Integer, default=0)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_posts_user_id'), nullable=False)
     committee_id = db.Column(db.Integer, db.ForeignKey('committees.id', ondelete='SET NULL', name='fk_posts_committee_id'), nullable=True)
@@ -88,6 +92,7 @@ class Post(db.Model):
 
     def __repr__(self):
         return f'<Post {self.id} by User {self.user_id}>'
+
 
 class Comment(db.Model):
     __tablename__ = 'comments'
