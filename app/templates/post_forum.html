@@ -21,9 +21,9 @@
         <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
              onclick="expandAndRedirect({{ post.id }})">
           <div class="flex items-center mb-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-lg mr-3 border border-slate-300">
-              <i class="fas fa-user"></i>
-            </div>
+            <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                 alt="Avatar"
+                 class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
             <div>
               <h3 class="font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
               <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
