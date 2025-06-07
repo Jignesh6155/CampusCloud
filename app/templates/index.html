@@ -11,11 +11,25 @@
 
 <!-- Background image -->
 <div class="absolute inset-0">
-  <img src="https://images.unsplash.com/photo-1616400619175-5beda3a17896?q=80&w=3174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="background" class="w-full h-full object-cover opacity-50" />
+  <img src="https://images.unsplash.com/photo-1616400619175-5beda3a17896?q=80&w=3174&auto=format&fit=crop" alt="background" class="w-full h-full object-cover opacity-50" />
 </div>
 
 <!-- Overlay for dark effect -->
 <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flash-messages" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs space-y-2">
+      {% for category, message in messages %}
+        <div class="p-3 rounded shadow animate-fadeIn
+                    bg-red-900 bg-opacity-70 text-red-200 border border-red-600 text-xs font-medium">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
 <!-- Form slider container -->
 <div class="relative z-10 w-full max-w-md h-[500px] overflow-hidden rounded-lg shadow-lg">
@@ -78,6 +92,16 @@
   </div>
 </div>
 
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+</style>
+
 <script>
   const showSignup = document.getElementById('show-signup');
   const showLogin = document.getElementById('show-login');
@@ -92,6 +116,15 @@
     e.preventDefault();
     formsWrapper.classList.remove('-translate-x-1/2');
   });
+
+  // Auto-dismiss flash messages after 4 seconds
+  setTimeout(() => {
+    const flashMessages = document.querySelectorAll('#flash-messages > div');
+    flashMessages.forEach(el => {
+      el.classList.add('opacity-0', 'transition', 'duration-500');
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 4000);
 </script>
 
 </body>
