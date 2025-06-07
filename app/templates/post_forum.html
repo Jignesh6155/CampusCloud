@@ -22,15 +22,18 @@
           {% for post in posts %}
           <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
                onclick="expandAndRedirect({{ post.id }})">
-            <div class="flex items-center mb-3">
-              <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-                   alt="Avatar"
-                   class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
-              <div>
-                <h3 class="font-semibold text-slate-800">{{ post.author.display_name or 'Anonymous' }}</h3>
-                <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
+               <div class="flex items-center mb-3">
+                <!-- Wrap both the profile picture and username in a link -->
+                <a href="{{ url_for('routes.profile', user_id=post.author.id) }}" class="flex items-center space-x-0"> 
+                  <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                       alt="Avatar"
+                       class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
+                  <div>
+                    <h3 class="font-semibold text-slate-800 hover:underline hover:text-indigo-600">{{ post.author.display_name or 'Anonymous' }}</h3> <!-- Added hover effect to only username -->
+                    <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
+                  </div>
+                </a>
               </div>
-            </div>
             {% if post.title %}
             <h4 class="text-base font-semibold text-slate-800 mb-1">{{ post.title }}</h4>
             {% endif %}
