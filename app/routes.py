@@ -446,7 +446,8 @@ def api_search_users():
         {
             'id': u.id,
             'display_name': u.display_name or '(No Name)',
-            'profile_picture': u.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+            'profile_picture': u.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+            'university': u.university or ''  # <-- ADD THIS LINE
         } for u in users
     ]
     return jsonify(results)
