@@ -43,16 +43,19 @@
       </form>
 
       <div id="commentsContainer" class="space-y-4">
-        {% macro render_comment(comment, level=0) %}
+        {% macro render_comment(comment, level=0, is_reply=False) %}
         <div class="pl-{{ (level + 2) ~ '' }} py-2 border-l border-slate-200">
           <div class="flex gap-2 items-start">
             <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
                  alt="Profile picture"
-                 class="w-8 h-8 rounded-full object-cover border border-slate-300 shrink-0" />
+                 class="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0" />
             <div class="flex-1 rounded-xl p-3 transition {{ level == 0 and 'bg-white shadow-lg hover:shadow-2xl' or 'bg-white shadow hover:shadow-md' }}">
               <h4 class="text-sm font-semibold text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</h4>
               <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
-              <p class="text-slate-700 text-sm mt-1">{{ comment.content }}</p>
+              <p class="text-slate-700 text-sm mt-1">
+                {% if is_reply %} <span class="text-slate-500">Replying to {{ comment.parent.author.display_name }}</span> <br>{% endif %}
+                {{ comment.content }}
+              </p>
               <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
                 <button onclick="toggleReplyForm(this)" class="hover:text-indigo-600 transition">Reply</button>
                 {% if current_user.id == comment.user_id %}
@@ -75,7 +78,7 @@
                 </button>
                 <div class="replies space-y-2 mt-2 hidden">
                   {% for reply in comment.replies|sort(attribute='created_at') %}
-                  {{ render_comment(reply, level + 2) }}
+                  {{ render_comment(reply, level + 2, true) }}
                   {% endfor %}
                 </div>
               </div>
