@@ -118,83 +118,89 @@
 </div>
 
 <script>
-  function toggleReplyForm(button) {
-    const form = button.closest('.flex').nextElementSibling;
-    form.classList.toggle('hidden');
-  }
-
-  function toggleReplies(button) {
-    const repliesDiv = button.nextElementSibling;
-    const icon = button.querySelector('i');
-    repliesDiv.classList.toggle('hidden');
-    icon.classList.toggle('rotate-90');
-  }
-
-  async function postReply(button, parentId) {
-    const form = button.closest('.replyForm');
-    const textarea = form.querySelector('textarea');
-    const content = textarea.value.trim();
-    if (!content) return;
-
-    const response = await fetch(`/comment/${parentId}/reply`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
-    });
-
-    if (response.ok) window.location.reload();
-    else alert('Error posting reply!');
-  }
-
-  async function deleteComment(commentId) {
-    if (!confirm('Are you sure you want to delete this comment and its replies?')) return;
-    const response = await fetch(`/comment/${commentId}/delete`, { method: 'DELETE' });
-    if (response.ok) window.location.reload();
-    else alert('Error deleting comment.');
-  }
-
-  async function voteComment(commentId, voteValue) {
-    const response = await fetch(`/comment/${commentId}/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vote: voteValue })
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const scoreElem = document.getElementById(`comment-score-${commentId}`);
-      scoreElem.textContent = data.new_score;
-
-      const upvoteBtn = document.getElementById(`upvote-${commentId}`);
-      const downvoteBtn = document.getElementById(`downvote-${commentId}`);
-
-      upvoteBtn.classList.remove('text-green-600');
-      downvoteBtn.classList.remove('text-red-600');
-
-      if (voteValue === 1) {
-        upvoteBtn.classList.add('text-green-600');
-      } else if (voteValue === -1) {
-        downvoteBtn.classList.add('text-red-600');
-      }
-    } else {
-      alert('Error voting. Please try again.');
+    function toggleReplyForm(button) {
+      const form = button.closest('.flex').nextElementSibling;
+      form.classList.toggle('hidden');
     }
-  }
-
-  const commentForm = document.getElementById('commentForm');
-  const postId = {{ post.id }};
-  commentForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const content = document.getElementById('commentContent').value.trim();
-    if (content) {
-      const response = await fetch(`/post/${postId}/comment`, {
+  
+    function toggleReplies(button) {
+      const repliesDiv = button.nextElementSibling;
+      const icon = button.querySelector('i');
+      repliesDiv.classList.toggle('hidden');
+      icon.classList.toggle('rotate-90');
+    }
+  
+    async function postReply(button, parentId) {
+      const form = button.closest('.replyForm');
+      const textarea = form.querySelector('textarea');
+      const content = textarea.value.trim();
+      if (!content) return;
+  
+      const response = await fetch(`/comment/${parentId}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
       });
+  
       if (response.ok) window.location.reload();
-      else alert('Error posting comment!');
+      else alert('Error posting reply!');
     }
-  });
-</script>
-{% endblock %}
+  
+    async function deleteComment(commentId) {
+      if (!confirm('Are you sure you want to delete this comment and its replies?')) return;
+      const response = await fetch(`/comment/${commentId}/delete`, { method: 'DELETE' });
+      if (response.ok) window.location.reload();
+      else alert('Error deleting comment.');
+    }
+  
+    async function voteComment(commentId, voteValue) {
+      const response = await fetch(`/comment/${commentId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote: voteValue })
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        const scoreElem = document.getElementById(`comment-score-${commentId}`);
+        scoreElem.textContent = data.new_score;
+  
+        const upvoteBtn = document.getElementById(`upvote-${commentId}`);
+        const downvoteBtn = document.getElementById(`downvote-${commentId}`);
+  
+        // Reset to neutral
+        upvoteBtn.classList.remove('text-green-600');
+        downvoteBtn.classList.remove('text-red-600');
+        upvoteBtn.classList.add('text-slate-500');
+        downvoteBtn.classList.add('text-slate-500');
+  
+        // Apply new color based on user's actual vote
+        if (data.user_vote === 1) {
+          upvoteBtn.classList.remove('text-slate-500');
+          upvoteBtn.classList.add('text-green-600');
+        } else if (data.user_vote === -1) {
+          downvoteBtn.classList.remove('text-slate-500');
+          downvoteBtn.classList.add('text-red-600');
+        }
+      } else {
+        alert('Error voting. Please try again.');
+      }
+    }
+  
+    const commentForm = document.getElementById('commentForm');
+    const postId = {{ post.id }};
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = document.getElementById('commentContent').value.trim();
+      if (content) {
+        const response = await fetch(`/post/${postId}/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        if (response.ok) window.location.reload();
+        else alert('Error posting comment!');
+      }
+    });
+  </script>
+  {% endblock %}
