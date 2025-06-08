@@ -110,7 +110,7 @@ class Comment(db.Model):
         passive_deletes=True
     )
 
-    votes = db.relationship('CommentVote', backref='voted_comment', cascade='all, delete-orphan', passive_deletes=True)
+    votes = db.relationship('CommentVote', backref='voted_comment', cascade='all, delete-orphan', passive_deletes=True, overlaps="comment_votes,voted_comment")
 
     @property
     def score(self):
@@ -139,7 +139,7 @@ class CommentVote(db.Model):
     )
 
     user = db.relationship('User', backref='comment_votes')
-    comment = db.relationship('Comment', backref='comment_votes')
+    comment = db.relationship('Comment', backref='comment_votes', overlaps="votes,voted_comment")
 
     def __repr__(self):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
