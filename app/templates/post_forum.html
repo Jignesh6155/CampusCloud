@@ -15,25 +15,22 @@
         </button>
       </div>
 
-      <!-- Wrapper for scrollable container -->
       <div class="relative h-[calc(100vh-250px)] overflow-y-auto pr-2">
-        <!-- Posts container with visible overflow for expanding effect -->
         <div id="postsContainer" class="space-y-6 overflow-visible">
           {% for post in posts %}
           <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
                onclick="expandAndRedirect({{ post.id }})">
-               <div class="flex items-center mb-3">
-                <!-- Wrap both the profile picture and username in a link -->
-                <a href="{{ url_for('routes.profile', user_id=post.author.id) }}" class="flex items-center space-x-0" onclick="event.stopPropagation();"> 
-                  <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-                       alt="Avatar"
-                       class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
-                  <div>
-                    <h3 class="font-semibold text-slate-800 hover:underline hover:text-indigo-600">{{ post.author.display_name or 'Anonymous' }}</h3> <!-- Added hover effect to only username -->
-                    <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
-                  </div>
-                </a>
-              </div>
+            <div class="flex items-center mb-3">
+              <a href="{{ url_for('routes.profile', user_id=post.author.id) }}" class="flex items-center space-x-0" onclick="event.stopPropagation();"> 
+                <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                     alt="Avatar"
+                     class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
+                <div>
+                  <h3 class="font-semibold text-slate-800 hover:underline hover:text-indigo-600">{{ post.author.display_name or 'Anonymous' }}</h3>
+                  <p class="text-xs text-slate-500">{{ post.author.major }}, {{ post.author.university }}</p>
+                </div>
+              </a>
+            </div>
             {% if post.title %}
             <h4 class="text-base font-semibold text-slate-800 mb-1">{{ post.title }}</h4>
             {% endif %}
@@ -55,7 +52,7 @@
                 </button>
               </div>
               <div class="flex space-x-2">
-                <button class="hover:text-indigo-600 transition"><i class="fas fa-bookmark"></i></button>
+                <button onclick="openReportModal(event, {{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-flag"></i></button>
                 {% if current_user.is_authenticated and post.author.id == current_user.id %}
                 <button onclick="event.stopPropagation(); deletePost({{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
                 {% endif %}
@@ -106,107 +103,127 @@
   </div>
 </div>
 
+<!-- Report Modal -->
+<div id="reportModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm relative">
+    <h2 class="text-lg font-bold mb-4 text-slate-800">Report Post</h2>
+    <form id="reportForm" class="space-y-4">
+      <input type="hidden" id="reportPostId" name="post_id" />
+      <div>
+        <label for="reportReason" class="block text-sm font-medium text-slate-600 mb-1">Reason for reporting:</label>
+        <select id="reportReason" name="reason" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring focus:ring-red-200 focus:border-red-400 outline-none transition">
+          <option value="">Select a reason</option>
+          <option value="spam">Spam</option>
+          <option value="harassment">Harassment</option>
+          <option value="inappropriate">Inappropriate Content</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 mt-2">
+        <button type="button" onclick="closeReportModal();" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded shadow-sm transition">Cancel</button>
+        <button type="button" onclick="submitReport();" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded shadow-sm transition">Report</button>
+      </div>
+    </form>
+    <button type="button" onclick="closeReportModal();" class="absolute top-3 right-3 text-slate-500 hover:text-slate-700 transition"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
 <style>
   .post-card {
     transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
-    position: relative;   /* important to allow z-index to work */
-    z-index: 1;            /* default stacking order */
+    position: relative;
+    z-index: 1;
   }
   .post-card.expanding {
     transform: scale(1.05);
     box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     opacity: 0.8;
-    z-index: 10;           /* bring it above everything else */
+    z-index: 10;
   }
   .liked {
     color: #3b82f6 !important;
   }
-  <style>
-    .post-card {
-      transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
-      position: relative;   /* ensure stacking context */
-      z-index: 1;            /* default stacking order */
+</style>
+
+<script>
+  const openModal = document.getElementById('openModal');
+  const closeModal = document.getElementById('closeModal');
+  const closeModalTop = document.getElementById('closeModalTop');
+  const postModal = document.getElementById('postModal');
+
+  openModal.addEventListener('click', () => postModal.classList.remove('hidden'));
+  closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
+  closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
+
+  function openReportModal(event, postId) {
+    event.stopPropagation();
+    document.getElementById('reportPostId').value = postId;
+    document.getElementById('reportModal').classList.remove('hidden');
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModal').classList.add('hidden');
+  }
+
+  function submitReport() {
+    const reason = document.getElementById('reportReason').value;
+    if (!reason) {
+      alert('Please select a reason.');
+      return;
     }
-    .post-card.expanding {
-      transform: scale(1.05);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-      opacity: 0.8;
-    }
-    .liked {
-      color: #3b82f6 !important;
-    }
-  </style>
-  
-  <script>
-    const openModal = document.getElementById('openModal');
-    const closeModal = document.getElementById('closeModal');
-    const closeModalTop = document.getElementById('closeModalTop');
-    const postModal = document.getElementById('postModal');
-  
-    openModal.addEventListener('click', () => postModal.classList.remove('hidden'));
-    closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
-    closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
-  
-    async function deletePost(postId) {
-      if (confirm('Are you sure you want to delete this post?')) {
-        const response = await fetch(`/delete-post/${postId}`, { method: 'DELETE' });
-        if (response.ok) {
-          document.getElementById(`post-${postId}`).remove();
-        } else {
-          alert('Error deleting post!');
-        }
-      }
-    }
-  
-    function expandAndRedirect(postId) {
-      const postCard = document.getElementById(`post-${postId}`);
-      const rect = postCard.getBoundingClientRect();
-  
-      // Clone the post card and style it
-      const clone = postCard.cloneNode(true);
-      clone.style.position = 'fixed';
-      clone.style.top = rect.top + 'px';
-      clone.style.left = rect.left + 'px';
-      clone.style.width = rect.width + 'px';
-      clone.style.height = rect.height + 'px';
-      clone.style.zIndex = 50;  // high z-index for on-top effect
-      clone.style.transition = 'transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease';
-  
-      // Append to body
-      document.body.appendChild(clone);
-  
-      // Hide original box so it doesn’t show behind the expanding clone
-      postCard.style.visibility = 'hidden';
-  
-      // Animate
-      setTimeout(() => {
-        clone.style.transform = 'scale(1.05)';
-        clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
-        clone.style.opacity = 0.8;
-      }, 0);
-  
-      // Redirect after animation
-      setTimeout(() => {
-        window.location.href = `/post/${postId}`;
-      }, 350);
-    }
-  
-    async function likePost(event, postId) {
-      event.stopPropagation();
-      const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        document.getElementById(`like-count-${postId}`).textContent = data.likes;
-  
-        const icon = document.getElementById(`heart-icon-${postId}`);
-        if (data.liked) {
-          icon.classList.add('liked');
-        } else {
-          icon.classList.remove('liked');
-        }
+    alert('Report submitted for review.');
+    closeReportModal();
+  }
+
+  async function deletePost(postId) {
+    if (confirm('Are you sure you want to delete this post?')) {
+      const response = await fetch(`/delete-post/${postId}`, { method: 'DELETE' });
+      if (response.ok) {
+        document.getElementById(`post-${postId}`).remove();
       } else {
-        alert('Error liking/unliking post!');
+        alert('Error deleting post!');
       }
     }
-  </script>
+  }
+
+  function expandAndRedirect(postId) {
+    const postCard = document.getElementById(`post-${postId}`);
+    const rect = postCard.getBoundingClientRect();
+    const clone = postCard.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.top = rect.top + 'px';
+    clone.style.left = rect.left + 'px';
+    clone.style.width = rect.width + 'px';
+    clone.style.height = rect.height + 'px';
+    clone.style.zIndex = 50;
+    clone.style.transition = 'transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease';
+    document.body.appendChild(clone);
+    postCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      clone.style.transform = 'scale(1.05)';
+      clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
+      clone.style.opacity = 0.8;
+    }, 0);
+    setTimeout(() => {
+      window.location.href = `/post/${postId}`;
+    }, 350);
+  }
+
+  async function likePost(event, postId) {
+    event.stopPropagation();
+    const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById(`like-count-${postId}`).textContent = data.likes;
+      const icon = document.getElementById(`heart-icon-${postId}`);
+      if (data.liked) {
+        icon.classList.add('liked');
+      } else {
+        icon.classList.remove('liked');
+      }
+    } else {
+      alert('Error liking/unliking post!');
+    }
+  }
+</script>
 {% endblock %}
