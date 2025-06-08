@@ -64,6 +64,19 @@
                 {% if is_reply %} <span class="text-slate-500">Replying to {{ comment.parent.author.display_name }}</span> <br>{% endif %}
                 {{ comment.content }}
               </p>
+              <div class="flex gap-2 items-center mt-2 text-xs">
+                <button id="upvote-{{ comment.id }}"
+                        onclick="voteComment({{ comment.id }}, 1)"
+                        class="hover:text-green-600 text-slate-500 transition">
+                  <i class="fas fa-thumbs-up text-xs"></i>
+                </button>
+                <span id="comment-score-{{ comment.id }}" class="font-semibold text-slate-700">{{ comment.score }}</span>
+                <button id="downvote-{{ comment.id }}"
+                        onclick="voteComment({{ comment.id }}, -1)"
+                        class="hover:text-red-600 text-slate-500 transition">
+                  <i class="fas fa-thumbs-down text-xs"></i>
+                </button>
+              </div>
               <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
                 <button onclick="toggleReplyForm(this)" class="hover:text-indigo-600 transition">Reply</button>
                 {% if current_user.id == comment.user_id %}
@@ -138,6 +151,34 @@
     const response = await fetch(`/comment/${commentId}/delete`, { method: 'DELETE' });
     if (response.ok) window.location.reload();
     else alert('Error deleting comment.');
+  }
+
+  async function voteComment(commentId, voteValue) {
+    const response = await fetch(`/comment/${commentId}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote: voteValue })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const scoreElem = document.getElementById(`comment-score-${commentId}`);
+      scoreElem.textContent = data.new_score;
+
+      const upvoteBtn = document.getElementById(`upvote-${commentId}`);
+      const downvoteBtn = document.getElementById(`downvote-${commentId}`);
+
+      upvoteBtn.classList.remove('text-green-600');
+      downvoteBtn.classList.remove('text-red-600');
+
+      if (voteValue === 1) {
+        upvoteBtn.classList.add('text-green-600');
+      } else if (voteValue === -1) {
+        downvoteBtn.classList.add('text-red-600');
+      }
+    } else {
+      alert('Error voting. Please try again.');
+    }
   }
 
   const commentForm = document.getElementById('commentForm');
