@@ -60,6 +60,7 @@ class User(db.Model, UserMixin):
     def skills_list(self, skills_list):
         self.skills = ', '.join(skills_list)
 
+
 class Committee(db.Model):
     __tablename__ = 'committees'
 
@@ -70,6 +71,7 @@ class Committee(db.Model):
 
     def __repr__(self):
         return f'<Committee {self.name}>'
+
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -88,6 +90,7 @@ class Post(db.Model):
 
     def __repr__(self):
         return f'<Post {self.id} by User {self.user_id}>'
+
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -113,8 +116,15 @@ class Comment(db.Model):
     def score(self):
         return sum(vote.vote for vote in self.votes)
 
+    def user_vote(self, user_id):
+        for vote in self.votes:
+            if vote.user_id == user_id:
+                return vote.vote
+        return 0
+
     def __repr__(self):
         return f'<Comment {self.id} by User {self.user_id}>'
+
 
 class CommentVote(db.Model):
     __tablename__ = 'comment_votes'
@@ -129,7 +139,7 @@ class CommentVote(db.Model):
     )
 
     user = db.relationship('User', backref='comment_votes')
-    comment = db.relationship('Comment', backref='comment_votes')  # changed from 'votes' to 'comment_votes' to avoid conflict
+    comment = db.relationship('Comment', backref='comment_votes')
 
     def __repr__(self):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
