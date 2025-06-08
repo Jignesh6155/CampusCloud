@@ -484,28 +484,39 @@ def profile(user_id):
 def vote_comment(comment_id):
     data = request.get_json()
     vote_value = data.get('vote')  # Expected to be +1 or -1
+
     if vote_value not in [1, -1]:
         return jsonify({'error': 'Invalid vote value'}), 400
 
     comment = Comment.query.get_or_404(comment_id)
 
-    # Check if user has already voted on this comment
+    # Check if the user has already voted on this comment
     existing_vote = CommentVote.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
+
     if existing_vote:
         if existing_vote.vote == vote_value:
-            # Same vote again -> remove vote (toggle)
+            # User clicked the same vote again -> remove vote (toggle off)
             db.session.delete(existing_vote)
+            db.session.commit()
+            return jsonify({
+                'status': 'success',
+                'new_score': comment.score,
+                'user_vote': 0  # No active vote anymore
+            })
         else:
             # Change vote
             existing_vote.vote = vote_value
+            db.session.commit()
     else:
-        # Add new vote
+        # Add a new vote
         new_vote = CommentVote(user_id=current_user.id, comment_id=comment_id, vote=vote_value)
         db.session.add(new_vote)
+        db.session.commit()
 
-    db.session.commit()
-
+    # After update, get the final user vote
+    final_vote = CommentVote.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
     return jsonify({
         'status': 'success',
-        'new_score': comment.score
+        'new_score': comment.score,
+        'user_vote': final_vote.vote if final_vote else 0
     })
