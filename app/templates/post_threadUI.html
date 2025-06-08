@@ -67,13 +67,13 @@
               <div class="flex gap-2 items-center mt-2 text-xs">
                 <button id="upvote-{{ comment.id }}"
                         onclick="voteComment({{ comment.id }}, 1)"
-                        class="hover:text-green-600 text-slate-500 transition">
+                        class="transition text-xs {% if comment.user_vote(current_user.id) == 1 %}text-green-600{% else %}text-slate-500{% endif %}">
                   <i class="fas fa-thumbs-up text-xs"></i>
                 </button>
                 <span id="comment-score-{{ comment.id }}" class="font-semibold text-slate-700">{{ comment.score }}</span>
                 <button id="downvote-{{ comment.id }}"
                         onclick="voteComment({{ comment.id }}, -1)"
-                        class="hover:text-red-600 text-slate-500 transition">
+                        class="transition text-xs {% if comment.user_vote(current_user.id) == -1 %}text-red-600{% else %}text-slate-500{% endif %}">
                   <i class="fas fa-thumbs-down text-xs"></i>
                 </button>
               </div>
