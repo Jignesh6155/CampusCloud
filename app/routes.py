@@ -6,10 +6,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
-from app.models import Post  # Import at the top of routes.py
 
 from app import db
-from app.models import Post, Comment, User, Committee  # Added Comment and Committee
+from app.models import Post, Comment, User, Committee, CommentVote  # ✅ Added CommentVote here
 
 
 bp = Blueprint('routes', __name__)
@@ -328,7 +327,11 @@ def create_post():
 @bp.route('/post/<int:post_id>')
 def post_thread(post_id):
     post = Post.query.get_or_404(post_id)
-    comments = Comment.query.filter_by(post_id=post_id, parent_id=None).order_by(Comment.created_at.asc()).all()
+
+    # Sort top-level comments by score, descending
+    comments = Comment.query.filter_by(post_id=post_id, parent_id=None).all()
+    comments.sort(key=lambda c: (c.score, c.created_at), reverse=True)
+
     return render_template('post_threadUI.html', post=post, comments=comments)
 
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
@@ -475,3 +478,34 @@ def api_search_users():
 def profile(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('profile_landingpage.html', user=user, Post=Post)
+
+@bp.route('/comment/<int:comment_id>/vote', methods=['POST'])
+@login_required
+def vote_comment(comment_id):
+    data = request.get_json()
+    vote_value = data.get('vote')  # Expected to be +1 or -1
+    if vote_value not in [1, -1]:
+        return jsonify({'error': 'Invalid vote value'}), 400
+
+    comment = Comment.query.get_or_404(comment_id)
+
+    # Check if user has already voted on this comment
+    existing_vote = CommentVote.query.filter_by(user_id=current_user.id, comment_id=comment_id).first()
+    if existing_vote:
+        if existing_vote.vote == vote_value:
+            # Same vote again -> remove vote (toggle)
+            db.session.delete(existing_vote)
+        else:
+            # Change vote
+            existing_vote.vote = vote_value
+    else:
+        # Add new vote
+        new_vote = CommentVote(user_id=current_user.id, comment_id=comment_id, vote=vote_value)
+        db.session.add(new_vote)
+
+    db.session.commit()
+
+    return jsonify({
+        'status': 'success',
+        'new_score': comment.score
+    })

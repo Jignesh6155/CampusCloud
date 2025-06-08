@@ -28,21 +28,19 @@ class User(db.Model, UserMixin):
     bio = db.Column(db.Text)
     job_title = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    university = db.Column(db.String(100))  
-    faculty = db.Column(db.String(100))    
-    major = db.Column(db.String(100))      
+    university = db.Column(db.String(100))
+    faculty = db.Column(db.String(100))
+    major = db.Column(db.String(100))
     quote = db.Column(db.Text)
     skills = db.Column(db.Text)
-    profile_picture = db.Column(db.String(255))  
-    cover_picture = db.Column(db.String(255))    
+    profile_picture = db.Column(db.String(255))
+    cover_picture = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-    # Relationships
     committees = db.relationship('Committee', secondary=user_committees, backref='members', lazy='dynamic')
     posts = db.relationship('Post', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     comments = db.relationship('Comment', backref='author', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
 
-    # Relationship for liked posts
     liked_posts = db.relationship('Post', secondary=post_likes, backref=db.backref('likers', lazy='dynamic'))
 
     def set_password(self, password):
@@ -62,7 +60,6 @@ class User(db.Model, UserMixin):
     def skills_list(self, skills_list):
         self.skills = ', '.join(skills_list)
 
-
 class Committee(db.Model):
     __tablename__ = 'committees'
 
@@ -73,7 +70,6 @@ class Committee(db.Model):
 
     def __repr__(self):
         return f'<Committee {self.name}>'
-
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -93,7 +89,6 @@ class Post(db.Model):
     def __repr__(self):
         return f'<Post {self.id} by User {self.user_id}>'
 
-
 class Comment(db.Model):
     __tablename__ = 'comments'
 
@@ -112,5 +107,29 @@ class Comment(db.Model):
         passive_deletes=True
     )
 
+    votes = db.relationship('CommentVote', backref='voted_comment', cascade='all, delete-orphan', passive_deletes=True)
+
+    @property
+    def score(self):
+        return sum(vote.vote for vote in self.votes)
+
     def __repr__(self):
         return f'<Comment {self.id} by User {self.user_id}>'
+
+class CommentVote(db.Model):
+    __tablename__ = 'comment_votes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='CASCADE'), nullable=False)
+    vote = db.Column(db.Integer, nullable=False)  # +1 for upvote, -1 for downvote
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'comment_id', name='unique_user_comment_vote'),
+    )
+
+    user = db.relationship('User', backref='comment_votes')
+    comment = db.relationship('Comment', backref='comment_votes')  # changed from 'votes' to 'comment_votes' to avoid conflict
+
+    def __repr__(self):
+        return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
