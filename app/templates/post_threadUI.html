@@ -79,10 +79,10 @@
               </div>
         
               <!-- Report button moved to top-right -->
-              <button onclick="openReportModal(event, {{ comment.id }}, 'comment')" class="absolute top-2 right-2 flex items-center gap-1 text-red-500 hover:text-red-600 transition text-xs px-2 py-1">
+              <button onclick="openReportModal(event, {{ comment.id }}, 'comment')" class="absolute top-2 right-2 flex items-center gap-1 text-gray-500 hover:text-red-600 transition text-xs px-2 py-1">
                 <i class="fas fa-flag text-sm"></i> 
               </button>
-        
+
               <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
                 <button onclick="toggleReplyForm(this)" class="hover:text-indigo-600 transition">Reply</button>
                 {% if current_user.id == comment.user_id %}

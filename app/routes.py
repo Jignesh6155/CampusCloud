@@ -380,12 +380,21 @@ def add_reply(comment_id):
 @bp.route('/comment/<int:comment_id>/delete', methods=['DELETE'])
 @login_required
 def delete_comment(comment_id):
+    # Get the comment object
     comment = Comment.query.get_or_404(comment_id)
-    if comment.user_id != current_user.id:
+    
+    # Ensure the comment belongs to the current user or the post's author
+    if comment.user_id != current_user.id and comment.post.author.id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
+    # Delete all associated votes first
+    for vote in comment.votes:
+        db.session.delete(vote)
+
+    # Now delete the comment
     db.session.delete(comment)
     db.session.commit()
+
     return jsonify({'status': 'success'})
 
 @bp.route('/post-forum')
