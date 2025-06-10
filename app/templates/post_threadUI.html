@@ -49,7 +49,7 @@
       <div id="commentsContainer" class="space-y-4">
         {% macro render_comment(comment, level=0, is_reply=False) %}
         <div class="pl-{{ (level + 2) ~ '' }} py-2 border-l border-slate-200">
-          <div class="flex gap-2 items-start">
+          <div class="flex gap-2 items-start relative"> <!-- Add relative positioning here -->
             <a href="{{ url_for('routes.profile', user_id=comment.author.id) }}">
               <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
                    alt="Profile picture"
@@ -77,6 +77,12 @@
                   <i class="fas fa-thumbs-down text-xs"></i>
                 </button>
               </div>
+        
+              <!-- Report button moved to top-right -->
+              <button onclick="openReportModal(event, {{ comment.id }}, 'comment')" class="absolute top-2 right-2 flex items-center gap-1 text-red-500 hover:text-red-600 transition text-xs px-2 py-1">
+                <i class="fas fa-flag text-sm"></i> 
+              </button>
+        
               <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
                 <button onclick="toggleReplyForm(this)" class="hover:text-indigo-600 transition">Reply</button>
                 {% if current_user.id == comment.user_id %}
@@ -90,7 +96,7 @@
                   class="self-end bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-xs">Post
                   Reply</button>
               </form>
-
+        
               {% if comment.replies %}
               <div class="ml-2 mt-2 border-l-2 border-slate-200 pl-2">
                 <button class="toggle-replies-btn text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition"
@@ -108,6 +114,7 @@
           </div>
         </div>
         {% endmacro %}
+        
 
         {% for comment in comments %}
         {{ render_comment(comment) }}
@@ -202,5 +209,57 @@
         else alert('Error posting comment!');
       }
     });
-  </script>
-  {% endblock %}
+
+    function openReportModal(event, itemId, itemType) {
+      event.stopPropagation();
+      const modal = document.getElementById('reportModal');
+      const reportPostId = document.getElementById('reportPostId');
+      reportPostId.value = itemId;
+      document.getElementById('reportItemType').value = itemType;
+      modal.classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    async function submitReport() {
+      const reason = document.getElementById('reportReason').value;
+      if (!reason) {
+        alert('Please select a reason.');
+        return;
+      }
+      const itemId = document.getElementById('reportPostId').value;
+      const itemType = document.getElementById('reportItemType').value;
+      alert(`Report for ${itemType} ${itemId} with reason: ${reason}`);
+      closeReportModal();
+    }
+</script>
+
+<!-- Report Modal -->
+<div id="reportModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm relative">
+    <h2 class="text-lg font-bold mb-4 text-slate-800">Report Item</h2>
+    <form id="reportForm" class="space-y-4">
+      <input type="hidden" id="reportPostId" name="post_id" />
+      <input type="hidden" id="reportItemType" name="item_type" />
+      <div>
+        <label for="reportReason" class="block text-sm font-medium text-slate-600 mb-1">Reason for reporting:</label>
+        <select id="reportReason" name="reason" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring focus:ring-red-200 focus:border-red-400 outline-none transition">
+          <option value="">Select a reason</option>
+          <option value="spam">Spam</option>
+          <option value="harassment">Harassment</option>
+          <option value="inappropriate">Inappropriate Content</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 mt-2">
+        <button type="button" onclick="closeReportModal();" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded shadow-sm transition">Cancel</button>
+        <button type="button" onclick="submitReport();" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded shadow-sm transition">Report</button>
+      </div>
+    </form>
+    <button type="button" onclick="closeReportModal();" class="absolute top-3 right-3 text-slate-500 hover:text-slate-700 transition"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
+{% endblock %}
