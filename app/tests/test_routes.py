@@ -211,6 +211,40 @@ def test_following_self_does_not_affect_counts(client, setup_users):
     # Counts remain zero
     assert user1.followers_count == 0
     assert user1.campus_followers_count == 0
+    
+def test_delete_post(client, setup_users):
+    """
+    Test that a user can delete their post and that it is removed from the database.
+    """
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    # Create a post
+    post_title = 'Test Post for Deletion'
+    post_content = 'This post will be deleted.'
+    response = client.post('/create-post', data={
+        'title': post_title,
+        'content': post_content
+    })
+
+    assert response.status_code == 302  # Redirect after creation
+
+    # Confirm the post exists
+    post = Post.query.filter_by(title=post_title).first()
+    assert post is not None
+    assert post.content == post_content
+
+    # Delete the post
+    delete_response = client.delete(f'/delete-post/{post.id}')
+    data = delete_response.get_json()
+
+    # Confirm deletion was successful
+    assert delete_response.status_code == 200
+    assert data['status'] == 'success'
+
+    # Confirm the post is gone from the DB
+    deleted_post = Post.query.get(post.id)
+    assert deleted_post is None
 
  #run using PYTHONPATH=. pytest
  
