@@ -50,12 +50,12 @@ class User(db.Model, UserMixin):
 
     liked_posts = db.relationship('Post', secondary=post_likes, backref=db.backref('likers', lazy='dynamic'))
 
-    # Follower/following relationships
     followers = db.relationship(
         'User', secondary=user_followers,
         primaryjoin=(user_followers.c.followed_id == id),
         secondaryjoin=(user_followers.c.follower_id == id),
-        backref='following', lazy='dynamic'
+        backref=db.backref('following', lazy='dynamic'),
+        lazy='dynamic'
     )
 
     def set_password(self, password):
@@ -135,10 +135,17 @@ class Comment(db.Model):
         'Comment',
         backref=db.backref('parent', remote_side=[id]),
         cascade='all, delete-orphan',
-        passive_deletes=True
+        passive_deletes=True,
+        lazy='joined'
     )
 
-    votes = db.relationship('CommentVote', backref='voted_comment', cascade='all, delete-orphan', passive_deletes=True, overlaps="comment_votes,voted_comment")
+    votes = db.relationship(
+        'CommentVote',
+        backref='voted_comment',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+        overlaps="comment_votes,voted_comment"
+    )
 
     @property
     def score(self):
@@ -160,7 +167,7 @@ class CommentVote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='CASCADE'), nullable=False)
-    vote = db.Column(db.Integer, nullable=False)  # +1 for upvote, -1 for downvote
+    vote = db.Column(db.Integer, nullable=False)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'comment_id', name='unique_user_comment_vote'),
