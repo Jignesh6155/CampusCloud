@@ -213,6 +213,38 @@ def test_following_self_does_not_affect_counts(client, setup_users):
     assert user1.followers_count == 0
     assert user1.campus_followers_count == 0
 
+def test_signup_and_login(client):
+    # Test signup
+    signup_data = {
+        'student_number': '123456',
+        'email': '123456@student.uwa.edu.au',
+        'full_name': 'Ronaldo',
+        'password': '123456'
+    }
+    response = client.post('/signup', data=signup_data, follow_redirects=True)
+    assert response.status_code == 200
+    # Check that user was created in the DB
+    user = User.query.filter_by(student_number='123456').first()
+    assert user is not None
+    assert user.email == '123456@student.uwa.edu.au'
+    assert user.display_name == 'Ronaldo'
+    # Check password hash (not the same as raw password!)
+    assert user.check_password('123456') is True
+
+    # Test login
+    login_data = {
+        'student_number': '123456',
+        'password': '123456'
+    }
+    response = client.post('/login', data=login_data, follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Profile' in response.data or b'CampusCloud' in response.data  # Adjust based on your page
+
+    # Confirm session (user is logged in)
+    with client.session_transaction() as sess:
+        assert '_user_id' in sess
+        assert sess['_user_id'] == str(user.id)
+        
  #run using PYTHONPATH=. pytest
  
  
