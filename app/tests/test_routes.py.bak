@@ -4,7 +4,8 @@ from app.models import User, Post, Comment
 
 @pytest.fixture
 def app_context():
-    app = create_app({
+    app = create_app()
+    app.config.update({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
         'WTF_CSRF_ENABLED': False
