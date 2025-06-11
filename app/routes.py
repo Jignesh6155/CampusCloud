@@ -4,6 +4,7 @@ from app.forms import LoginForm, SignupForm  # Import your WTForms
 from sqlalchemy.orm import joinedload
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 import os
 
@@ -38,12 +39,7 @@ def signup():
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # Check for duplicate email
-        if User.query.filter_by(email=email).first():
-            flash('Student email already registered!', 'danger')
-            return redirect(url_for('routes.index'))
-
-        # ✅ Create user & hash password
+        # Create user & hash password
         user = User(
             display_name=display_name,
             email=email,
@@ -51,9 +47,15 @@ def signup():
         )
         user.set_password(password)
         db.session.add(user)
-        db.session.commit()
 
-        flash('Account created successfully! Please log in.', 'success')
+        try:
+            db.session.commit()
+            flash('Account created successfully! Please log in.', 'success')
+        except IntegrityError:
+            db.session.rollback()
+            flash('An account with that student number or email already exists.', 'danger')
+            return redirect(url_for('routes.index'))
+
         return redirect(url_for('routes.index'))
 
     # 🔍 DEBUG: Show form errors

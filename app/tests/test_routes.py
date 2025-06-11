@@ -15,6 +15,61 @@ def app_context():
         db.session.remove()
         db.drop_all()
 
+def test_valid_signup(client):
+    response = client.post('/signup', data={
+        'student_number': '123456',
+        'email': 'test1@student.uwa.edu.au',
+        'full_name': 'Test User',
+        'password': 'securepassword'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b'Account created successfully!' in response.data
+    assert User.query.filter_by(email='test1@student.uwa.edu.au').first() is not None
+
+def test_duplicate_email_signup(client):
+    # First signup
+    client.post('/signup', data={
+        'student_number': '123456',
+        'email': 'test2@student.uwa.edu.au',
+        'full_name': 'Test User',
+        'password': 'securepassword'
+    })
+
+    # Duplicate signup
+    response = client.post('/signup', data={
+        'student_number': '654321',
+        'email': 'test2@student.uwa.edu.au',  # same email
+        'full_name': 'Another User',
+        'password': 'anotherpassword'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b'Student email already registered!' in response.data
+
+def test_signup_missing_fields(client):
+    # Missing student number
+    response = client.post('/signup', data={
+        'student_number': '',
+        'email': 'missing@student.uwa.edu.au',
+        'full_name': '',
+        'password': 'password'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b'Please fix the errors in the form.' in response.data
+
+def test_signup_invalid_email(client):
+    response = client.post('/signup', data={
+        'student_number': '987654',
+        'email': 'notanemail',
+        'full_name': 'Invalid Email User',
+        'password': 'password'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b'Please fix the errors in the form.' in response.data
+
 @pytest.fixture
 def client(app_context):
     return app_context.test_client()
