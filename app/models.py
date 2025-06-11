@@ -16,6 +16,13 @@ post_likes = db.Table(
     db.Column('post_id', db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE'), primary_key=True)
 )
 
+# Association table for follower/following relationships
+user_followers = db.Table(
+    'user_followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+)
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -43,6 +50,14 @@ class User(db.Model, UserMixin):
 
     liked_posts = db.relationship('Post', secondary=post_likes, backref=db.backref('likers', lazy='dynamic'))
 
+    # Follower/following relationships
+    followers = db.relationship(
+        'User', secondary=user_followers,
+        primaryjoin=(user_followers.c.followed_id == id),
+        secondaryjoin=(user_followers.c.follower_id == id),
+        backref='following', lazy='dynamic'
+    )
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -59,6 +74,19 @@ class User(db.Model, UserMixin):
     @skills_list.setter
     def skills_list(self, skills_list):
         self.skills = ', '.join(skills_list)
+
+    @property
+    def followers_count(self):
+        return self.followers.count()
+
+    @property
+    def campus_followers_count(self):
+        my_domain = self.email.split('@')[-1] if self.email else ''
+        count = 0
+        for follower in self.followers:
+            if follower.email and follower.email.split('@')[-1] == my_domain:
+                count += 1
+        return count
 
 
 class Committee(db.Model):

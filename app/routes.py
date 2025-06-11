@@ -529,3 +529,29 @@ def vote_comment(comment_id):
         'new_score': comment.score,
         'user_vote': final_vote.vote if final_vote else 0
     })
+    
+@bp.route('/toggle-follow/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_follow(user_id):
+    user_to_follow = User.query.get_or_404(user_id)
+
+    if user_to_follow == current_user:
+        return jsonify({'error': 'You cannot follow yourself.'}), 400
+
+    if current_user in user_to_follow.followers:
+        # Unfollow
+        user_to_follow.followers.remove(current_user)
+        followed = False
+    else:
+        # Follow
+        user_to_follow.followers.append(current_user)
+        followed = True
+
+    db.session.commit()
+
+    return jsonify({
+        'status': 'success',
+        'followed': followed,
+        'followers_count': user_to_follow.followers_count,
+        'campus_followers_count': user_to_follow.campus_followers_count
+    })

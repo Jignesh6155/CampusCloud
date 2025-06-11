@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_wtf.csrf import generate_csrf  # 💡 ADD THIS
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -25,8 +26,14 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # 💡 CSRF token for all templates
+    @app.context_processor
+    def inject_csrf_token():
+        return dict(csrf_token=generate_csrf)
+
     # Import and register routes as a Blueprint
     from app.routes import bp as routes_bp
     app.register_blueprint(routes_bp)
 
     return app
+
