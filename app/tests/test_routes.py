@@ -36,15 +36,18 @@ def test_create_and_delete_post(client, setup_users):
     user1, _ = setup_users
     login_user(client, user1.id)
 
-    # Create post
+    # Create post with a specific title
+    test_title = 'My Custom Title'
     response = client.post('/create-post', data={
-        'title': 'Test Title',
+        'title': test_title,
         'content': 'Hello world!'
     })
     assert response.status_code == 302
+
     post = Post.query.first()
-    assert post.title == 'Test Title'
-    assert post.content == 'Hello world!'   
+    assert post is not None
+    assert post.title == test_title
+    assert post.content == 'Hello world!'
 
     # Delete post
     response = client.delete(f'/delete-post/{post.id}')
@@ -211,4 +214,6 @@ def test_following_self_does_not_affect_counts(client, setup_users):
     assert user1.campus_followers_count == 0
 
  #run using PYTHONPATH=. pytest
+ 
+ 
  
