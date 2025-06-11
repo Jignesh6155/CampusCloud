@@ -36,14 +36,14 @@ def signup():
         student_number = form.student_number.data.strip()
         email = form.email.data.strip()
         password = form.password.data
-        display_name = form.full_name.data.strip() or student_number  # Use student_number as fallback
+        display_name = form.full_name.data.strip() or student_number
 
-        # Check for existing user by email
+        # Check for duplicate email
         if User.query.filter_by(email=email).first():
             flash('Student email already registered!', 'danger')
             return redirect(url_for('routes.index'))
 
-        # Create user (NOTE: using display_name, not full_name)
+        # ✅ Create user & hash password
         user = User(
             display_name=display_name,
             email=email,
@@ -52,8 +52,13 @@ def signup():
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
+
         flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('routes.index'))
+
+    # 🔍 DEBUG: Show form errors
+    if form.errors:
+        print('Signup form errors:', form.errors)
 
     flash('Please fix the errors in the form.', 'danger')
     return redirect(url_for('routes.index'))
@@ -62,22 +67,25 @@ def signup():
 def login():
     form = LoginForm()
     print('Form errors:', form.errors)  # Debugging
+    print('Form data:', request.form)  # 💡 Show all form data
 
     if form.validate_on_submit():
         student_number = form.student_number.data.strip()
         password = form.password.data
 
+        print('student_number:', student_number)
+        print('password:', password)
+
         user = User.query.filter_by(student_number=student_number).first()
+        print('User found:', user)
+
         if user and user.check_password(password):
             login_user(user)
             flash('Login successful!', 'success')
-
-            # ✅ Check if "next" param is safe
             next_page = request.args.get('next')
             if not next_page or not is_safe_url(next_page):
                 next_page = url_for('routes.profile_landing_page')
             return redirect(next_page)
-
         else:
             flash('Invalid student number or password.', 'danger')
             return redirect(url_for('routes.index'))
