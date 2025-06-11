@@ -38,14 +38,15 @@ def test_duplicate_email_signup(client):
 
     # Duplicate signup
     response = client.post('/signup', data={
-        'student_number': '654321',
+        'student_number': '654321',  # Different student number
         'email': 'test2@student.uwa.edu.au',  # same email
         'full_name': 'Another User',
         'password': 'anotherpassword'
     }, follow_redirects=True)
 
     assert response.status_code == 200
-    assert b'Student email already registered!' in response.data
+    assert b'An account with that student number or email already exists.' in response.data
+
 
 def test_signup_missing_fields(client):
     # Missing student number
@@ -68,6 +69,28 @@ def test_signup_invalid_email(client):
     }, follow_redirects=True)
 
     assert response.status_code == 200
+    assert b'Please fix the errors in the form.' in response.data
+    
+def test_login_with_wrong_student_number(client, setup_users):
+    response = client.post('/login', data={
+        'student_number': 'wrongnumber',
+        'password': 'somepassword'
+    }, follow_redirects=True)
+    assert b'Invalid student number or password.' in response.data
+
+def test_login_with_wrong_password(client, setup_users):
+    user1, _ = setup_users
+    response = client.post('/login', data={
+        'student_number': user1.student_number,
+        'password': 'wrongpassword'
+    }, follow_redirects=True)
+    assert b'Invalid student number or password.' in response.data
+
+def test_login_with_blank_fields(client):
+    response = client.post('/login', data={
+        'student_number': '',
+        'password': ''
+    }, follow_redirects=True)
     assert b'Please fix the errors in the form.' in response.data
 
 @pytest.fixture
