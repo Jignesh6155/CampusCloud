@@ -178,3 +178,5 @@ class CommentVote(db.Model):
 
     def __repr__(self):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
+
+#
