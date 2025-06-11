@@ -39,7 +39,7 @@ def signup():
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # Create user & hash password
+        # ✅ Create user & hash password
         user = User(
             display_name=display_name,
             email=email,
@@ -58,11 +58,11 @@ def signup():
 
         return redirect(url_for('routes.index'))
 
-    # 🔍 DEBUG: Show form errors
+    # ✅ If validation errors (e.g. blank fields), show generic form error
+    flash('Please fix the errors in the form.', 'danger')
     if form.errors:
         print('Signup form errors:', form.errors)
 
-    flash('Please fix the errors in the form.', 'danger')
     return redirect(url_for('routes.index'))
 
 @bp.route('/login', methods=['POST'])
