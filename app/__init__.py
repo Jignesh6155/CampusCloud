@@ -10,14 +10,21 @@ db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'w$$a9#^b2av#m2#jQ$s*G831!!6kgY@'
 
-    # ✅ Use absolute path for the database file
+    # Use absolute path for the database file
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     DB_PATH = os.path.join(BASE_DIR, '../instance/app.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
+
+    # ✅ If test_config is provided, override the real database path with it
+    if test_config:
+        app.config.update(test_config)
+
+    # 🚨 Print the DB URI for debugging
+    print("🚀 Using DB:", app.config['SQLALCHEMY_DATABASE_URI'])
 
     # Initialize extensions
     db.init_app(app)
