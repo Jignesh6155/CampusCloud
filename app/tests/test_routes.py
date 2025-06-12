@@ -384,6 +384,13 @@ def test_signup_creates_forum_if_not_exists(client):
     forum = Forum.query.filter_by(university_domain='curtin.edu.au').first()
     assert forum is not None
     assert forum.name == 'Curtin'
+    
+def test_login_missing_email(client):
+    response = client.post('/login', data={
+        'email': '',
+        'password': 'testpass'
+    }, follow_redirects=True)
+    assert b'Please fix the errors in the form.' in response.data
 
  #run using PYTHONPATH=. pytest
  
