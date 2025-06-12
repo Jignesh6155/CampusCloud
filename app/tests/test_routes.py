@@ -71,20 +71,20 @@ def test_signup_invalid_email(client):
     assert response.status_code == 200
     assert b'Please fix the errors in the form.' in response.data
     
-def test_login_with_wrong_student_number(client, setup_users):
+def test_login_with_wrong_email(client, setup_users):
     response = client.post('/login', data={
-        'student_number': 'wrongnumber',
+        'email': 'wrong@uni.edu',
         'password': 'somepassword'
     }, follow_redirects=True)
-    assert b'Invalid student number or password.' in response.data
+    assert b'Invalid email or password.' in response.data
 
 def test_login_with_wrong_password(client, setup_users):
     user1, _ = setup_users
     response = client.post('/login', data={
-        'student_number': user1.student_number,
+        'email': user1.email,
         'password': 'wrongpassword'
     }, follow_redirects=True)
-    assert b'Invalid student number or password.' in response.data
+    assert b'Invalid email or password.' in response.data
 
 def test_login_with_blank_fields(client):
     response = client.post('/login', data={
