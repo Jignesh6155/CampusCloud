@@ -387,9 +387,59 @@ def test_signup_creates_forum_if_not_exists(client):
 
     assert response.status_code == 200
     from app.models import Forum
-    forum = Forum.query.filter_by(university_domain='curtin.edu.au').first()
+    forum = Forum.query.filter_by(university_domain='curtin').first()  # ✅ FIXED
     assert forum is not None
     assert forum.name == 'Curtin'
+    
+def test_signup_sanitizes_email_and_creates_forum(client):
+    email = 'testuser@student.monash.edu.au'
+    client.post('/signup', data={
+        'student_number': '20231234',
+        'email': email,
+        'full_name': 'Monash User',
+        'password': 'securepassword'
+    }, follow_redirects=True)
+
+    from app.models import Forum
+    forum = Forum.query.filter(Forum.university_domain.ilike('%monash%')).first()
+    assert forum is not None
+    assert forum.name.lower() == 'monash'
+
+def test_post_only_appears_in_specific_forum(client, setup_users):
+    user1, _ = setup_users
+    user1.email = 'johndoe@student.uwa.edu.au'
+    db.session.commit()
+    from app.models import Forum
+
+    login_user(client, user1.id)
+
+    # Trigger signup behavior manually
+    client.post('/signup', data={
+        'student_number': '999999',
+        'email': user1.email,
+        'full_name': 'UWA User',
+        'password': 'securepassword'
+    }, follow_redirects=True)
+
+    forum = Forum.query.filter(Forum.university_domain.ilike('%uwa%')).first()
+    assert forum is not None
+
+    # Create a post tied to the UWA forum
+    response = client.post(f'/create-post/{forum.university_domain}', data={
+        'title': 'Uni-specific Post',
+        'content': 'This is for UWA only.'
+    }, follow_redirects=True)
+
+    from app.models import Post
+    post = Post.query.filter_by(forum_id=forum.id).first()
+    assert post is not None
+    assert post.title == 'Uni-specific Post'
+    assert post.forum.name.lower() == 'uwa'
+
+    # Ensure it's not posted to another forum (e.g., 'Student' or general forum)
+    student_forum = Forum.query.filter(Forum.name.ilike('Student')).first()
+    if student_forum:
+        assert Post.query.filter_by(forum_id=student_forum.id).count() == 0
     
 
 
