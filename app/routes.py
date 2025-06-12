@@ -589,25 +589,24 @@ def toggle_follow(user_id):
     })
 
 @bp.route('/forum/<slug>')
+@login_required
 def forum(slug):
     slug = slug.lower()
 
-    # Find users whose university domain contains the search slug
     forum_users = User.query.filter(User.university.ilike(f"%{slug}%")).all()
 
     if not forum_users:
-        flash(f"No forum found for '{slug}'.", 'warning')
-        return redirect(url_for('routes.index'))
+        flash(f"No forum found for '{slug}'. Showing general forum instead.", 'warning')
+        return redirect(url_for('routes.general_forum'))
 
-    # Get all user IDs from matched university users
     user_ids = [user.id for user in forum_users]
 
-    # Get posts written by these users
     posts = Post.query.options(joinedload(Post.author))\
         .filter(Post.user_id.in_(user_ids))\
         .order_by(Post.created_at.desc()).all()
 
     return render_template('university_forum.html', university=slug.upper(), posts=posts)
+
 
 
 # 🔷 Route 2 — Manually created static forums (avoid collision by using `/forums/`)
@@ -644,3 +643,9 @@ def search_forums():
     ]
 
     return jsonify(results)
+
+@bp.route('/general-forum')
+@login_required  # Optional: restrict to logged-in users
+def general_forum():
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template('post_forum.html', posts=posts)

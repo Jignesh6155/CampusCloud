@@ -1,20 +1,40 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-6"> <!-- Added this line to restore original top spacing -->
-<div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
-  <div class="flex items-center gap-2">
-    <h1 class="text-2xl font-bold">Cross-University Forum</h1>
-    <span class="text-2xl">🚀</span>
+<div class="mt-6">
+
+  <!-- 🔶 Flash messages section (added) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-4">
+        {% for category, message in messages %}
+          <div class="p-3 rounded text-sm font-medium
+                      {% if category == 'success' %}bg-green-100 text-green-800
+                      {% elif category == 'warning' %}bg-yellow-100 text-yellow-800
+                      {% elif category == 'danger' %}bg-red-100 text-red-800
+                      {% else %}bg-slate-100 text-slate-800
+                      {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- 🔷 Rest of your original page starts here -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
+    <div class="flex items-center gap-2 ml-4">
+      <h1 class="text-2xl font-bold">Cross-University Forum</h1>
+      <span class="text-2xl">🚀</span>
+    </div>
+    <form id="forumSearchForm" class="mt-4 md:mt-0 flex">
+      <input type="text" id="forumSearchInput"
+             placeholder="Search university forums (e.g. UWA, monash.edu)"
+             class="border border-slate-300 rounded-l-lg px-3 py-2 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
+      <button type="submit"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg text-sm font-semibold transition">Go</button>
+    </form>
   </div>
-  <form id="forumSearchForm" class="mt-4 md:mt-0 flex">
-    <input type="text" id="forumSearchInput"
-           placeholder="Search university forums (e.g. UWA, monash.edu)"
-           class="border border-slate-300 rounded-l-lg px-3 py-2 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
-    <button type="submit"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg text-sm font-semibold transition">Go</button>
-  </form>
-</div>
 
 <div class="p-4 bg-slate-100">
   <div class="flex flex-col md:flex-row gap-6 p-4">
