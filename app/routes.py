@@ -422,7 +422,7 @@ def delete_comment(comment_id):
 @bp.route('/post-forum')
 @login_required
 def post_forum():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
+    posts = Post.query.filter(Post.forum_id == None).order_by(Post.created_at.desc()).all()
     return render_template('post_forum.html', posts=posts)
 
 @bp.route('/delete-post/<int:post_id>', methods=['DELETE'])
