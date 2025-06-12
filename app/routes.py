@@ -1,6 +1,7 @@
 # Flask core
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app, abort
 from flask_login import login_required, current_user, login_user, logout_user
+from app.utils.domain import sanitize_domain
 
 # Forms
 from app.forms import LoginForm, SignupForm
@@ -49,14 +50,13 @@ def signup():
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # ✅ Extract university domain
-        domain = email.split('@')[-1].lower()
-        uni_name = domain.split('.')[0].capitalize()  # e.g., 'uwa.edu.au' → 'Uwa'
+        # ✅ Extract and sanitize university domain (e.g., 'student.curtin.edu.au' → 'curtin')
+        cleaned_uni = sanitize_domain(email)
 
         # ✅ Check if a forum already exists for this university domain
-        existing_forum = Forum.query.filter_by(university_domain=domain).first()
+        existing_forum = Forum.query.filter_by(university_domain=cleaned_uni).first()
         if not existing_forum:
-            new_forum = Forum(name=uni_name, university_domain=domain)
+            new_forum = Forum(name=cleaned_uni.capitalize(), university_domain=cleaned_uni)
             db.session.add(new_forum)
 
         # ✅ Create user and hash password
@@ -64,7 +64,7 @@ def signup():
             display_name=display_name,
             email=email,
             student_number=student_number,
-            university=domain  # Optional: save domain to user profile
+            university=cleaned_uni  # e.g., 'curtin', 'uwa', etc.
         )
         user.set_password(password)
         db.session.add(user)
