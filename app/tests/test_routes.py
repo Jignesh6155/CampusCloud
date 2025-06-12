@@ -370,6 +370,20 @@ def test_view_post_thread(client, setup_users):
     assert response.status_code == 200
     assert b'View me' in response.data
 
+def test_signup_creates_forum_if_not_exists(client):
+    email = 'newuser@curtin.edu.au'
+    response = client.post('/signup', data={
+        'student_number': '888888',
+        'email': email,
+        'full_name': 'Curtin User',
+        'password': 'testpass'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    from app.models import Forum
+    forum = Forum.query.filter_by(university_domain='curtin.edu.au').first()
+    assert forum is not None
+    assert forum.name == 'Curtin'
 
  #run using PYTHONPATH=. pytest
  

@@ -89,28 +89,28 @@ def signup():
 @bp.route('/login', methods=['POST'])
 def login():
     form = LoginForm()
-    print('Form errors:', form.errors)  # Debugging
-    print('Form data:', request.form)  # 💡 Show all form data
+    print('Form errors:', form.errors)
+    print('Form data:', request.form)
 
     if form.validate_on_submit():
-        student_number = form.student_number.data.strip()
+        email = form.email.data.strip().lower()
         password = form.password.data
 
-        print('student_number:', student_number)
+        print('email:', email)
         print('password:', password)
 
-        user = User.query.filter_by(student_number=student_number).first()
+        user = User.query.filter_by(email=email).first()
         print('User found:', user)
 
         if user and user.check_password(password):
             login_user(user)
             flash('Login successful!', 'success')
             next_page = request.args.get('next')
-            if not next_page or not is_safe_url(next_page):
+            if not next_page or not url_parse(next_page).netloc == '':
                 next_page = url_for('routes.profile_landing_page')
             return redirect(next_page)
         else:
-            flash('Invalid student number or password.', 'danger')
+            flash('Invalid email or password.', 'danger')
             return redirect(url_for('routes.index'))
 
     flash('Please fix the errors in the form.', 'danger')

@@ -3,11 +3,10 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
 
 class LoginForm(FlaskForm):
-    # Use student_number as the identifier
-    student_number = StringField('Student Number', validators=[DataRequired(), Length(max=50)])
+    email = StringField('Student Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('Sign In')
-
+    
 class SignupForm(FlaskForm):
     student_number = StringField('Student Number', validators=[DataRequired(), Length(max=50)])
     email = StringField('Student Email', validators=[DataRequired(), Email(), Length(max=120)])
