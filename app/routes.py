@@ -1,15 +1,25 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
+# Flask core
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app, abort
 from flask_login import login_required, current_user, login_user, logout_user
-from app.forms import LoginForm, SignupForm  # Import your WTForms
+
+# Forms
+from app.forms import LoginForm, SignupForm
+
+# DB + ORM
+from app import db
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
+
+# Models
+from app.models import User, Forum, Post, Comment, Committee, CommentVote
+
+# Security + Utils
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy.exc import IntegrityError
+
+# Built-in
 from datetime import datetime
 import os
-
-from app import db
-from app.models import Post, Comment, User, Committee, CommentVote  # ✅ Added CommentVote here
 
 
 bp = Blueprint('routes', __name__)
@@ -39,11 +49,22 @@ def signup():
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # ✅ Create user & hash password
+        # ✅ Extract university domain
+        domain = email.split('@')[-1].lower()
+        uni_name = domain.split('.')[0].capitalize()  # e.g., 'uwa.edu.au' → 'Uwa'
+
+        # ✅ Check if a forum already exists for this university domain
+        existing_forum = Forum.query.filter_by(university_domain=domain).first()
+        if not existing_forum:
+            new_forum = Forum(name=uni_name, university_domain=domain)
+            db.session.add(new_forum)
+
+        # ✅ Create user and hash password
         user = User(
             display_name=display_name,
             email=email,
-            student_number=student_number
+            student_number=student_number,
+            university=domain  # Optional: save domain to user profile
         )
         user.set_password(password)
         db.session.add(user)
@@ -58,7 +79,7 @@ def signup():
 
         return redirect(url_for('routes.index'))
 
-    # ✅ If validation errors (e.g. blank fields), show generic form error
+    # ❌ If validation errors
     flash('Please fix the errors in the form.', 'danger')
     if form.errors:
         print('Signup form errors:', form.errors)
@@ -566,3 +587,60 @@ def toggle_follow(user_id):
         'followers_count': user_to_follow.followers_count,
         'campus_followers_count': user_to_follow.campus_followers_count
     })
+
+@bp.route('/forum/<slug>')
+def forum(slug):
+    slug = slug.lower()
+
+    # Find users whose university domain contains the search slug
+    forum_users = User.query.filter(User.university.ilike(f"%{slug}%")).all()
+
+    if not forum_users:
+        flash(f"No forum found for '{slug}'.", 'warning')
+        return redirect(url_for('routes.index'))
+
+    # Get all user IDs from matched university users
+    user_ids = [user.id for user in forum_users]
+
+    # Get posts written by these users
+    posts = Post.query.options(joinedload(Post.author))\
+        .filter(Post.user_id.in_(user_ids))\
+        .order_by(Post.created_at.desc()).all()
+
+    return render_template('university_forum.html', university=slug.upper(), posts=posts)
+
+
+# 🔷 Route 2 — Manually created static forums (avoid collision by using `/forums/`)
+@bp.route('/forums/<name>')
+def view_forum(name):
+    forum = Forum.query.filter(Forum.name.ilike(f"%{name}%")).first()
+
+    if not forum:
+        flash("Forum doesn't exist. Redirected to general forum.", "warning")
+        return redirect(url_for('routes.general_forum'))
+
+    posts = forum.posts.order_by(Post.created_at.desc()).all()
+
+    return render_template('forum.html', forum=forum, posts=posts)
+
+
+
+# 🔷 Route 3 — Autocomplete forum search
+@bp.route('/search-forums')
+def search_forums():
+    query = request.args.get('q', '').lower()
+
+    # Get unique domains matching the query from existing users
+    users = User.query.filter(User.university.ilike(f"%{query}%")).all()
+    uni_domains = {user.university for user in users if user.university}
+
+    # Build results for frontend dropdown/autocomplete
+    results = [
+        {
+            "label": domain.split('.')[0].upper() + " Forum",
+            "value": domain.split('.')[0].lower()  # used as slug in /forum/<slug>
+        }
+        for domain in uni_domains
+    ]
+
+    return jsonify(results)
