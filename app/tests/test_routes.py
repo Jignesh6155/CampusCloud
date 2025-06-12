@@ -323,6 +323,53 @@ def test_delete_post(client, setup_users):
     # Confirm the post is gone from the DB
     deleted_post = Post.query.get(post.id)
     assert deleted_post is None
+    
+def test_logout(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.get('/logout', follow_redirects=True)
+    assert b'You have been logged out.' in response.data
+    
+def test_api_user_search_results_redirect_to_profile(client, setup_users):
+    user1, user2 = setup_users
+    login_user(client, user1.id)
+
+    # Use actual AJAX search route
+    response = client.get('/api/search-users?query=User2')
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert any(u['display_name'] == 'User2' for u in data)
+    
+def test_view_other_profile(client, setup_users):
+    user1, user2 = setup_users
+    login_user(client, user1.id)
+
+    response = client.get(f'/profile/{user2.id}')
+    assert response.status_code == 200
+    assert user2.display_name.encode() in response.data
+
+def test_edit_profile_page(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.get('/edit-profile')
+    assert response.status_code == 200
+    assert b'Edit Profile' in response.data or user1.display_name.encode() in response.data
+
+def test_view_post_thread(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    post = Post(content='View me', author=user1)
+    db.session.add(post)
+    db.session.commit()
+
+    response = client.get(f'/post/{post.id}')
+    assert response.status_code == 200
+    assert b'View me' in response.data
+
 
  #run using PYTHONPATH=. pytest
  
