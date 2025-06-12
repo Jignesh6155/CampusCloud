@@ -101,6 +101,20 @@ class Committee(db.Model):
         return f'<Committee {self.name}>'
 
 
+class Forum(db.Model):
+    __tablename__ = 'forums'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    university_domain = db.Column(db.String(120), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    posts = db.relationship('Post', backref='forum', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
+
+    def __repr__(self):
+        return f'<Forum {self.name}>'
+
+
 class Post(db.Model):
     __tablename__ = 'posts'
 
@@ -112,8 +126,9 @@ class Post(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_posts_user_id'), nullable=False)
     committee_id = db.Column(db.Integer, db.ForeignKey('committees.id', ondelete='SET NULL', name='fk_posts_committee_id'), nullable=True)
-    committee = db.relationship('Committee', backref='posts', lazy='joined')
+    forum_id = db.Column(db.Integer, db.ForeignKey('forums.id', ondelete='SET NULL', name='fk_posts_forum_id'), nullable=True)
 
+    committee = db.relationship('Committee', backref='posts', lazy='joined')
     comments = db.relationship('Comment', backref='post', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
 
     def __repr__(self):
@@ -178,5 +193,3 @@ class CommentVote(db.Model):
 
     def __repr__(self):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
-
-#

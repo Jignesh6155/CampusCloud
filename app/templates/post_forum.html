@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="w-full bg-slate-100 text-slate-800 py-6 px-6 flex items-center gap-2">
-  <h1 class="text-2xl font-bold">General Forum</h1>
-  <span class="text-2xl">🚀</span>
+<div class="mt-6"> <!-- Added this line to restore original top spacing -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
+  <div class="flex items-center gap-2">
+    <h1 class="text-2xl font-bold">Cross-University Forum</h1>
+    <span class="text-2xl">🚀</span>
+  </div>
+  <form id="forumSearchForm" class="mt-4 md:mt-0 flex">
+    <input type="text" id="forumSearchInput"
+           placeholder="Search university forums (e.g. UWA, monash.edu)"
+           class="border border-slate-300 rounded-l-lg px-3 py-2 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
+    <button type="submit"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg text-sm font-semibold transition">Go</button>
+  </form>
 </div>
 
 <div class="p-4 bg-slate-100">
@@ -146,6 +156,7 @@
 </style>
 
 <script>
+  // 🔷 New Post Modal Logic
   const openModal = document.getElementById('openModal');
   const closeModal = document.getElementById('closeModal');
   const closeModalTop = document.getElementById('closeModalTop');
@@ -155,6 +166,7 @@
   closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
   closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
 
+  // 🔷 Report Modal Logic
   function openReportModal(event, postId) {
     event.stopPropagation();
     document.getElementById('reportPostId').value = postId;
@@ -175,6 +187,7 @@
     closeReportModal();
   }
 
+  // 🔷 Delete Post Handler
   async function deletePost(postId) {
     if (confirm('Are you sure you want to delete this post?')) {
       const response = await fetch(`/delete-post/${postId}`, { method: 'DELETE' });
@@ -186,6 +199,7 @@
     }
   }
 
+  // 🔷 Post Expansion Animation and Redirect
   function expandAndRedirect(postId) {
     const postCard = document.getElementById(`post-${postId}`);
     const rect = postCard.getBoundingClientRect();
@@ -209,6 +223,7 @@
     }, 350);
   }
 
+  // 🔷 Like Button Handler
   async function likePost(event, postId) {
     event.stopPropagation();
     const res = await fetch(`/like-post/${postId}`, { method: 'POST' });
@@ -224,6 +239,18 @@
     } else {
       alert('Error liking/unliking post!');
     }
+  }
+
+  // 🔷 University Forum Search Handler (at top)
+  const forumSearchForm = document.getElementById('forumSearchForm');
+  if (forumSearchForm) {
+    forumSearchForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const input = document.getElementById('forumSearchInput').value.trim().toLowerCase();
+      if (!input) return;
+      const slug = input.toLowerCase().replace(/[^a-z0-9]/gi, '');
+      window.location.href = `/forum/${slug}`;
+    });
   }
 </script>
 {% endblock %}
