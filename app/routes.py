@@ -585,7 +585,7 @@ def forum(slug):
 
     if not forum:
         flash(f"No forum found for '{slug}'.", 'warning')
-        return redirect(url_for('routes.general_forum'))
+        return redirect(url_for('routes.general_forum', not_found=slug))  # ✅ FIXED
 
     posts = Post.query.options(joinedload(Post.author))\
         .filter(Post.forum_id == forum.id)\
@@ -615,19 +615,28 @@ def view_forum(name):
 # 🔷 Route 3 — Autocomplete forum search
 @bp.route('/search-forums')
 def search_forums():
-    query = request.args.get('q', '').lower()
+    query = request.args.get('q', '').strip().lower()
 
-    # Get unique domains matching the query from existing users
-    users = User.query.filter(User.university.ilike(f"%{query}%")).all()
-    uni_domains = {user.university for user in users if user.university}
+    if not query:
+        return jsonify([])
 
-    # Build results for frontend dropdown/autocomplete
+    # Fetch users where university domain matches the query (case-insensitive)
+    matched_users = User.query.filter(User.university.ilike(f"%{query}%")).all()
+
+    # Extract unique university domains
+    unique_domains = {
+        user.university.strip().lower()
+        for user in matched_users
+        if user.university and '.' in user.university
+    }
+
+    # Format into dropdown-compatible JSON: label + value
     results = [
         {
-            "label": domain.split('.')[0].upper() + " Forum",
-            "value": domain.split('.')[0].lower()  # used as slug in /forum/<slug>
+            "label": domain.split('.')[0].capitalize() + " Forum",
+            "value": domain.split('.')[0].lower()
         }
-        for domain in uni_domains
+        for domain in sorted(unique_domains)
     ]
 
     return jsonify(results)
@@ -635,13 +644,18 @@ def search_forums():
 @bp.route('/general-forum')
 @login_required
 def general_forum():
-    # ❗ This MUST filter for posts where forum_id IS NULL
+    not_found = request.args.get('not_found')  # optional slug if redirected
     posts = Post.query.options(joinedload(Post.author))\
         .filter(Post.forum_id == None)\
         .order_by(Post.created_at.desc())\
         .all()
 
-    return render_template('university_forum.html', university="GENERAL", posts=posts)
+    return render_template(
+        'university_forum.html',
+        university="GENERAL",        # always shows "Cross-University Forum"
+        posts=posts
+    )
+
 @bp.route('/create-post/<slug>', methods=['POST'])
 @login_required
 def create_post_forum(slug):

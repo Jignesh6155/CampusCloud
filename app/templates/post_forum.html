@@ -27,12 +27,11 @@
       <h1 class="text-2xl font-bold">Cross-University Forum</h1>
       <span class="text-2xl">🚀</span>
     </div>
-    <form id="forumSearchForm" class="mt-4 md:mt-0 flex">
+    <form id="forumSearchForm" class="mt-4 md:mt-0 relative w-full max-w-md">
       <input type="text" id="forumSearchInput"
              placeholder="Search university forums (e.g. UWA, monash.edu)"
-             class="border border-slate-300 rounded-l-lg px-3 py-2 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
-      <button type="submit"
-              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg text-sm font-semibold transition">Go</button>
+             class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-full focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
+      <ul id="searchResults" class="absolute w-full bg-white border border-slate-200 rounded-md shadow mt-1 z-50 hidden"></ul>
     </form>
   </div>
 
@@ -261,16 +260,56 @@
     }
   }
 
-  // 🔷 University Forum Search Handler (at top)
+  // 🔷 Forum Autocomplete Dropdown Handler
+  const forumSearchInput = document.getElementById('forumSearchInput');
+  const searchResults = document.getElementById('searchResults');
+
+  const forums = ['uwa', 'curtin', 'unsw', 'monash', 'uq', 'sydney', 'anu', 'unimelb', 'rmit']; // Example forum list
+
+  forumSearchInput.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    searchResults.innerHTML = '';
+    if (!query) {
+      searchResults.classList.add('hidden');
+      return;
+    }
+
+    const matches = forums.filter(f => f.includes(query));
+    if (matches.length === 0) {
+      searchResults.classList.add('hidden');
+      return;
+    }
+
+    matches.forEach(match => {
+      const li = document.createElement('li');
+      li.textContent = match;
+      li.className = 'px-3 py-2 hover:bg-indigo-100 cursor-pointer text-sm';
+      li.addEventListener('click', () => {
+        window.location.href = `/forum/${match}`;
+      });
+      searchResults.appendChild(li);
+    });
+
+    searchResults.classList.remove('hidden');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!forumSearchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+    }
+  });
+
+  // 🔷 Backup Manual Form Submit Handler
   const forumSearchForm = document.getElementById('forumSearchForm');
   if (forumSearchForm) {
     forumSearchForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      const input = document.getElementById('forumSearchInput').value.trim().toLowerCase();
+      const input = forumSearchInput.value.trim().toLowerCase();
       if (!input) return;
-      const slug = input.toLowerCase().replace(/[^a-z0-9]/gi, '');
+      const slug = input.replace(/[^a-z0-9]/gi, '');
       window.location.href = `/forum/${slug}`;
     });
   }
 </script>
+
 {% endblock %}
