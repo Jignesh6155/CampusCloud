@@ -1,84 +1,103 @@
 <!-- base.html -->
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CampusCloud Dashboard</title>
-        <!-- Tailwind CSS CDN -->
-        <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Font Awesome for icons -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-        
-        <!-- CSRF Token for AJAX -->
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-    </head>
-<body class="bg-slate-50 text-slate-800">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CampusCloud Dashboard</title>
 
-<div class="flex min-h-screen overflow-hidden">
-  <!-- Sidebar -->
-  <aside class="group flex flex-col bg-slate-200 shadow-lg transition-all duration-300 w-16 hover:w-64 overflow-hidden border-r border-slate-300">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
-      CampusCloud
-    </h1>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <nav class="flex-1 flex flex-col space-y-2 items-start">
-      <a href="{{ url_for('routes.profile_landing_page') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-user text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Profile</span>
-      </a>
-      <a href="{{ url_for('routes.post_forum') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-comments text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Post Forums</span>
-      </a>
-      <a href="{{ url_for('routes.units_chat') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-book text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Unit Chats</span>
-      </a>
-      <a href="{{ url_for('routes.committee_chat') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-university text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Committee Chats</span>
-      </a>
-      <a href="{{ url_for('routes.study_groups') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-users text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
-      </a>
-      <a href="{{ url_for('routes.group_assignments') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
-        <i class="fas fa-tasks text-lg"></i>
-        <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Group Assignments</span>
-      </a>
-    </nav>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Logout button instead of copyright -->
-    <a href="{{ url_for('routes.logout') }}" class="mt-auto mb-4 flex items-center justify-center text-xs text-slate-700 hover:text-red-600 transition-opacity duration-300 w-full">
-      <i class="fas fa-sign-out-alt mr-2"></i>
-      <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Logout</span>
-    </a>
-  </aside>
+    <!-- CSRF for AJAX -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <!-- Main Content Area -->
-  <main class="flex-1 bg-slate-100 min-h-screen flex flex-col">
+    <!-- Flash animation -->
+    <style>
+      @keyframes fade-in-down {
+        0% { opacity: 0; transform: translateY(-10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-down {
+        animation: fade-in-down 0.3s ease-out;
+      }
+    </style>
+  </head>
 
-    <!-- Flash Message Block -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2">
-          {% for category, message in messages %}
-            <div class="px-4 py-2 rounded shadow text-white
-                        {% if category == 'success' %}bg-green-600
-                        {% elif category == 'danger' %}bg-red-600
-                        {% else %}bg-blue-600{% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+  <body class="bg-slate-50 text-slate-800">
+    <div class="flex min-h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside class="group flex flex-col bg-slate-200 shadow-lg transition-all duration-300 w-16 hover:w-64 overflow-hidden border-r border-slate-300">
+        <h1 class="text-2xl font-semibold text-slate-800 mb-6 text-center pt-4 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+          CampusCloud
+        </h1>
 
-    {% block content %}
-    {% endblock %}
-  </main>
-</div>
+        <nav class="flex-1 flex flex-col space-y-2 items-start">
+          <a href="{{ url_for('routes.profile_landing_page') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-user text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Profile</span>
+          </a>
+          <a href="{{ url_for('routes.post_forum') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-comments text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Post Forums</span>
+          </a>
+          <a href="{{ url_for('routes.units_chat') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-book text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Unit Chats</span>
+          </a>
+          <a href="{{ url_for('routes.committee_chat') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-university text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Committee Chats</span>
+          </a>
+          <a href="{{ url_for('routes.study_groups') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-users text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Study Groups</span>
+          </a>
+          <a href="{{ url_for('routes.group_assignments') }}" class="flex items-center space-x-3 pl-4 p-3 hover:bg-indigo-100 hover:text-indigo-600 transition rounded w-full">
+            <i class="fas fa-tasks text-lg"></i>
+            <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Group Assignments</span>
+          </a>
+        </nav>
 
-</body>
+        <a href="{{ url_for('routes.logout') }}" class="mt-auto mb-4 flex items-center justify-center text-xs text-slate-700 hover:text-red-600 transition-opacity duration-300 w-full">
+          <i class="fas fa-sign-out-alt mr-2"></i>
+          <span class="whitespace-nowrap transition-opacity duration-300 opacity-0 group-hover:opacity-100">Logout</span>
+        </a>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 bg-slate-100 min-h-screen flex flex-col">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md space-y-2">
+            {% for category, message in messages %}
+              <div class="flex items-center justify-between px-4 py-3 rounded-xl shadow text-white animate-fade-in-down
+                {% if category == 'success' %}bg-green-600
+                {% elif category == 'danger' %}bg-red-600
+                {% elif category == 'warning' %}bg-yellow-500
+                {% else %}bg-gray-700{% endif %}">
+                <span class="text-sm font-medium">{{ message }}</span>
+                <button onclick="this.parentElement.remove()" class="ml-3 text-white text-lg font-bold leading-none">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- Auto-dismiss script -->
+    <script>
+      setTimeout(() => {
+        document.querySelectorAll('.fixed.top-5').forEach(el => el.remove());
+      }, 3000);
+    </script>
+  </body>
 </html>
