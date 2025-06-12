@@ -205,29 +205,50 @@ def committee_messages(committee_name):
 def study_groups():
     return render_template('study_group.html', meetups=meetups)
 
-@bp.route('/study-groups/create', methods=['POST'])
-def create_meetup():
-    topic = request.form.get('topic')
-    location = request.form.get('location')
-    datetime_str = request.form.get('datetime')
-    mtype = request.form.get('type')
-    description = request.form.get('description')
-    tags = request.form.get('tags', '').split(',')
+@bp.route('/create-post', methods=['POST'])
+@login_required
+def create_post():
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    image_file = request.files.get('image')
 
-    if topic and location and datetime_str and mtype:
-        meetup = {
-            "id": len(meetups) + 1,
-            "topic": topic,
-            "location": location,
-            "datetime": datetime_str,
-            "type": mtype,
-            "description": description,
-            "tags": [tag.strip() for tag in tags if tag.strip()],
-            "rsvp_count": 0
-        }
-        meetups.append(meetup)
-        return jsonify({"status": "success", "meetup": meetup})
-    return jsonify({"status": "error", "message": "Missing required fields"})
+    if not content:
+        flash('Content is required.', 'error')
+        return redirect(request.referrer or url_for('routes.general_forum'))
+
+    image_url = None
+    if image_file and image_file.filename != '':
+        filename = secure_filename(image_file.filename)
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+        os.makedirs(upload_folder, exist_ok=True)
+        image_path = os.path.join(upload_folder, filename)
+        image_file.save(image_path)
+        image_url = f'static/uploads/{filename}'
+
+    # ✅ Match user's university domain to a forum
+    domain = current_user.university.lower()
+    forum = Forum.query.filter(Forum.university_domain.ilike(f"%{domain}%")).first()
+
+    # ❗ Safely assign forum_id (None = general forum)
+    forum_id = forum.id if forum else None
+
+    post = Post(
+        title=title,
+        content=content,
+        author=current_user,
+        image_url=image_url,
+        forum_id=forum_id
+    )
+
+    db.session.add(post)
+    db.session.commit()
+
+    flash('Post created!', 'success')
+
+    # ✅ Redirect to forum if matched, else to general
+    if forum:
+        return redirect(url_for('routes.forum', slug=forum.university_domain.split('.')[0].lower()))
+    return redirect(url_for('routes.general_forum'))
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
 def rsvp_meetup(meetup_id):
@@ -322,38 +343,7 @@ def edit_profile():
     return render_template('editprofile.html', user=current_user)
 
 
-@bp.route('/create-post', methods=['POST'])
-@login_required
-def create_post():
-    title = request.form.get('title', '').strip()
-    content = request.form.get('content', '').strip()
-    image_file = request.files.get('image')
 
-    if not content:
-        flash('Content is required.', 'error')
-        return redirect(url_for('routes.post_forum'))
-
-    image_url = None
-    if image_file and image_file.filename != '':
-        # Save the uploaded image to static/uploads
-        filename = secure_filename(image_file.filename)
-        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-        os.makedirs(upload_folder, exist_ok=True)  # Ensure folder exists
-        image_path = os.path.join(upload_folder, filename)
-        image_file.save(image_path)
-        image_url = f'static/uploads/{filename}'
-
-    post = Post(
-        title=title,
-        content=content,
-        author=current_user,
-        image_url=image_url
-    )
-    db.session.add(post)
-    db.session.commit()
-
-    flash('Post created!', 'success')
-    return redirect(url_for('routes.post_forum'))
     
 @bp.route('/post/<int:post_id>')
 def post_thread(post_id):
@@ -591,21 +581,19 @@ def toggle_follow(user_id):
 @bp.route('/forum/<slug>')
 @login_required
 def forum(slug):
-    slug = slug.lower()
+    forum = Forum.query.filter(Forum.university_domain.ilike(f"%{slug}%")).first()
 
-    forum_users = User.query.filter(User.university.ilike(f"%{slug}%")).all()
-
-    if not forum_users:
-        flash(f"No forum found for '{slug}'. Showing general forum instead.", 'warning')
+    if not forum:
+        flash(f"No forum found for '{slug}'.", 'warning')
         return redirect(url_for('routes.general_forum'))
 
-    user_ids = [user.id for user in forum_users]
-
     posts = Post.query.options(joinedload(Post.author))\
-        .filter(Post.user_id.in_(user_ids))\
-        .order_by(Post.created_at.desc()).all()
+        .filter(Post.forum_id == forum.id)\
+        .order_by(Post.created_at.desc())\
+        .all()
 
     return render_template('university_forum.html', university=slug.upper(), posts=posts)
+
 
 
 
@@ -645,7 +633,35 @@ def search_forums():
     return jsonify(results)
 
 @bp.route('/general-forum')
-@login_required  # Optional: restrict to logged-in users
+@login_required
 def general_forum():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-    return render_template('post_forum.html', posts=posts)
+    # ❗ This MUST filter for posts where forum_id IS NULL
+    posts = Post.query.options(joinedload(Post.author))\
+        .filter(Post.forum_id == None)\
+        .order_by(Post.created_at.desc())\
+        .all()
+
+    return render_template('university_forum.html', university="GENERAL", posts=posts)
+
+@bp.route('/create-post/<slug>', methods=['POST'])
+@login_required
+def create_post_forum(slug):
+    forum = Forum.query.filter(Forum.university_domain.ilike(f"%{slug}%")).first()
+    if not forum:
+        flash("Forum not found.", "warning")
+        return redirect(url_for('routes.general_forum'))
+
+    title = request.form.get('title')
+    content = request.form.get('content')
+
+    post = Post(
+        title=title,
+        content=content,
+        user_id=current_user.id,
+        forum_id=forum.id  # ✅ Assign forum properly
+    )
+    db.session.add(post)
+    db.session.commit()
+
+    flash("Post created in university forum.", "success")
+    return redirect(url_for('routes.forum', slug=slug))
