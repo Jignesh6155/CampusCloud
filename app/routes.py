@@ -642,7 +642,6 @@ def general_forum():
         .all()
 
     return render_template('university_forum.html', university="GENERAL", posts=posts)
-
 @bp.route('/create-post/<slug>', methods=['POST'])
 @login_required
 def create_post_forum(slug):
@@ -654,11 +653,21 @@ def create_post_forum(slug):
     title = request.form.get('title')
     content = request.form.get('content')
 
+    image = request.files.get('image')
+    image_url = None
+
+    if image and image.filename != '':
+        filename = secure_filename(image.filename)
+        filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
+        image.save(filepath)
+        image_url = f'static/uploads/{filename}'
+
     post = Post(
         title=title,
         content=content,
         user_id=current_user.id,
-        forum_id=forum.id  # ✅ Assign forum properly
+        forum_id=forum.id,
+        image_url=image_url  # ✅ save the image path
     )
     db.session.add(post)
     db.session.commit()
