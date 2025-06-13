@@ -46,25 +46,30 @@ def signup():
     form = SignupForm()
     if form.validate_on_submit():
         student_number = form.student_number.data.strip()
-        email = form.email.data.strip()
+        email = form.email.data.strip().lower()
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # ✅ Extract and sanitize university domain (e.g., 'student.curtin.edu.au' → 'curtin')
+        # ✅ Sanitize university domain (e.g. 'student.curtin.edu.au' → 'curtin')
         cleaned_uni = sanitize_domain(email)
 
-        # ✅ Check if a forum already exists for this university domain
+        # ✅ Check if email already exists
+        if User.query.filter_by(email=email).first():
+            flash('An account with that email already exists.', 'danger')
+            return redirect(url_for('routes.index'))
+
+        # ✅ Create forum if it doesn't exist
         existing_forum = Forum.query.filter_by(university_domain=cleaned_uni).first()
         if not existing_forum:
             new_forum = Forum(name=cleaned_uni.capitalize(), university_domain=cleaned_uni)
             db.session.add(new_forum)
 
-        # ✅ Create user and hash password
+        # ✅ Create new user
         user = User(
             display_name=display_name,
             email=email,
             student_number=student_number,
-            university=cleaned_uni  # e.g., 'curtin', 'uwa', etc.
+            university=cleaned_uni
         )
         user.set_password(password)
         db.session.add(user)
@@ -74,12 +79,12 @@ def signup():
             flash('Account created successfully! Please log in.', 'success')
         except IntegrityError:
             db.session.rollback()
-            flash('An account with that student number or email already exists.', 'danger')
+            flash('Unexpected error during signup. Please try again.', 'danger')
             return redirect(url_for('routes.index'))
 
         return redirect(url_for('routes.index'))
 
-    # ❌ If validation errors
+    # ❌ Form validation failed
     flash('Please fix the errors in the form.', 'danger')
     if form.errors:
         print('Signup form errors:', form.errors)
