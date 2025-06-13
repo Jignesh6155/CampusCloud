@@ -1,8 +1,8 @@
-"""Initial migration
+"""Initial clean migration
 
-Revision ID: 852800b590d9
+Revision ID: 30a77e2c73ca
 Revises: 
-Create Date: 2025-06-11 20:06:27.189128
+Create Date: 2025-06-13 10:00:42.172732
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '852800b590d9'
+revision = '30a77e2c73ca'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,15 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
+    )
+    op.create_table('forums',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('university_domain', sa.String(length=120), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('university_domain')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -44,8 +53,7 @@ def upgrade():
     sa.Column('cover_picture', sa.String(length=255), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('student_number')
+    sa.UniqueConstraint('email')
     )
     op.create_table('posts',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -55,7 +63,9 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('committee_id', sa.Integer(), nullable=True),
+    sa.Column('forum_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['committee_id'], ['committees.id'], name='fk_posts_committee_id', ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['forum_id'], ['forums.id'], name='fk_posts_forum_id', ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_posts_user_id', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
@@ -113,5 +123,6 @@ def downgrade():
     op.drop_table('user_committees')
     op.drop_table('posts')
     op.drop_table('users')
+    op.drop_table('forums')
     op.drop_table('committees')
     # ### end Alembic commands ###

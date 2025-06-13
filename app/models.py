@@ -28,7 +28,7 @@ class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     display_name = db.Column(db.String(100))
-    student_number = db.Column(db.String(50), unique=True, nullable=False)
+    student_number = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
