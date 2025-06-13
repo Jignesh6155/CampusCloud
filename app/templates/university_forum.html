@@ -252,35 +252,34 @@
   
     // 🔷 Post Expansion Slide & Redirect
     function expandAndRedirect(postId) {
-        const container = document.getElementById('pageContainer');
-        if (container) {
-          container.classList.remove('slide-in');
-          container.classList.remove('slide-out');
-        }
-      
         const postCard = document.getElementById(`post-${postId}`);
+        if (!postCard) return;
+      
         const rect = postCard.getBoundingClientRect();
         const clone = postCard.cloneNode(true);
       
-        clone.style.position = 'fixed';
-        clone.style.top = rect.top + 'px';
-        clone.style.left = rect.left + 'px';
-        clone.style.width = rect.width + 'px';
-        clone.style.height = rect.height + 'px';
-        clone.style.zIndex = 50;
-        clone.style.margin = 0;
-        clone.style.transition = 'transform 0.6s ease-in-out, opacity 0.6s ease-in-out';
-        clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
-        clone.style.background = 'white';
-        clone.style.overflow = 'hidden';
+        // Style the clone to match the original card
+        Object.assign(clone.style, {
+          position: 'fixed',
+          top: rect.top + 'px',
+          left: rect.left + 'px',
+          width: rect.width + 'px',
+          height: rect.height + 'px',
+          zIndex: 9999,
+          margin: 0,
+          background: 'white',
+          overflow: 'hidden',
+          boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+          borderRadius: '16px',
+          transition: 'transform 0.6s ease, opacity 0.6s ease',
+        });
       
         document.body.appendChild(clone);
-        postCard.style.visibility = 'hidden';
+        postCard.style.opacity = '0';
       
+        // Trigger the animation
         requestAnimationFrame(() => {
-            clone.style.transform = 'scale(1.05)';
-            clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
-            clone.style.opacity = 0.8;
+          clone.style.transform = 'translate(0, 0) scale(1.05)';
         });
       
         setTimeout(() => {
