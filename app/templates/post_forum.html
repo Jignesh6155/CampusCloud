@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-10">
-
-  <!-- 🔶 Flash messages section (added) -->
+<div id="pageContainer" class="mt-10">
+  <!-- 🔶 Flash messages section -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="mb-4">
@@ -175,14 +174,47 @@
     position: relative;
     z-index: 1;
   }
+
   .post-card.expanding {
     transform: scale(1.05);
     box-shadow: 0 12px 24px rgba(0,0,0,0.2);
     opacity: 0.8;
     z-index: 10;
   }
+
   .liked {
     color: #3b82f6 !important;
+  }
+
+  /* 🔷 Slide Overlay Animation */
+  #pageContainer.slide-in {
+    animation: slideInFromRight 0.6s ease forwards;
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  #pageContainer.slide-out {
+    animation: slideOutToLeft 0.6s ease forwards;
+  }
+
+  @keyframes slideOutToLeft {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
   }
 </style>
 
@@ -251,7 +283,7 @@
     }, 0);
     setTimeout(() => {
       window.location.href = `/post/${postId}`;
-    }, 350);
+    }, 650);
   }
 
   // 🔷 Like Button Handler
@@ -279,51 +311,75 @@
   forumSearchInput.addEventListener('input', async function () {
     const query = this.value.trim().toLowerCase();
     searchResults.innerHTML = '';
-  
+
     if (!query) {
       searchResults.classList.add('hidden');
       return;
     }
-  
+
     try {
       const res = await fetch(`/search-forums?q=${encodeURIComponent(query)}`);
       const data = await res.json();
-  
+
       if (data.length === 0) {
         searchResults.classList.add('hidden');
         return;
       }
-  
+
       data.forEach(item => {
         const li = document.createElement('li');
         li.className = 'px-3 py-2 hover:bg-indigo-100 cursor-pointer text-sm flex justify-between items-center';
-  
+
         const nameSpan = document.createElement('span');
         nameSpan.textContent = item.label;
-  
+
         const badge = document.createElement('a');
         badge.href = `/forum/${item.value}`;
         badge.textContent = 'Visit';
         badge.className = 'bg-indigo-100 text-indigo-800 text-xs font-semibold px-2 py-0.5 rounded-full hover:bg-indigo-200 transition';
-        badge.onclick = (e) => e.stopPropagation();
-  
+
+        // 🔸 Use overlay slide-out transition before redirecting
+        badge.onclick = (e) => {
+          e.stopPropagation();
+          navigateToForum(item.value);
+        };
+
         li.appendChild(nameSpan);
         li.appendChild(badge);
-  
+
         li.addEventListener('click', () => {
-          window.location.href = `/forum/${item.value}`;
+          navigateToForum(item.value);
         });
-  
+
         searchResults.appendChild(li);
       });
-  
+
       searchResults.classList.remove('hidden');
-  
     } catch (err) {
       console.error('Forum search error:', err);
       searchResults.classList.add('hidden');
     }
   });
-</script>
 
+  // 🔷 Slide Transition Navigation
+  function navigateToForum(slug) {
+    const container = document.getElementById('pageContainer');
+    if (container) {
+      container.classList.add('slide-out');
+      setTimeout(() => {
+        window.location.href = `/forum/${slug}`;
+      }, 400);
+    } else {
+      window.location.href = `/forum/${slug}`;
+    }
+  }
+
+  // 🔷 Slide-in animation on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('pageContainer');
+    if (container) {
+      container.classList.add('slide-in');
+    }
+  });
+</script>
 {% endblock %}

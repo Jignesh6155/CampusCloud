@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-6">
+<div id="pageContainer" class="mt-6 opacity-0 animate-slideIn">
     <div class="mt-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
           <div class="flex items-center gap-2 ml-4">
@@ -149,19 +149,38 @@
   </div>
   
   <style>
+    /* 🔷 Post Card Styles */
     .post-card {
       transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
       position: relative;
       z-index: 1;
     }
+  
     .post-card.expanding {
       transform: scale(1.05);
       box-shadow: 0 12px 24px rgba(0,0,0,0.2);
       opacity: 0.8;
       z-index: 10;
     }
+  
     .liked {
       color: #3b82f6 !important;
+    }
+  
+    /* 🔷 Slide-in Animation on Page Load */
+    @keyframes slideInFromRight {
+      0% {
+        transform: translateX(30px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  
+    .animate-slideIn {
+      animation: slideInFromRight 0.6s ease forwards;
     }
   </style>
   
@@ -172,9 +191,9 @@
     const closeModalTop = document.getElementById('closeModalTop');
     const postModal = document.getElementById('postModal');
   
-    openModal.addEventListener('click', () => postModal.classList.remove('hidden'));
-    closeModal.addEventListener('click', () => postModal.classList.add('hidden'));
-    closeModalTop.addEventListener('click', () => postModal.classList.add('hidden'));
+    openModal?.addEventListener('click', () => postModal?.classList.remove('hidden'));
+    closeModal?.addEventListener('click', () => postModal?.classList.add('hidden'));
+    closeModalTop?.addEventListener('click', () => postModal?.classList.add('hidden'));
   
     // 🔷 Report Modal Logic
     function openReportModal(event, postId) {
@@ -209,28 +228,38 @@
       }
     }
   
-    // 🔷 Post Expansion Animation and Redirect
+    // 🔷 Post Expansion Slide & Redirect
     function expandAndRedirect(postId) {
       const postCard = document.getElementById(`post-${postId}`);
       const rect = postCard.getBoundingClientRect();
       const clone = postCard.cloneNode(true);
+  
       clone.style.position = 'fixed';
       clone.style.top = rect.top + 'px';
       clone.style.left = rect.left + 'px';
       clone.style.width = rect.width + 'px';
       clone.style.height = rect.height + 'px';
       clone.style.zIndex = 50;
-      clone.style.transition = 'transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease';
+      clone.style.margin = 0;
+      clone.style.transition = 'transform 0.6s ease-in-out, opacity 0.6s ease-in-out';
+      clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
+      clone.style.background = 'white';
+      clone.style.overflow = 'hidden';
+  
       document.body.appendChild(clone);
       postCard.style.visibility = 'hidden';
-      setTimeout(() => {
-        clone.style.transform = 'scale(1.05)';
-        clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
-        clone.style.opacity = 0.8;
-      }, 0);
+  
+      // Slide + expand to full screen
+      requestAnimationFrame(() => {
+        clone.style.transform = `translateX(-${rect.left}px) translateY(-${rect.top}px) scale(1)`;
+        clone.style.width = '100vw';
+        clone.style.height = '100vh';
+        clone.style.borderRadius = '0';
+      });
+  
       setTimeout(() => {
         window.location.href = `/post/${postId}`;
-      }, 350);
+      }, 550);
     }
   
     // 🔷 Like Button Handler
@@ -263,64 +292,63 @@
       });
     }
   
-      // 🔷 Forum Autocomplete Dropdown Logic (updated for dynamic search)
-  const forumSearchInput = document.getElementById('forumSearchInput');
-  const searchResults = document.getElementById('searchResults');
-
-  forumSearchInput.addEventListener('input', async function () {
-    const query = this.value.trim().toLowerCase();
-    searchResults.innerHTML = '';
-
-    if (!query) {
-      searchResults.classList.add('hidden');
-      return;
-    }
-
-    try {
-      const res = await fetch(`/search-forums?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-
-      if (data.length === 0) {
+    // 🔷 Forum Autocomplete Dropdown Logic (updated for dynamic search)
+    const forumSearchInput = document.getElementById('forumSearchInput');
+    const searchResults = document.getElementById('searchResults');
+  
+    forumSearchInput?.addEventListener('input', async function () {
+      const query = this.value.trim().toLowerCase();
+      searchResults.innerHTML = '';
+  
+      if (!query) {
         searchResults.classList.add('hidden');
         return;
       }
-
-      data.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'px-3 py-2 hover:bg-indigo-100 cursor-pointer text-sm flex justify-between items-center';
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = item.label;
-
-        const badge = document.createElement('a');
-        badge.href = `/forum/${item.value}`;
-        badge.textContent = 'Visit';
-        badge.className = 'bg-indigo-100 text-indigo-800 text-xs font-semibold px-2 py-0.5 rounded-full hover:bg-indigo-200 transition';
-        badge.onclick = (e) => e.stopPropagation();
-
-        li.appendChild(nameSpan);
-        li.appendChild(badge);
-
-        li.addEventListener('click', () => {
-          window.location.href = `/forum/${item.value}`;
-        });
-
-        searchResults.appendChild(li);
-      });
-
-      searchResults.classList.remove('hidden');
-    } catch (err) {
-      console.error('Forum search error:', err);
-      searchResults.classList.add('hidden');
-    }
-  });
-
-  document.addEventListener('click', function (e) {
-    if (!forumSearchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.add('hidden');
-    }
-  });
-</script>
   
+      try {
+        const res = await fetch(`/search-forums?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+  
+        if (data.length === 0) {
+          searchResults.classList.add('hidden');
+          return;
+        }
+  
+        data.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'px-3 py-2 hover:bg-indigo-100 cursor-pointer text-sm flex justify-between items-center';
+  
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = item.label;
+  
+          const badge = document.createElement('a');
+          badge.href = `/forum/${item.value}`;
+          badge.textContent = 'Visit';
+          badge.className = 'bg-indigo-100 text-indigo-800 text-xs font-semibold px-2 py-0.5 rounded-full hover:bg-indigo-200 transition';
+          badge.onclick = (e) => e.stopPropagation();
+  
+          li.appendChild(nameSpan);
+          li.appendChild(badge);
+  
+          li.addEventListener('click', () => {
+            window.location.href = `/forum/${item.value}`;
+          });
+  
+          searchResults.appendChild(li);
+        });
+  
+        searchResults.classList.remove('hidden');
+      } catch (err) {
+        console.error('Forum search error:', err);
+        searchResults.classList.add('hidden');
+      }
+    });
+  
+    document.addEventListener('click', function (e) {
+      if (!forumSearchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+  </script>
   {% endblock %}
   
