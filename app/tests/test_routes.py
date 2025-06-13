@@ -45,9 +45,9 @@ def test_duplicate_email_signup(client):
         'full_name': 'Another User',
         'password': 'anotherpassword'
     }, follow_redirects=True)
-
+    
     assert response.status_code == 200
-    assert b'An account with that student number or email already exists.' in response.data
+    assert b'An account with that email already exists.' in response.data
 
 
 def test_signup_missing_fields(client):
