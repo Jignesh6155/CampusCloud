@@ -517,6 +517,26 @@ def test_unknown_forum_slug_falls_back_to_general(client, setup_users):
     assert r2.status_code == 200
     assert b"Cross-University Forum" in r2.data or b"GENERAL Forum" in r2.data
     
+def test_follow_toggle_consistency(client, setup_users):
+    user1, user2 = setup_users
+    login_user(client, user1.id)
+
+    r1 = client.post(f'/toggle-follow/{user2.id}')
+    r2 = client.post(f'/toggle-follow/{user2.id}')  # Unfollow
+    r3 = client.post(f'/toggle-follow/{user2.id}')  # Follow again
+
+    assert r3.status_code == 200
+    assert user2.followers_count == 1
+    
+def test_cannot_delete_others_post(client, setup_users):
+    user1, user2 = setup_users
+    post = Post(content='user2 post', author=user2)
+    db.session.add(post); db.session.commit()
+
+    login_user(client, user1.id)
+    r = client.delete(f'/delete-post/{post.id}')
+    assert r.status_code == 403  # Or 404 depending on implementation
+    
 
 
  #run using PYTHONPATH=. pytest
