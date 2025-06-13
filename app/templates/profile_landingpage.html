@@ -143,8 +143,9 @@
               {% if post.title %}
               <h4 class="font-semibold text-slate-800 text-sm mb-1">{{ post.title }}</h4>
               {% endif %}
-              <p class="text-slate-700 text-xs break-words">{{ post.content }}</p>
-              <p class="text-xs text-slate-400 italic mt-1">Posted in General Forum</p>
+              <p class="text-xs text-slate-400 italic mt-1">
+                Posted in {{ post.forum.university_domain.split('.')[0].upper() + "'s forum" if post.forum else "General Forum" }}
+              </p>
             </div>
           </a>
           {% endfor %}
