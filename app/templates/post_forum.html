@@ -121,8 +121,9 @@
 <div id="postModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
   <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative">
     <h2 class="text-xl font-bold mb-4 text-slate-800">Create New Post</h2>
-    <form id="newPostForm" class="space-y-4" action="/create-post" method="POST" enctype="multipart/form-data">
-      <div>
+    <form id="newPostForm" class="space-y-4"
+    action="{{ url_for('routes.create_post_forum', slug='general') }}"
+    method="POST" enctype="multipart/form-data">      <div>
         <label for="postTitle" class="block text-sm font-medium text-slate-600 mb-1">Title (optional)</label>
         <input id="postTitle" name="title" type="text" placeholder="Add a catchy title..." class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
       </div>
