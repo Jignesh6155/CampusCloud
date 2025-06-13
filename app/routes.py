@@ -638,27 +638,35 @@ def view_forum(name):
 @bp.route('/search-forums')
 def search_forums():
     query = request.args.get('q', '').strip().lower()
-
     if not query:
         return jsonify([])
 
-    # Fetch users where university domain matches the query (case-insensitive)
-    matched_users = User.query.filter(User.university.ilike(f"%{query}%")).all()
+    # 🔹 Option 1: Forums directly from the Forum table (preferred)
+    matched_forums = Forum.query.filter(
+        (Forum.name.ilike(f"%{query}%")) |
+        (Forum.university_domain.ilike(f"%{query}%"))
+    ).all()
 
-    # Extract unique university domains
-    unique_domains = {
-        user.university.strip().lower()
-        for user in matched_users
-        if user.university and '.' in user.university
+    forum_slugs = {
+        forum.university_domain.split('.')[0].lower(): forum.name.capitalize()
+        for forum in matched_forums
+        if forum.university_domain
     }
 
-    # Format into dropdown-compatible JSON: label + value
+    # 🔹 Option 2: Additional domains extracted from User table
+    matched_users = User.query.filter(User.university.ilike(f"%{query}%")).all()
+    for user in matched_users:
+        if user.university and '.' in user.university:
+            slug = user.university.strip().split('.')[0].lower()
+            forum_slugs.setdefault(slug, slug.capitalize())  # Don’t override existing
+
+    # 🔹 Format output
     results = [
         {
-            "label": domain.split('.')[0].capitalize() + " Forum",
-            "value": domain.split('.')[0].lower()
+            "label": f"{name} Forum",
+            "value": slug
         }
-        for domain in sorted(unique_domains)
+        for slug, name in sorted(forum_slugs.items())
     ]
 
     return jsonify(results)
