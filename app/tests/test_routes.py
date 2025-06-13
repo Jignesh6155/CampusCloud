@@ -436,6 +436,87 @@ def test_post_only_appears_in_specific_forum(client, setup_users):
     posts = Post.query.filter_by(forum_id=forum.id).all()
     assert any(p.title == 'Test Title' for p in posts)
     
+def test_cross_uni_post_stays_global(client, setup_users):
+    """
+    • POST /create-post/general
+    • Resulting post has forum_id == None
+    """
+    user1, _ = setup_users
+    user1.email = "alice@student.uwa.edu.au"   # any domain is fine
+    db.session.commit()
+
+    login_user(client, user1.id)
+
+    # Create post in the global feed
+    title   = "Global Hello"
+    content = "This belongs to everyone."
+    resp = client.post("/create-post/general", data={
+        "title": title,
+        "content": content
+    }, follow_redirects=True)
+
+    # Should land back on /forum/general
+    assert resp.status_code == 200
+    assert b"Cross-University Forum" in resp.data or b"GENERAL Forum" in resp.data
+
+    # DB checks
+    post = Post.query.filter_by(title=title).first()
+    assert post is not None
+    assert post.forum_id is None       # ← KEY ASSERTION
+
+
+def test_global_posts_visible_only_in_general_feed(client, setup_users):
+    """
+    • Create 1 global post, 1 UWA post
+    • /forum/general shows only the global one
+    """
+    user1, user2 = setup_users
+    user1.email = "u1@student.uwa.edu.au"
+    user2.email = "u2@student.uwa.edu.au"
+    db.session.commit()
+
+    # Ensure UWA forum exists
+    from app.utils.domain import sanitize_domain
+    domain = sanitize_domain(user1.email)      # "uwa"
+    forum   = Forum.query.filter_by(university_domain=domain).first()
+    if not forum:
+        forum = Forum(name=domain.capitalize(), university_domain=domain)
+        db.session.add(forum); db.session.commit()
+
+    # Login as user1 and make a GLOBAL post
+    login_user(client, user1.id)
+    client.post("/create-post/general", data={
+        "title": "Global post",
+        "content": "Visible to all"
+    })
+
+    # Login as user2 and make a UWA-only post
+    login_user(client, user2.id)
+    client.post(f"/create-post/{domain}", data={
+        "title": "UWA post",
+        "content": "Only at UWA"
+    })
+
+    # View Cross-University feed
+    r = client.get("/forum/general")
+    assert r.status_code == 200
+    assert b"Global post" in r.data
+    assert b"UWA post" not in r.data
+
+
+def test_unknown_forum_slug_falls_back_to_general(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    r1 = client.get("/forum/nonexistent", follow_redirects=False)
+    assert r1.status_code == 302
+    # Accept whatever URL the general-forum route generates
+    assert r1.location.endswith("/general-forum")
+
+    r2 = client.get(r1.location)
+    assert r2.status_code == 200
+    assert b"Cross-University Forum" in r2.data or b"GENERAL Forum" in r2.data
+    
 
 
  #run using PYTHONPATH=. pytest
