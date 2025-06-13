@@ -586,18 +586,35 @@ def toggle_follow(user_id):
 @bp.route('/forum/<slug>')
 @login_required
 def forum(slug):
-    forum = Forum.query.filter(Forum.university_domain.ilike(f"%{slug}%")).first()
+    slug_lower = slug.lower()
 
+    # 🟢  Cross-Uni feed
+    if slug_lower in {'general', 'cross-university'}:
+        posts = (Post.query
+                       .options(joinedload(Post.author))
+                       .filter(Post.forum_id.is_(None))
+                       .order_by(Post.created_at.desc())
+                       .all())
+        return render_template('university_forum.html',
+                               university='GENERAL',
+                               posts=posts)
+
+    # 🔵  University-specific feed (unchanged)
+    forum = Forum.query.filter(
+        Forum.university_domain.ilike(f"%{slug_lower}%")
+    ).first()
     if not forum:
         flash(f"No forum found for '{slug}'.", 'warning')
-        return redirect(url_for('routes.general_forum', not_found=slug))  # ✅ FIXED
+        return redirect(url_for('routes.general_forum'))
 
-    posts = Post.query.options(joinedload(Post.author))\
-        .filter(Post.forum_id == forum.id)\
-        .order_by(Post.created_at.desc())\
-        .all()
-
-    return render_template('university_forum.html', university=slug.upper(), posts=posts)
+    posts = (Post.query
+                   .options(joinedload(Post.author))
+                   .filter(Post.forum_id == forum.id)
+                   .order_by(Post.created_at.desc())
+                   .all())
+    return render_template('university_forum.html',
+                           university=slug.upper(),
+                           posts=posts)
 
 
 
@@ -664,32 +681,58 @@ def general_forum():
 @bp.route('/create-post/<slug>', methods=['POST'])
 @login_required
 def create_post_forum(slug):
-    forum = Forum.query.filter(Forum.university_domain.ilike(f"%{slug}%")).first()
-    if not forum:
-        flash("Forum not found.", "warning")
-        return redirect(url_for('routes.general_forum'))
+    """
+    Handles post creation from both:
+      • /forum/<university-slug>    → post goes into that forum
+      • /forum/general             → post stays in the global feed (forum_id = None)
+    """
+    slug = slug.lower().strip()
 
-    title = request.form.get('title')
-    content = request.form.get('content')
+    # 1️⃣  Decide the target forum -------------------------------------------
+    if slug in {"general", "cross-university"}:
+        forum = None                           # cross-university feed
+    else:
+        forum = Forum.query.filter(
+            Forum.university_domain.ilike(f"%{slug}%")
+        ).first()
 
-    image = request.files.get('image')
-    image_url = None
+        if not forum:
+            flash("Forum not found.", "warning")
+            return redirect(url_for('routes.general_forum'))
 
-    if image and image.filename != '':
-        filename = secure_filename(image.filename)
-        filepath = os.path.join(current_app.root_path, 'static', 'uploads', filename)
-        image.save(filepath)
-        image_url = f'static/uploads/{filename}'
+    # 2️⃣  Extract form fields -----------------------------------------------
+    title   = request.form.get('title', '').strip() or None
+    content = request.form.get('content', '').strip()
 
+    if not content:
+        flash("Content is required.", "error")
+        return redirect(request.referrer or url_for('routes.general_forum'))
+
+    # 3️⃣  Optional image upload --------------------------------------------
+    image_file = request.files.get('image')
+    image_url  = None
+    if image_file and image_file.filename:
+        filename      = secure_filename(image_file.filename)
+        upload_folder = os.path.join(current_app.root_path, "static", "uploads")
+        os.makedirs(upload_folder, exist_ok=True)
+        image_path = os.path.join(upload_folder, filename)
+        image_file.save(image_path)
+        image_url = f"static/uploads/{filename}"
+
+    # 4️⃣  Create & store post ----------------------------------------------
     post = Post(
-        title=title,
-        content=content,
-        user_id=current_user.id,
-        forum_id=forum.id,
-        image_url=image_url  # ✅ save the image path
+        title     = title,
+        content   = content,
+        user_id   = current_user.id,
+        forum_id  = forum.id if forum else None,   # ← Key change
+        image_url = image_url
     )
     db.session.add(post)
     db.session.commit()
 
-    flash("Post created in university forum.", "success")
-    return redirect(url_for('routes.forum', slug=slug))
+    flash("Post created!", "success")
+
+    # 5️⃣  Redirect back to the right feed ----------------------------------
+    if forum:
+        return redirect(url_for('routes.forum', slug=slug))
+    return redirect(url_for('routes.general_forum'))
