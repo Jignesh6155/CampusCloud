@@ -362,23 +362,29 @@
   });
 
   // 🔷 Slide Transition Navigation
-  function navigateToForum(slug) {
-    const container = document.getElementById('pageContainer');
-    if (container) {
-      container.classList.add('slide-out');
-      setTimeout(() => {
-        window.location.href = `/forum/${slug}`;
-      }, 400);
-    } else {
+// 🔷 Slide Transition Navigation
+function navigateToForum(slug) {
+  const container = document.getElementById('pageContainer');
+  sessionStorage.setItem('fromSearch', 'true'); // Mark this as a search-triggered navigation
+
+  if (container) {
+    container.classList.add('slide-out');
+    setTimeout(() => {
       window.location.href = `/forum/${slug}`;
-    }
+    }, 400);
+  } else {
+    window.location.href = `/forum/${slug}`;
   }
+}
 
   // 🔷 Slide-in animation on page load
   window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('pageContainer');
-    if (container) {
+    const fromSearch = sessionStorage.getItem('fromSearch');
+  
+    if (container && fromSearch === 'true') {
       container.classList.add('slide-in');
+      sessionStorage.removeItem('fromSearch');
     }
   });
 </script>
