@@ -1,6 +1,7 @@
 from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import validates
 
 # Association table for many-to-many relationship between users and committees
 user_committees = db.Table(
@@ -105,11 +106,17 @@ class Forum(db.Model):
     __tablename__ = 'forums'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
+    normalized_name = db.Column(db.String(100), nullable=False, unique=True)
     university_domain = db.Column(db.String(120), nullable=False, unique=True)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     posts = db.relationship('Post', backref='forum', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
+
+    @validates('name')
+    def convert_to_lower(self, key, value):
+        self.normalized_name = value.lower()
+        return value
 
     def __repr__(self):
         return f'<Forum {self.name}>'

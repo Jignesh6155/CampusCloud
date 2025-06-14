@@ -1,5 +1,6 @@
 import pytest
 from app import create_app, db
+from sqlalchemy.exc import IntegrityError
 from app.models import User, Post, Comment
 from app.utils.domain import sanitize_domain
 from app.models import Forum
@@ -536,11 +537,27 @@ def test_cannot_delete_others_post(client, setup_users):
     login_user(client, user1.id)
     r = client.delete(f'/delete-post/{post.id}')
     assert r.status_code == 403  # Or 404 depending on implementation
+
+def test_forum_name_duplicate_case_insensitive(app_context):
+    # Create initial forum
+    forum1 = Forum(name='Curtin', university_domain='curtin.edu.au', normalized_name='curtin')
+    db.session.add(forum1)
+    db.session.commit()
+
+    # Try adding a case-variant duplicate
+    forum2 = Forum(name='CURTIN', university_domain='curtin.edu', normalized_name='curtin')
+    db.session.add(forum2)
+
+    with pytest.raises(IntegrityError):
+        db.session.commit()
     
 
 
  #run using PYTHONPATH=. pytest
- 
+ #PYTHONPATH=. pytest -v
+ #PYTHONPATH=. pytest -v -p no:warnings
+
+
  
  
  
