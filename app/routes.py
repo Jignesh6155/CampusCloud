@@ -1,27 +1,15 @@
-# Flask core
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app, abort
 from flask_login import login_required, current_user, login_user, logout_user
-from app.utils.domain import sanitize_domain
-
-# Forms
+from app.utils.domain import UNIVERSITY_EMAIL_DOMAINS, sanitize_domain, UNIVERSITY_SLUG_TO_NAME
 from app.forms import LoginForm, SignupForm
-
-# DB + ORM
 from app import db
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
-
-# Models
 from app.models import User, Forum, Post, Comment, Committee, CommentVote
-
-# Security + Utils
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-
-# Built-in
 from datetime import datetime
 import os
-
 
 bp = Blueprint('routes', __name__)
 
@@ -588,12 +576,12 @@ def toggle_follow(user_id):
         'campus_followers_count': user_to_follow.campus_followers_count
     })
 
+
 @bp.route('/forum/<slug>')
 @login_required
 def forum(slug):
     slug_lower = slug.lower()
 
-    # 🟢  Cross-Uni feed
     if slug_lower in {'general', 'cross-university'}:
         posts = (Post.query
                        .options(joinedload(Post.author))
@@ -604,7 +592,6 @@ def forum(slug):
                                university='GENERAL',
                                posts=posts)
 
-    # 🔵  University-specific feed (unchanged)
     forum = Forum.query.filter(
         Forum.university_domain.ilike(f"%{slug_lower}%")
     ).first()
@@ -617,8 +604,12 @@ def forum(slug):
                    .filter(Post.forum_id == forum.id)
                    .order_by(Post.created_at.desc())
                    .all())
+
+    # 🟡 Use full university name if available
+    university_name = UNIVERSITY_SLUG_TO_NAME.get(slug_lower, slug.upper())
+
     return render_template('university_forum.html',
-                           university=slug.upper(),
+                           university=university_name,
                            posts=posts)
 
 
