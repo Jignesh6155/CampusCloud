@@ -144,7 +144,7 @@
               <h4 class="font-semibold text-slate-800 text-sm mb-1">{{ post.title }}</h4>
               {% endif %}
               <p class="text-xs text-slate-400 italic mt-1">
-                Posted in {{ post.forum.university_domain.split('.')[0]|capitalize + "'s forum" if post.forum else "Cross-Uni Forum" }}
+                Posted in {{ post.forum.university_domain.split('.')[0]|title + "'s forum" if post.forum else "Cross-Uni Forum" }}
             </p>
             </div>
           </a>

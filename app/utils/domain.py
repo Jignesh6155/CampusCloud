@@ -49,8 +49,29 @@ UNIVERSITY_EMAIL_DOMAINS = {
     'scu.edu.au': 'Southern Cross University',
     'students.vu.edu.au': 'Victoria University',
     'vu.edu.au': 'Victoria University',
-}
 
+    # 🔹 Added universities
+    'murdoch.edu.au': 'Murdoch University',
+    'student.murdoch.edu.au': 'Murdoch University',
+    'newcastle.edu.au': 'University of Newcastle',
+    'uon.edu.au': 'University of Newcastle',
+    'students.uon.edu.au': 'University of Newcastle',
+    'une.edu.au': 'University of New England',
+    'students.une.edu.au': 'University of New England',
+    'federation.edu.au': 'Federation University Australia',
+    'students.federation.edu.au': 'Federation University Australia',
+    'utas.edu.au': 'University of Tasmania',
+    'students.utas.edu.au': 'University of Tasmania',
+    'nd.edu.au': 'University of Notre Dame Australia',
+    'my.nd.edu.au': 'University of Notre Dame Australia',
+    'torrens.edu.au': 'Torrens University Australia',
+    'students.torrens.edu.au': 'Torrens University Australia',
+    'cqu.edu.au': 'Central Queensland University',
+    'my.cqu.edu.au': 'Central Queensland University',
+    'ecu.edu.au': 'Edith Cowan University',
+    'our.ecu.edu.au': 'Edith Cowan University',
+    'students.ecu.edu.au': 'Edith Cowan University',
+}
 def sanitize_domain(email):
     domain = email.split('@')[-1].lower()
 
