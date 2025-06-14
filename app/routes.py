@@ -110,10 +110,15 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash('Login successful!', 'success')
+
+            # Determine the next page
             next_page = request.args.get('next')
             if not next_page or not url_parse(next_page).netloc == '':
                 next_page = url_for('routes.profile_landing_page')
-            return redirect(next_page)
+
+            # Instead of redirecting immediately, render a transition screen
+            return render_template('login_success.html', redirect_url=next_page)
+
         else:
             flash('Invalid email or password.', 'danger')
             return redirect(url_for('routes.index'))

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Successful</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 🔷 Animation */
+    @keyframes exitFadeZoom {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.95); }
+    }
+
+    .exit-animation {
+      animation: exitFadeZoom 0.6s ease-in-out forwards;
+    }
+  </style>
+</head>
+<body class="relative min-h-screen flex items-center justify-center text-white">
+
+  <!-- 🔷 Background Image -->
+  <div class="absolute inset-0 z-0">
+    <img src="https://images.unsplash.com/photo-1616400619175-5beda3a17896?q=80&w=3174&auto=format&fit=crop"
+         alt="background"
+         class="w-full h-full object-cover opacity-50" />
+  </div>
+
+  <!-- 🔷 Overlay (Optional) -->
+  <div class="absolute inset-0 bg-black bg-opacity-70 z-0"></div>
+
+  <!-- 🔷 Success Box -->
+  <div id="loginBox" class="relative z-10 text-center p-8 rounded-lg bg-grey bg-opacity-80 shadow-xl">
+    <h1 class="text-3xl font-bold mb-4">🎉 Welcome back!</h1>
+    <p class="text-sm text-gray-200">Redirecting to your Profile...</p>
+  </div>
+
+  <!-- 🔷 Script for animation + redirect -->
+  <script>
+    setTimeout(() => {
+      document.getElementById('loginBox').classList.add('exit-animation');
+    }, 1000);  // Start animation after 1s
+
+    setTimeout(() => {
+      window.location.href = "{{ redirect_url }}";
+    }, 1700);  // Redirect after animation ends
+  </script>
+</body>
+</html>
