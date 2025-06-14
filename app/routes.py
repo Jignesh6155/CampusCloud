@@ -38,7 +38,7 @@ def signup():
         password = form.password.data
         display_name = form.full_name.data.strip() or student_number
 
-        # ✅ Sanitize university domain (e.g. 'student.curtin.edu.au' → 'curtin')
+        # ✅ Sanitize university domain
         cleaned_uni = sanitize_domain(email)
 
         # ✅ Check if email already exists
@@ -51,6 +51,7 @@ def signup():
         if not existing_forum:
             new_forum = Forum(name=cleaned_uni.capitalize(), university_domain=cleaned_uni)
             db.session.add(new_forum)
+            db.session.commit()  # 🔥 Commit forum immediately so test can find it
 
         # ✅ Create new user
         user = User(
@@ -72,7 +73,6 @@ def signup():
 
         return redirect(url_for('routes.index'))
 
-    # ❌ Form validation failed
     flash('Please fix the errors in the form.', 'danger')
     if form.errors:
         print('Signup form errors:', form.errors)
