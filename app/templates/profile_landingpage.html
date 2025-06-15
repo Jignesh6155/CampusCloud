@@ -60,13 +60,15 @@
 <div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
   <!-- Sidebar -->
   <aside class="md:col-span-1 flex flex-col gap-4">
+
     <!-- About Me -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">About Me</h3>
       <p class="text-sm text-slate-700 leading-relaxed break-words">{{ user.bio or "No bio available." }}</p>
     </div>
+  
     <!-- Skills -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Skills & Interests</h3>
       {% if user.skills %}
       <div class="flex flex-wrap gap-2">
@@ -78,22 +80,25 @@
       <p class="text-sm text-slate-600">No skills added yet.</p>
       {% endif %}
     </div>
+  
     <!-- University -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">University & Faculty</h3>
-      <ul class="text-sm text-slate-700 space-y-1">
+      <ul class="text-sm text-slate-700 space-y-[6px]">
         <li>🎓 <strong>University:</strong> {{ user.university or 'Not specified' }}</li>
         <li>🏛️ <strong>Faculty:</strong> {{ user.faculty or 'Not specified' }}</li>
         <li>📚 <strong>Major:</strong> {{ user.major or 'Not specified' }}</li>
       </ul>
     </div>
+  
     <!-- Contact -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
       <p class="text-sm text-slate-700 break-words">📧 {{ user.email }}</p>
       <p class="text-sm text-slate-700 break-words">📞 {{ user.phone or 'Not provided' }}</p>
       <p class="text-sm text-slate-700 break-words">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
     </div>
+  
   </aside>
 
   <!-- Main -->
