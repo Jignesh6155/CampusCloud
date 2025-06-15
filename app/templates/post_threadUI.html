@@ -5,10 +5,10 @@
   <div class="mx-auto my-4 p-4 w-full max-w-6xl bg-white rounded-xl shadow overflow-hidden">
 
     <div class="mb-4">
-      <a href="{{ url_for('routes.post_forum') }}"
-         class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
-        <i class="fas fa-arrow-left"></i> Back to Forum
-      </a>
+        <a href="{{ back_url }}"
+           class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
+          <i class="fas fa-arrow-left"></i> Back to {{ back_label }}
+        </a>
     </div>
 
     <div class="p-6 flex flex-col gap-3 border-b border-slate-200">
