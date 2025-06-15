@@ -552,6 +552,25 @@ def test_forum_name_duplicate_case_insensitive(app_context):
 
     with pytest.raises(IntegrityError):
         db.session.commit()
+        
+def test_known_slug_forum_renders(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    forum = Forum(name="Curtin", university_domain="curtin.edu.au", normalized_name="curtin")
+    db.session.add(forum); db.session.commit()
+
+    response = client.get('/forum/curtin')
+    assert response.status_code == 200
+    assert b"Curtin" in response.data
+    
+def test_cross_university_alias_works(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.get('/forum/cross-university')
+    assert response.status_code == 200
+    assert b"Cross-University Forum" in response.data or b"GENERAL Forum" in response.data
     
 
 
