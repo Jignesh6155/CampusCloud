@@ -5,13 +5,13 @@
   <div class="mt-6">
     
     {% if university != "GENERAL" %}
-      <!-- 🔷 Back button above the title -->
-      <div class="ml-4 -mt-7 mb-2">
-        <button onclick="navigateToForum('general')" class="text-indigo-600 text-sm hover:underline transition">
-          ← Back 
-        </button>
-      </div>
-    {% endif %}
+    <!-- 🔷 Back button to forums directory -->
+    <div class="ml-4 -mt-7 mb-2">
+      <a href="/forums" class="text-indigo-600 text-sm hover:underline transition">
+        ← Back to Forums
+      </a>
+    </div>
+    {% endif %}   
 
     <!-- 🔷 Title and Search Bar aligned in flex -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between w-full px-4">
