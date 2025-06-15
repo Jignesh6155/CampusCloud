@@ -58,17 +58,17 @@
 </div>
 
 <div class="max-w-6xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-  <!-- Sidebar -->
-  <aside class="md:col-span-1 flex flex-col gap-4">
+<!-- Sidebar -->
+<aside class="md:col-span-1 flex flex-col gap-4">
 
     <!-- About Me -->
     <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">About Me</h3>
-      <p class="text-sm text-slate-700 leading-relaxed break-words">{{ user.bio or "No bio available." }}</p>
+      <p class="text-sm text-slate-700 leading-relaxed break-words min-h-[60px]">{{ user.bio or "No bio available." }}</p>
     </div>
   
     <!-- Skills -->
-    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6 min-h-[100px]">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Skills & Interests</h3>
       {% if user.skills %}
       <div class="flex flex-wrap gap-2">
@@ -82,7 +82,7 @@
     </div>
   
     <!-- University -->
-    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6 min-h-[100px]">
       <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">University & Faculty</h3>
       <ul class="text-sm text-slate-700 space-y-[6px]">
         <li>🎓 <strong>University:</strong> {{ user.university or 'Not specified' }}</li>
@@ -92,13 +92,13 @@
     </div>
   
     <!-- Contact -->
-    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
-        <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
-        <div class="text-sm text-slate-700 break-words space-y-1.5">
-          <p>📧 {{ user.email }}</p>
-          <p>📞 {{ user.phone or 'Not provided' }}</p>
-          <p>🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
-        </div>
+    <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6 min-h-[100px]">
+      <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
+      <div class="text-sm text-slate-700 break-words space-y-1.5">
+        <p>📧 {{ user.email }}</p>
+        <p>📞 {{ user.phone or 'Not provided' }}</p>
+        <p>🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
+      </div>
     </div>
   
   </aside>
