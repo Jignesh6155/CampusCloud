@@ -351,7 +351,22 @@ def post_thread(post_id):
     comments = Comment.query.filter_by(post_id=post_id, parent_id=None).all()
     comments.sort(key=lambda c: (c.score, c.created_at), reverse=True)
 
-    return render_template('post_threadUI.html', post=post, comments=comments)
+    # Determine where the post came from
+    if post.forum_id is None:
+        back_url = url_for('routes.general_forum')  # or 'routes.post_forum' if that's your preferred route
+        back_label = "Cross-Uni Forum"
+    else:
+        slug = post.forum.university_domain.split('.')[0].lower()
+        back_url = url_for('routes.forum', slug=slug)
+        back_label = f"{post.forum.name} Forum"
+
+    return render_template(
+        'post_threadUI.html',
+        post=post,
+        comments=comments,
+        back_url=back_url,
+        back_label=back_label
+    )
 
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required
