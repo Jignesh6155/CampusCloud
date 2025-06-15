@@ -602,36 +602,44 @@ def toggle_follow(user_id):
 def forum(slug):
     slug_lower = slug.lower()
 
-    if slug_lower in {'general', 'cross-university'}:
+    # ✅ Handle Cross-Uni forum (posts with no forum_id)
+    if slug_lower == "cross-uni":
         posts = (Post.query
-                       .options(joinedload(Post.author))
-                       .filter(Post.forum_id.is_(None))
-                       .order_by(Post.created_at.desc())
-                       .all())
-        return render_template('university_forum.html',
-                               university='GENERAL',
-                               posts=posts,
-                               forum_slug='general')  # ✅ kept for frontend usage
+                 .options(joinedload(Post.author))
+                 .filter(Post.forum_id == None)
+                 .order_by(Post.created_at.desc())
+                 .all())
+        return render_template(
+            'university_forum.html',
+            university='Cross-University',
+            posts=posts,
+            forum_slug='cross-uni'
+        )
 
+    # ✅ Try DB-based forum match
     forum = Forum.query.filter(
         Forum.university_domain.ilike(f"%{slug_lower}%")
     ).first()
-    if not forum:
-        flash(f"No forum found for '{slug}'.", 'warning')
-        return redirect(url_for('routes.general_forum'))
 
-    posts = (Post.query
-                   .options(joinedload(Post.author))
-                   .filter(Post.forum_id == forum.id)
-                   .order_by(Post.created_at.desc())
-                   .all())
+    if forum:
+        posts = (Post.query
+                 .options(joinedload(Post.author))
+                 .filter(Post.forum_id == forum.id)
+                 .order_by(Post.created_at.desc())
+                 .all())
+        return render_template(
+            'university_forum.html',
+            university=forum.name,
+            posts=posts,
+            forum_slug=slug_lower
+        )
 
-    university_name = UNIVERSITY_SLUG_TO_NAME.get(slug_lower, slug.upper())
+    # ✅ Handle fallback for old "general" route
+    if slug_lower == "general":
+        return redirect(url_for('routes.forum', slug='cross-uni'))
 
-    return render_template('university_forum.html',
-                           university=university_name,
-                           posts=posts,
-                           forum_slug=slug_lower)  # ✅ kept
+    flash(f"No forum found for '{slug}'.", 'warning')
+    return redirect(url_for('routes.landing_forums'))
 
 
 
@@ -706,57 +714,55 @@ def general_forum():
 @login_required
 def create_post_forum(slug):
     """
-    Handles post creation from both:
-      • /forum/<university-slug>    → post goes into that forum
-      • /forum/general             → post stays in the global feed (forum_id = None)
+    Handles post creation for any forum:
+    - DB forums like 'uwa', 'curtin', 'crossuni'
+    - Special conceptual forum: 'general'
     """
     slug = slug.lower().strip()
 
-    # 1️⃣  Decide the target forum -------------------------------------------
-    if slug in {"general", "cross-university"}:
-        forum = None                           # cross-university feed
-    else:
-        forum = Forum.query.filter(
-            Forum.university_domain.ilike(f"%{slug}%")
-        ).first()
+    # 1️⃣ Match DB forum
+    forum = Forum.query.filter(
+        Forum.university_domain.ilike(f"%{slug}%")
+    ).first()
 
-        if not forum:
-            flash("Forum not found.", "warning")
-            return redirect(url_for('routes.general_forum'))
+    if slug in {"general"}:
+        forum = None  # Optional: allow general posting without a forum
 
-    # 2️⃣  Extract form fields -----------------------------------------------
-    title   = request.form.get('title', '').strip() or None
+    if not forum and slug != "general":
+        flash("Forum not found.", "warning")
+        return redirect(url_for('routes.landing_forums'))
+
+    # 2️⃣ Get form fields
+    title = request.form.get('title', '').strip() or None
     content = request.form.get('content', '').strip()
 
     if not content:
         flash("Content is required.", "error")
-        return redirect(request.referrer or url_for('routes.general_forum'))
+        return redirect(request.referrer or url_for('routes.landing_forums'))
 
-    # 3️⃣  Optional image upload --------------------------------------------
+    # 3️⃣ Handle optional image
     image_file = request.files.get('image')
-    image_url  = None
+    image_url = None
     if image_file and image_file.filename:
-        filename      = secure_filename(image_file.filename)
+        filename = secure_filename(image_file.filename)
         upload_folder = os.path.join(current_app.root_path, "static", "uploads")
         os.makedirs(upload_folder, exist_ok=True)
         image_path = os.path.join(upload_folder, filename)
         image_file.save(image_path)
         image_url = f"static/uploads/{filename}"
 
-    # 4️⃣  Create & store post ----------------------------------------------
+    # 4️⃣ Create post
     post = Post(
-        title     = title,
-        content   = content,
-        user_id   = current_user.id,
-        forum_id  = forum.id if forum else None,   # ← Key change
-        image_url = image_url
+        title=title,
+        content=content,
+        user_id=current_user.id,
+        forum_id=forum.id if forum else None,
+        image_url=image_url
     )
     db.session.add(post)
     db.session.commit()
 
     flash("Post created!", "success")
 
-    # 5️⃣  Redirect back to the right feed ----------------------------------
-    if forum:
-        return redirect(url_for('routes.forum', slug=slug))
-    return redirect(url_for('routes.general_forum'))
+    # 5️⃣ Redirect
+    return redirect(url_for('routes.forum', slug=slug))
