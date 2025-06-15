@@ -20,30 +20,38 @@
     {% endif %}
   {% endwith %}
 
-  <!-- 🔷 Rest of your original page starts here -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
-    <div class="flex items-center gap-2 ml-4">
-      <h1 class="text-2xl font-bold">Cross-University Forum</h1>
-      <span class="text-2xl">🚀</span>
-    </div>
-    <form id="forumSearchForm" class="mt-4 md:mt-0 relative w-full max-w-md">
-      <div class="relative">
-        <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
-          <i class="fas fa-search"></i>
-        </span>
-        <input
-          type="text"
-          id="forumSearchInput"
-          placeholder="Search university forums (e.g. UWA, monash.edu)"
-          class="pl-10 pr-4 py-2 w-full rounded-full shadow-sm border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"
-        />
-        <ul
-          id="searchResults"
-          class="absolute w-full bg-white border border-slate-200 rounded-md shadow mt-1 z-50 hidden"
-        ></ul>
-      </div>
-    </form>
+<!-- 🔷 Rest of your original page starts here -->
+
+<!-- 🔙 Back to Forum Directory -->
+<div class="ml-4 -mt-7 mb-2">
+  <a href="/forums" class="text-indigo-600 text-sm hover:underline transition">
+    ← Back to Forums
+  </a>
+</div>
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
+  <div class="flex items-center gap-2 ml-4">
+    <h1 class="text-2xl font-bold">Cross-University Forum</h1>
+    <span class="text-2xl">🚀</span>
   </div>
+  <form id="forumSearchForm" class="mt-4 md:mt-0 relative w-full max-w-md">
+    <div class="relative">
+      <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+        <i class="fas fa-search"></i>
+      </span>
+      <input
+        type="text"
+        id="forumSearchInput"
+        placeholder="Search university forums (e.g. UWA, monash.edu)"
+        class="pl-10 pr-4 py-2 w-full rounded-full shadow-sm border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"
+      />
+      <ul
+        id="searchResults"
+        class="absolute w-full bg-white border border-slate-200 rounded-md shadow mt-1 z-50 hidden"
+      ></ul>
+    </div>
+  </form>
+</div>
 
 <div class="p-4 bg-slate-100">
   <div class="flex flex-col md:flex-row gap-6 p-4">
