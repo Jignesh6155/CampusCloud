@@ -93,10 +93,12 @@
   
     <!-- Contact -->
     <div class="bg-white rounded-xl shadow px-6 pt-4 pb-6">
-      <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
-      <p class="text-sm text-slate-700 break-words">📧 {{ user.email }}</p>
-      <p class="text-sm text-slate-700 break-words">📞 {{ user.phone or 'Not provided' }}</p>
-      <p class="text-sm text-slate-700 break-words">🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
+        <h3 class="text-md font-semibold text-slate-800 mb-2 border-b border-slate-200 pb-1">Contact</h3>
+        <div class="text-sm text-slate-700 break-words space-y-1.5">
+          <p>📧 {{ user.email }}</p>
+          <p>📞 {{ user.phone or 'Not provided' }}</p>
+          <p>🎓 Student Number: {{ user.student_number or 'Not provided' }}</p>
+        </div>
     </div>
   
   </aside>
