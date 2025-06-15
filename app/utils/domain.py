@@ -79,36 +79,34 @@ def sanitize_domain(email):
     if domain in UNIVERSITY_EMAIL_DOMAINS:
         return UNIVERSITY_EMAIL_DOMAINS[domain]
 
-    # Strip known prefixes (like student., mail., etc.)
-    stripped_domain = re.sub(r'^(student|students|alumni|mail|staff|info|admin|uni)\.', '', domain)
-    if stripped_domain in UNIVERSITY_EMAIL_DOMAINS:
-        return UNIVERSITY_EMAIL_DOMAINS[stripped_domain]
+    # Strip known prefixes like student., mail., etc.
+    stripped = re.sub(r'^(student|students|alumni|mail|staff|info|admin|uni|my|our)\.', '', domain)
+    if stripped in UNIVERSITY_EMAIL_DOMAINS:
+        return UNIVERSITY_EMAIL_DOMAINS[stripped]
 
-    # Try matching using partial base domains
+    # Try matching using base domain components
     base_domain = re.sub(r'\.(edu|ac|com|org|net)(\.[a-z]{2})?$', '', domain)
     for key in UNIVERSITY_EMAIL_DOMAINS:
         if base_domain in key:
             return UNIVERSITY_EMAIL_DOMAINS[key]
 
-    # Fallback: try last meaningful subdomain
+    # Fallback to last meaningful part
     fallback = base_domain.split('.')[-1].upper()
     return fallback
 
-# 🔁 Map domain slugs like 'uwa' or 'unimelb' to full university names (Title Cased)
+
+# 🔁 Generate mapping from slug → full university name
 UNIVERSITY_SLUG_TO_NAME = {}
 
 for domain, full_name in UNIVERSITY_EMAIL_DOMAINS.items():
-    # Extract slug (e.g., 'student.uwa.edu.au' → 'uwa')
-    parts = domain.split('.')
-    if len(parts) >= 3:
-        slug = parts[-3]
+    # Try to extract slug from domain using regex
+    match = re.search(r'([a-z]+)\.(edu|ac)\.au$', domain)
+    if match:
+        slug = match.group(1).lower()
     else:
-        slug = parts[0]
-    slug = slug.lower()
+        # Fallback for unusual domains
+        slug = domain.split('.')[0].lower()
 
-    # Use title case for the full university name
-    title_case_name = full_name.title()
-
-    # Only map if not already present (preserve first entry for slug)
+    # Store slug mapping if not already present
     if slug not in UNIVERSITY_SLUG_TO_NAME:
-        UNIVERSITY_SLUG_TO_NAME[slug] = title_case_name
+        UNIVERSITY_SLUG_TO_NAME[slug] = full_name.title()

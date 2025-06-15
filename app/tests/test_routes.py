@@ -379,22 +379,30 @@ def test_view_post_thread(client, setup_users):
     assert response.status_code == 200
     assert b'View me' in response.data
 
-def test_signup_creates_forum_if_not_exists(client):
-    email = 'newuser@curtin.edu.au'
-    response = client.post('/signup', data={
-        'student_number': '888888',
-        'email': email,
-        'full_name': 'Curtin User',
-        'password': 'testpass'
-    }, follow_redirects=True)
-
-    assert response.status_code == 200
+def test_signup_creates_forum_if_not_exists_multiple_unis(client):
+    test_cases = [
+        ('newuser@curtin.edu.au', 'Curtin University'),
+        ('student@unimelb.edu.au', 'University of Melbourne'),
+        ('my.uwa@uwa.edu.au', 'University of Western Australia'),
+        ('student.qut@qut.edu.au', 'Queensland University of Technology'),
+        ('students.sydney@sydney.edu.au', 'University of Sydney'),
+    ]
 
     from app.models import Forum
-    forum = Forum.query.filter_by(university_domain='Curtin University').first()
 
-    assert forum is not None
-    assert forum.name.lower().startswith('curtin')  # Allow flexibility in casing
+    for idx, (email, expected_name) in enumerate(test_cases):
+        response = client.post('/signup', data={
+            'student_number': f'88888{idx}',
+            'email': email,
+            'full_name': f'Test User {idx}',
+            'password': 'testpass'
+        }, follow_redirects=True)
+
+        assert response.status_code == 200, f"Failed for email: {email}"
+
+        forum = Forum.query.filter_by(university_domain=expected_name).first()
+        assert forum is not None, f"Forum not created for {email}"
+        assert forum.name.lower().startswith(expected_name.split()[0].lower())
     
 def test_signup_sanitizes_email_and_creates_forum(client):
     email = 'testuser@student.monash.edu.au'
