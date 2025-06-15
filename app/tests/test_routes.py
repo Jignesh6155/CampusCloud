@@ -453,13 +453,13 @@ def test_cross_uni_post_stays_global(client, setup_users):
     • Resulting post has forum_id == None
     """
     user1, _ = setup_users
-    user1.email = "alice@student.uwa.edu.au"   # any domain is fine
+    user1.email = "alice@student.uwa.edu.au"  # any domain is fine
     db.session.commit()
 
     login_user(client, user1.id)
 
     # Create post in the global feed
-    title   = "Global Hello"
+    title = "Global Hello"
     content = "This belongs to everyone."
     resp = client.post("/create-post/general", data={
         "title": title,
@@ -468,12 +468,12 @@ def test_cross_uni_post_stays_global(client, setup_users):
 
     # Should land back on /forum/general
     assert resp.status_code == 200
-    assert b"Cross-University Forum" in resp.data or b"GENERAL Forum" in resp.data
+    assert b"Cross-University" in resp.data  # Heading presence
 
     # DB checks
     post = Post.query.filter_by(title=title).first()
     assert post is not None
-    assert post.forum_id is None       # ← KEY ASSERTION
+    assert post.forum_id is None
 
 
 def test_global_posts_visible_only_in_general_feed(client, setup_users):

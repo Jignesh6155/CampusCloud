@@ -137,8 +137,32 @@ def base():
 @bp.route('/forums')
 @login_required
 def landing_forums():
-    forums = Forum.query.order_by(Forum.name.asc()).all()
-    return render_template('landingforum.html', forums=forums)
+    # --- 1️⃣  Find Cross-University forum (slug/domain contains "cross") ---
+    cross_uni = Forum.query.filter(
+        Forum.university_domain.ilike("%cross%")
+    ).first()
+
+    # --- 2️⃣  Use sanitizer to get user's university name ------------------
+    user_email = current_user.email.lower()
+    uni_name = sanitize_domain(user_email)  # e.g. "University of Western Australia"
+
+    user_forum = None
+    if uni_name and (not cross_uni or uni_name.lower() != cross_uni.name.lower()):
+        user_forum = Forum.query.filter(
+            Forum.name.ilike(f"%{uni_name}%")
+        ).first()
+
+    # --- 3️⃣  Exclude pinned forums (cross & user) from main list ----------
+    pinned_ids = {f.id for f in [cross_uni, user_forum] if f}
+
+    other_forums = Forum.query.filter(~Forum.id.in_(pinned_ids)).order_by(Forum.name.asc()).all()
+
+    return render_template(
+        "landingforum.html",
+        cross_uni=cross_uni,
+        user_forum=user_forum,
+        forums=other_forums,
+    )
 
 @bp.route('/units-chat')
 def units_chat():
