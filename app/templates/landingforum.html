@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="px-6 py-10 max-w-screen-xl mx-auto">
+  <h1 class="text-4xl font-extrabold text-center text-slate-800 mb-10 tracking-tight">🌐 Explore University Forums</h1>
+
+  <!-- 🔍 Search -->
+  <div class="max-w-md mx-auto mb-12">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search for a university..."
+      class="w-full px-5 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-800 placeholder-slate-400"
+      onkeyup="filterForums()"
+    />
+  </div>
+
+  <!-- 📦 Forum Cards Grid -->
+  <div id="forumGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {% for forum in forums %}
+      <a href="{{ url_for('routes.forum', slug=forum.university_domain.split('.')[0].lower()) }}"
+         class="group relative block rounded-2xl border border-slate-200 bg-white p-6 shadow-md hover:shadow-xl transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-300">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700">{{ forum.name }}</h2>
+            <i class="fas fa-arrow-right text-slate-400 group-hover:text-indigo-500 transition"></i>
+          </div>
+          <p class="text-sm text-slate-500">{{ forum.university_domain }}</p>
+          <div class="mt-3 text-xs text-slate-400">📌 {{ forum.posts.count() }} posts</div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 🔍 JS Search Filter -->
+<script>
+function filterForums() {
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.getElementById('forumGrid').children;
+  for (let card of cards) {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(input) ? 'block' : 'none';
+  }
+}
+</script>
+{% endblock %}

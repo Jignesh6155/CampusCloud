@@ -134,6 +134,11 @@ def index():
 def base():
     return render_template('base.html')
 
+@bp.route('/forums')
+@login_required
+def landing_forums():
+    forums = Forum.query.order_by(Forum.name.asc()).all()
+    return render_template('landingforum.html', forums=forums)
 
 @bp.route('/units-chat')
 def units_chat():
