@@ -605,7 +605,8 @@ def forum(slug):
                        .all())
         return render_template('university_forum.html',
                                university='GENERAL',
-                               posts=posts)
+                               posts=posts,
+                               forum_slug='general')  # ✅ kept for frontend usage
 
     forum = Forum.query.filter(
         Forum.university_domain.ilike(f"%{slug_lower}%")
@@ -620,13 +621,12 @@ def forum(slug):
                    .order_by(Post.created_at.desc())
                    .all())
 
-    # 🟡 Use full university name if available
     university_name = UNIVERSITY_SLUG_TO_NAME.get(slug_lower, slug.upper())
 
     return render_template('university_forum.html',
                            university=university_name,
-                           posts=posts)
-
+                           posts=posts,
+                           forum_slug=slug_lower)  # ✅ kept
 
 
 
