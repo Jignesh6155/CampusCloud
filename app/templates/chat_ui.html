@@ -1,148 +1,160 @@
-<!-- chat_ui -->
-
 {% extends "base.html" %}
 
 {% block content %}
+<div id="pageContainer" class="mt-6">
+  <!-- ◂ Back link   -->
+  <div class="ml-4 -mt-7 mb-2">
+    <a href="/forums" class="text-indigo-600 text-sm hover:underline transition">
+      ← Back to Forums
+    </a>
+  </div>
 
-<!-- Title bar -->
-<div class="w-full bg-slate-100 text-slate-800 py-4 px-6 flex items-center gap-2 shadow">
-  <h1 class="text-xl font-bold">{{ unit_code }} - Discussion Board</h1>
-  <span class="text-lg">💬</span>
-</div>
-
-<!-- Main Chat Interface -->
-<div class="flex h-[calc(100vh-4rem)] bg-slate-50">
-
-  <!-- Sidebar: Channels / Tabs -->
-  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
-    <div class="p-4 border-b font-semibold text-slate-700">Channels</div>
-    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="general">
-      <i class="fas fa-comments text-slate-600"></i>
-      <span class="font-medium text-slate-700">General</span>
+  <!-- ◂ Heading + New Post -->
+  <div class="w-full px-4 mt-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">
+      {{ unit_code|upper }} Discussion 🚀
+    </h1>
+    <button id="openModal"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow">
+      + New Post
     </button>
-    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="assignments">
-      <i class="fas fa-tasks text-slate-600"></i>
-      <span class="font-medium text-slate-700">Assignments</span>
-    </button>
-    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="resources">
-      <i class="fas fa-folder-open text-slate-600"></i>
-      <span class="font-medium text-slate-700">Resources</span>
-    </button>
-  </aside>
+  </div>
 
-  <!-- Chat Content Area -->
-  <div class="flex-1 flex flex-col">
+  <!-- ◂ Layout wrapper -->
+  <div class="p-4 bg-slate-100">
+    <div class="flex flex-col md:flex-row gap-6 p-4">
+      <!-- ── Chat column ─────────────────────────────────────────── -->
+      <div class="flex-1 flex flex-col space-y-6">
+        <!-- Scroll area -->
+        <div class="relative h-[calc(100vh-150px)] overflow-y-auto pr-2">
+          <div id="chat-messages" class="space-y-4 overflow-visible">
+            <!-- Messages injected by JS -->
+          </div>
+        </div>
+      </div>
 
-    <!-- Messages container -->
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-      <!-- Messages loaded via AJAX -->
+      <!-- ── Sidebar (channels) ──────────────────────────────────── -->
+      <aside class="w-full md:w-72 sticky top-4 self-start rounded-xl shadow border border-slate-200 p-6 bg-white">
+        <h2 class="text-lg font-semibold text-slate-700 mb-3">Channels</h2>
+
+        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
+                data-channel="general">
+          <i class="fas fa-comments text-slate-600"></i>
+          <span class="font-medium text-slate-700">General</span>
+        </button>
+        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
+                data-channel="assignments">
+          <i class="fas fa-tasks text-slate-600"></i>
+          <span class="font-medium text-slate-700">Assignments</span>
+        </button>
+        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
+                data-channel="resources">
+          <i class="fas fa-folder-open text-slate-600"></i>
+          <span class="font-medium text-slate-700">Resources</span>
+        </button>
+      </aside>
     </div>
-
-    <!-- Message input area -->
-    <div class="p-4 border-t bg-white flex gap-2 items-start">
-      <div class="flex-shrink-0 bg-indigo-300 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold text-sm">A</div>
-      <textarea id="message-input" placeholder="Type a message, share code, or link resources..." rows="2" class="flex-1 px-4 py-2 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none"></textarea>
-      <button id="send-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-2xl hover:bg-indigo-700 transition">Send</button>
-    </div>
-
   </div>
 </div>
 
-<!-- Chat logic -->
+<!-- 🔷 New Post Modal -->
+<div id="postModal"
+     class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg relative">
+    <div class="flex justify-between items-center border-b px-6 py-4">
+      <h2 class="text-lg font-semibold">Create a New Post</h2>
+      <button id="closeModalTop" class="text-slate-400 hover:text-slate-600">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form method="POST" action="/create-post/{{ unit_code }}" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Title</label>
+        <input type="text" name="title" required
+               class="w-full px-4 py-2 border rounded-md focus:ring focus:ring-indigo-300 outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Content</label>
+        <textarea name="content" rows="4" required
+                  class="w-full px-4 py-2 border rounded-md focus:ring focus:ring-indigo-300 outline-none"></textarea>
+      </div>
+      <div class="flex justify-end pt-2">
+        <button id="closeModal"
+                type="button"
+                class="px-4 py-2 mr-2 rounded bg-slate-100 hover:bg-slate-200 text-sm">Cancel</button>
+        <button type="submit"
+                class="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm">Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ◂ Slide-in animation -->
+<style>
+  #pageContainer { transform: translateX(100%); opacity: 0; }
+  #pageContainer.slide-in { animation: slideIn 0.6s ease forwards; }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+</style>
+
 <script>
-  const unitCode = "{{ unit_code }}";
+  const unitCode     = "{{ unit_code }}";
   let currentChannel = "general";
-  const messagesContainer = document.getElementById('chat-messages');
-  const input = document.getElementById('message-input');
-  const sendBtn = document.getElementById('send-btn');
-  const tabButtons = document.querySelectorAll('.tab-btn');
 
-  // Load messages for a channel
-  function loadMessages() {
-    fetch(`/units/${unitCode}/messages?channel=${currentChannel}`)
-      .then(res => res.json())
-      .then(data => {
-        messagesContainer.innerHTML = '';
-        data.forEach(msgObj => {
-          const post = document.createElement('div');
-          post.className = 'flex items-start gap-3 max-w-[75%]';
+  const messagesBox  = document.getElementById("chat-messages");
+  const tabBtns      = document.querySelectorAll(".tab-btn");
 
-          // Profile picture
-          const avatar = document.createElement('div');
-          avatar.className = 'flex-shrink-0 bg-indigo-300 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold text-sm';
-          avatar.textContent = 'A';
-          post.appendChild(avatar);
+  async function loadMessages () {
+    const res  = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
+    const data = await res.json();
+    messagesBox.innerHTML = "";
+    data.forEach(m => addMsg(m));
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
 
-          // Message bubble and content
-          const bubble = document.createElement('div');
-          bubble.style.backgroundColor = '#dbeafe'; // keep your original color
-          bubble.className = 'rounded-2xl shadow p-3 flex-1';
-
-          // Format the timestamp from the backend
-          const time = new Date(msgObj.timestamp).toLocaleString();
-
-          // Name and time styling for subtle but clear separation
-          const header = document.createElement('div');
-          header.className = 'flex justify-between items-center mb-1';
-          header.innerHTML = `
-            <div class="font-semibold text-slate-800 text-sm">${msgObj.author || 'Anonymous User'}</div>
-            <div class="text-xs text-slate-500">${time}</div>
-          `;
-          bubble.appendChild(header);
-
-          // Message content styling (clean, readable, distinct)
-          const content = document.createElement('div');
-          content.className = 'text-sm text-slate-900 whitespace-pre-wrap break-words';
-          content.textContent = msgObj.message;
-          bubble.appendChild(content);
-
-          // Reply button styling
-          const replyBtn = document.createElement('button');
-          replyBtn.className = 'text-xs text-slate-600 hover:underline mt-2';
-          replyBtn.textContent = 'Reply';
-          bubble.appendChild(replyBtn);
-
-          post.appendChild(bubble);
-          messagesContainer.appendChild(post);
-        });
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      });
+  function addMsg (m) {
+    const wrap = document.createElement("div");
+    wrap.className = "flex items-start gap-3 max-w-[75%]";
+    wrap.innerHTML = `
+      <div class="flex-shrink-0 bg-indigo-300 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold text-sm">
+        A
+      </div>
+      <div class="rounded-2xl shadow p-3 flex-1 bg-indigo-50">
+        <div class="flex justify-between items-center mb-1">
+          <div class="font-semibold text-slate-800 text-sm">${m.author || "Anonymous"}</div>
+          <div class="text-xs text-slate-500">${new Date(m.timestamp).toLocaleString()}</div>
+        </div>
+        <div class="text-sm text-slate-900 whitespace-pre-wrap break-words">${m.message}</div>
+      </div>`;
+    messagesBox.appendChild(wrap);
   }
 
   loadMessages();
-  setInterval(loadMessages, 5000);
 
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabBtns.forEach(b => b.classList.remove("bg-slate-100"));
+      btn.classList.add("bg-slate-100");
       currentChannel = btn.dataset.channel;
-      tabButtons.forEach(b => b.classList.remove('bg-slate-200'));
-      btn.classList.add('bg-slate-200');
       loadMessages();
     });
   });
 
-  sendBtn.addEventListener('click', () => {
-    const message = input.value.trim();
-    if (!message) return;
+  // 🔷 Modal toggle logic
+  const postModal    = document.getElementById("postModal");
+  const openModalBtn = document.getElementById("openModal");
+  const closeModal   = document.getElementById("closeModal");
+  const closeModalTop = document.getElementById("closeModalTop");
 
-    fetch(`/units/${unitCode}/messages?channel=${currentChannel}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `message=${encodeURIComponent(message)}`
-    }).then(res => res.json()).then(data => {
-      if (data.status === 'success') {
-        input.value = '';
-        loadMessages();
-      }
-    });
-  });
+  openModalBtn?.addEventListener("click", () => postModal.classList.remove("hidden"));
+  closeModal?.addEventListener("click", () => postModal.classList.add("hidden"));
+  closeModalTop?.addEventListener("click", () => postModal.classList.add("hidden"));
 
-  input.addEventListener('keypress', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendBtn.click();
-    }
-  });
+  window.addEventListener("DOMContentLoaded", () =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        document.getElementById("pageContainer").classList.add("slide-in"))));
 </script>
-
 {% endblock %}
