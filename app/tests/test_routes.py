@@ -581,6 +581,38 @@ def test_cross_university_alias_works(client, setup_users):
     assert response.status_code == 200
     assert b"Forum" in response.data
     
+def test_profile_landing_page_shows_user_info(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+    response = client.get('/profile')
+    assert response.status_code == 200
+    assert user1.display_name.encode() in response.data
+
+def test_group_assignments_page_renders(client):
+    response = client.get('/group-assignments')
+    assert response.status_code == 200
+    assert b'Group Assignment' in response.data  # or another identifying text
+
+
+def test_api_search_users_empty_query_returns_all_or_none(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+    response = client.get('/api/search-users?query=')
+    assert response.status_code == 200
+    users = response.get_json()
+    assert isinstance(users, list)
+
+def test_invalid_vote_value_returns_error(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    post = Post(content="Voting test", author=user1)
+    comment = Comment(content="Vote comment", post=post, user_id=user1.id)
+    db.session.add_all([post, comment])
+    db.session.commit()
+
+    response = client.post(f"/comment/{comment.id}/vote", json={"vote": 99})
+    assert response.status_code in (400, 422)  # Depending on how it's handled
 
 
  #run using PYTHONPATH=. pytest
