@@ -1,95 +1,47 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div id="pageContainer" class="mt-6">
-  <!-- ◂ Back link   -->
-  <div class="ml-4 -mt-1 mb-2">
-    <a href="/forums" class="text-indigo-600 text-sm hover:underline transition">
+<div id="pageContainer" class="h-screen flex bg-slate-100">
+  <!-- ▸ Sidebar (now on the LEFT, with tint and spacing) -->
+  <div class="flex h-full w-full max-w-[20rem] flex-col rounded-xl bg-black/5 border border-black/10 p-4 pt-4 shadow-xl shadow-blue-gray-900/5">
+    <!-- 🔹 Back + Unit Title (spaced and centered) -->
+    <a href="/forums" class="text-indigo-600 text-sm hover:underline block mb-5 text-left">
       ← Back to Forums
     </a>
-  </div>
-
-  <!-- ◂ Heading + New Post -->
-  <div class="w-full px-4 mt-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold">
+    <h1 class="text-2xl font-bold leading-tight text-blue-gray-900 text-center mb-4">
       {{ unit_code|upper }} Discussion 🚀
     </h1>
-    <button id="openModal"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow">
-      + New Post
-    </button>
+
+    <!-- 🔹 Channels -->
+    <nav class="flex-1 overflow-y-auto text-base font-medium">
+      <div role="button"
+           class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50"
+           data-channel="general">
+        <i class="fas fa-comments w-5 h-5 mr-3 text-slate-600"></i> General
+      </div>
+      <div role="button"
+           class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50"
+           data-channel="assignments">
+        <i class="fas fa-tasks w-5 h-5 mr-3 text-slate-600"></i> Assignments
+      </div>
+      <div role="button"
+           class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50"
+           data-channel="resources">
+        <i class="fas fa-folder-open w-5 h-5 mr-3 text-slate-600"></i> Resources
+      </div>
+    </nav>
   </div>
 
-  <!-- ◂ Layout wrapper -->
-  <div class="p-4 bg-slate-100">
-    <div class="flex flex-col md:flex-row gap-6 p-4">
-      <!-- ── Chat column ─────────────────────────────────────────── -->
-      <div class="flex-1 flex flex-col space-y-6">
-        <!-- Scroll area -->
-        <div class="relative h-[calc(100vh-150px)] overflow-y-auto pr-2">
-          <div id="chat-messages" class="space-y-4 overflow-visible">
-            <!-- Messages injected by JS -->
-          </div>
-        </div>
+  <!-- ▸ Chat Area (now on the RIGHT) -->
+  <div class="flex-1 flex flex-col p-4">
+    <div class="relative h-full overflow-y-auto pr-2">
+      <div id="chat-messages" class="space-y-4">
+        <!-- Messages injected by JS -->
       </div>
-
-      <!-- ── Sidebar (channels) ──────────────────────────────────── -->
-      <aside class="w-full md:w-72 sticky top-4 self-start rounded-xl shadow border border-slate-200 p-6 bg-white">
-        <h2 class="text-lg font-semibold text-slate-700 mb-3">Channels</h2>
-
-        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
-                data-channel="general">
-          <i class="fas fa-comments text-slate-600"></i>
-          <span class="font-medium text-slate-700">General</span>
-        </button>
-        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
-                data-channel="assignments">
-          <i class="fas fa-tasks text-slate-600"></i>
-          <span class="font-medium text-slate-700">Assignments</span>
-        </button>
-        <button class="tab-btn flex items-center w-full gap-2 p-3 rounded hover:bg-slate-100 transition"
-                data-channel="resources">
-          <i class="fas fa-folder-open text-slate-600"></i>
-          <span class="font-medium text-slate-700">Resources</span>
-        </button>
-      </aside>
     </div>
   </div>
 </div>
 
-<!-- 🔷 New Post Modal -->
-<div id="postModal"
-     class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg relative">
-    <div class="flex justify-between items-center border-b px-6 py-4">
-      <h2 class="text-lg font-semibold">Create a New Post</h2>
-      <button id="closeModalTop" class="text-slate-400 hover:text-slate-600">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <form method="POST" action="/create-post/{{ unit_code }}" class="p-6 space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Title</label>
-        <input type="text" name="title" required
-               class="w-full px-4 py-2 border rounded-md focus:ring focus:ring-indigo-300 outline-none" />
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Content</label>
-        <textarea name="content" rows="4" required
-                  class="w-full px-4 py-2 border rounded-md focus:ring focus:ring-indigo-300 outline-none"></textarea>
-      </div>
-      <div class="flex justify-end pt-2">
-        <button id="closeModal"
-                type="button"
-                class="px-4 py-2 mr-2 rounded bg-slate-100 hover:bg-slate-200 text-sm">Cancel</button>
-        <button type="submit"
-                class="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm">Post</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ◂ Slide-in animation -->
+<!-- Slide-in animation -->
 <style>
   #pageContainer { transform: translateX(100%); opacity: 0; }
   #pageContainer.slide-in { animation: slideIn 0.6s ease forwards; }
@@ -100,17 +52,17 @@
 </style>
 
 <script>
-  const unitCode     = "{{ unit_code }}";
-  let currentChannel = "general";
+  const unitCode       = "{{ unit_code }}";
+  let   currentChannel = "general";
 
-  const messagesBox  = document.getElementById("chat-messages");
-  const tabBtns      = document.querySelectorAll(".tab-btn");
+  const messagesBox = document.getElementById("chat-messages");
+  const tabBtns     = document.querySelectorAll(".tab-btn");
 
   async function loadMessages () {
     const res  = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
     const data = await res.json();
     messagesBox.innerHTML = "";
-    data.forEach(m => addMsg(m));
+    data.forEach(addMsg);
     messagesBox.scrollTop = messagesBox.scrollHeight;
   }
 
@@ -123,38 +75,30 @@
       </div>
       <div class="rounded-2xl shadow p-3 flex-1 bg-indigo-50">
         <div class="flex justify-between items-center mb-1">
-          <div class="font-semibold text-slate-800 text-sm">${m.author || "Anonymous"}</div>
-          <div class="text-xs text-slate-500">${new Date(m.timestamp).toLocaleString()}</div>
+          <span class="font-semibold text-slate-800 text-sm">${m.author || "Anonymous"}</span>
+          <span class="text-xs text-slate-500">${new Date(m.timestamp).toLocaleString()}</span>
         </div>
-        <div class="text-sm text-slate-900 whitespace-pre-wrap break-words">${m.message}</div>
+        <p class="text-sm text-slate-900 whitespace-pre-wrap break-words">${m.message}</p>
       </div>`;
     messagesBox.appendChild(wrap);
   }
 
+  // Initial load
   loadMessages();
 
-  tabBtns.forEach(btn => {
+  // Channel switching
+  tabBtns.forEach(btn =>
     btn.addEventListener("click", () => {
-      tabBtns.forEach(b => b.classList.remove("bg-slate-100"));
-      btn.classList.add("bg-slate-100");
+      tabBtns.forEach(b => b.classList.remove("bg-slate-100", "text-indigo-600", "font-semibold"));
+      btn.classList.add("bg-slate-100", "text-indigo-600", "font-semibold");
       currentChannel = btn.dataset.channel;
       loadMessages();
-    });
-  });
+    })
+  );
 
-  // 🔷 Modal toggle logic
-  const postModal    = document.getElementById("postModal");
-  const openModalBtn = document.getElementById("openModal");
-  const closeModal   = document.getElementById("closeModal");
-  const closeModalTop = document.getElementById("closeModalTop");
-
-  openModalBtn?.addEventListener("click", () => postModal.classList.remove("hidden"));
-  closeModal?.addEventListener("click", () => postModal.classList.add("hidden"));
-  closeModalTop?.addEventListener("click", () => postModal.classList.add("hidden"));
-
+  // Slide-in effect
   window.addEventListener("DOMContentLoaded", () =>
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() =>
-        document.getElementById("pageContainer").classList.add("slide-in"))));
+    requestAnimationFrame(() => requestAnimationFrame(() =>
+      document.getElementById("pageContainer").classList.add("slide-in"))));
 </script>
 {% endblock %}
