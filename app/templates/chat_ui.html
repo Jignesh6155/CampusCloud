@@ -4,27 +4,55 @@
 <div class="p-4 h-screen bg-slate-100">
   <div id="pageContainer" class="h-full flex bg-white rounded-xl shadow-lg overflow-hidden">
   
-    <!-- ▸ Sidebar (Unit Navigation) -->
-    <div class="flex h-full w-[20rem] flex-col bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300 border-l border-white/70 rounded-l-xl shadow-lg z-10">
-      <a href="/forums" class="text-indigo-600 text-sm hover:underline block px-4 pt-4 mb-4">
-        ← Back to Forums
-      </a>
-      <h1 class="text-2xl font-bold leading-tight text-blue-gray-900 text-center mb-4 px-4">
-        {{ unit_code|upper }} Discussion 🚀
-      </h1>
+  <!-- ▸ Sidebar (Unit Navigation) -->
+  <div class="flex h-full w-[20rem] flex-col bg-gradient-to-b from-gray-50 to-gray-100 border-r border-gray-300 border-l border-white/70 rounded-l-xl shadow-xl z-10 backdrop-blur-sm">
+    <a href="/forums" class="text-indigo-600 text-sm hover:underline block px-5 pt-5 mb-4 transition">
+      ← Back to Forums
+    </a>
+    <h1 class="text-xl font-semibold text-gray-800 text-center mb-4 px-4 tracking-wide">
+      {{ unit_code|upper }} Discussion
+    </h1>
 
-      <nav class="flex-1 overflow-y-auto text-base font-medium px-2">
-        <div role="button" class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50" data-channel="general">
-          <i class="fas fa-comments w-5 h-5 mr-3 text-slate-600"></i> General
+    <nav class="flex-1 overflow-y-auto text-sm font-medium px-4 py-3 space-y-6">
+
+      <!-- 📁 Main Channels -->
+      <div class="space-y-1">
+        <div class="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wide">Main</div>
+    
+        <div role="button"
+             class="tab-btn flex items-center w-full gap-3 px-4 py-2 rounded-xl group transition-all duration-150 hover:bg-indigo-100 hover:text-indigo-700 relative"
+             data-channel="general">
+          <div class="w-1.5 h-full absolute left-0 top-0 rounded-r bg-indigo-500 opacity-0 group-hover:opacity-100 transition"></div>
+          <i class="fas fa-comments w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition"></i>
+          <span class="truncate font-medium">General</span>
+          <span class="ml-auto text-xs text-gray-400">4:00 pm</span>
         </div>
-        <div role="button" class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50" data-channel="assignments">
-          <i class="fas fa-tasks w-5 h-5 mr-3 text-slate-600"></i> Assignments
+      </div>
+    
+      <!-- 🧩 Topic Channels -->
+      <div class="space-y-1">
+        <div class="text-xs text-gray-500 px-2 mb-1 uppercase tracking-wide">Topics</div>
+    
+        <div role="button"
+             class="tab-btn flex items-center w-full gap-3 px-4 py-2 rounded-xl group transition-all duration-150 hover:bg-indigo-100 hover:text-indigo-700 relative"
+             data-channel="assignments">
+          <div class="w-1.5 h-full absolute left-0 top-0 rounded-r bg-indigo-500 opacity-0 group-hover:opacity-100 transition"></div>
+          <i class="fas fa-tasks w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition"></i>
+          <span class="truncate font-medium">Assignments</span>
+          <span class="ml-auto text-xs text-gray-400">4:00 pm</span>
         </div>
-        <div role="button" class="tab-btn flex items-center w-full p-3 rounded-lg hover:bg-blue-50" data-channel="resources">
-          <i class="fas fa-folder-open w-5 h-5 mr-3 text-slate-600"></i> Resources
+    
+        <div role="button"
+             class="tab-btn flex items-center w-full gap-3 px-4 py-2 rounded-xl group transition-all duration-150 hover:bg-indigo-100 hover:text-indigo-700 relative"
+             data-channel="resources">
+          <div class="w-1.5 h-full absolute left-0 top-0 rounded-r bg-indigo-500 opacity-0 group-hover:opacity-100 transition"></div>
+          <i class="fas fa-folder-open w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition"></i>
+          <span class="truncate font-medium">Resources</span>
+          <span class="ml-auto text-xs text-gray-400">4:00 pm</span>
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
+  </div>
 
     <!-- ▸ Chat Area -->
     <div class="flex-1 flex flex-col h-full">
@@ -68,15 +96,18 @@
               </div>
             </div>
 
-            <!-- Message Input -->
-            <div class="p-4 border-t bg-white flex items-center space-x-4 shadow-inner">
-              <i class="fa fa-smile-o text-gray-400 text-2xl cursor-pointer"></i>
+            <div class="p-4 border-t bg-white flex items-center gap-3 shadow-inner">
+              <button class="text-gray-400 hover:text-indigo-400 transition">
+                <i class="fa fa-smile-o text-xl"></i>
+              </button>
               <input
                 type="text"
                 placeholder="Type your message..."
-                class="flex-1 bg-gray-100 rounded-full px-5 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
               >
-              <i class="fa fa-paper-plane-o text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-3 rounded-full text-lg cursor-pointer"></i>
+              <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
+                <i class="fa fa-paper-plane-o text-sm"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -134,8 +165,19 @@
 
   tabBtns.forEach(btn =>
     btn.addEventListener("click", () => {
-      tabBtns.forEach(b => b.classList.remove("bg-slate-100", "text-indigo-600", "font-semibold"));
-      btn.classList.add("bg-slate-100", "text-indigo-600", "font-semibold");
+      // Reset all tab buttons
+      tabBtns.forEach(b => {
+        b.classList.remove("bg-indigo-50", "text-indigo-700", "font-semibold");
+        const indicator = b.querySelector("div.w-1\\.5");
+        if (indicator) indicator.classList.add("opacity-0");
+      });
+
+      // Activate current tab
+      btn.classList.add("bg-indigo-50", "text-indigo-700", "font-semibold");
+      const currentIndicator = btn.querySelector("div.w-1\\.5");
+      if (currentIndicator) currentIndicator.classList.remove("opacity-0");
+
+      // Switch content
       currentChannel = btn.dataset.channel;
 
       if (currentChannel === "general") {
