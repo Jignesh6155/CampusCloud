@@ -54,69 +54,135 @@
     </nav>
   </div>
 
-    <!-- ▸ Chat Area -->
-    <div class="flex-1 flex flex-col h-full">
-      <div class="relative h-full overflow-y-auto">
+<!-- ▸ Chat Area -->
+<div class="flex-1 flex flex-col h-full">
+  <div class="relative h-full overflow-y-auto">
 
-        <!-- Classic Chat -->
-        <div id="classic-chat" class="h-full overflow-y-auto">
-          <div id="chat-messages" class="space-y-4 p-4">
-            <!-- Messages injected by JS -->
-          </div>
-        </div>
-
-        <!-- General SMS-Style Chat -->
-        <div id="general-chat-container" class="hidden h-full bg-gradient-to-b from-white to-slate-100 rounded-r-xl border-l border-gray-200 shadow-lg">
-          <div class="flex flex-col h-full">
-
-            <!-- Header -->
-            <div class="p-4 border-b flex justify-between items-center bg-white shadow-sm">
-              <div class="font-bold text-gray-700 text-lg">General Chat</div>
-              <i class="fa fa-ellipsis-h text-gray-400"></i>
-            </div>
-
-            <!-- Message Body -->
-            <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
-              <div class="flex items-start space-x-4">
-                <div class="w-10 h-10 bg-indigo-300 rounded-full shadow-sm flex items-center justify-center text-white font-semibold">A</div>
-                <div>
-                  <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
-                    Hi everyone 👋 Just testing the chat layout!
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1">Today at 3:45 PM</div>
-                </div>
-              </div>
-              <div class="flex justify-end">
-                <div class="text-right">
-                  <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
-                    Welcome to the General channel!
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1">Today at 3:46 PM</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="p-4 border-t bg-white/90 border-gray-200/60 flex items-center gap-3 shadow">
-              <button class="text-gray-400 hover:text-indigo-400 transition">
-                <i class="fa fa-smile-o text-xl"></i>
-              </button>
-              <input
-                type="text"
-                placeholder="Type your message..."
-                class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
-              >
-              <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
-                <i class="fa fa-paper-plane-o text-sm"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
+    <!-- Classic Chat -->
+    <div id="classic-chat" class="h-full overflow-y-auto">
+      <div id="chat-messages" class="space-y-4 p-4">
+        <!-- Messages injected by JS -->
       </div>
     </div>
+
+    <!-- General SMS-Style Chat -->
+    <div id="general-chat-container" class="hidden h-full bg-gradient-to-b from-white to-slate-100 rounded-r-xl border-l border-gray-200 shadow-lg">
+      <div class="flex flex-col h-full">
+        <!-- Header -->
+        <div class="p-4 border-b flex justify-between items-center bg-white shadow-sm">
+          <div class="font-bold text-gray-700 text-lg">General Chat</div>
+          <i class="fa fa-ellipsis-h text-gray-400"></i>
+        </div>
+
+        <!-- Message Body -->
+        <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
+          <div class="flex items-start space-x-4">
+            <div class="w-10 h-10 bg-indigo-300 rounded-full shadow-sm flex items-center justify-center text-white font-semibold">A</div>
+            <div>
+              <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
+                Hi everyone 👋 Just testing the chat layout!
+              </div>
+              <div class="text-xs text-gray-400 mt-1">Today at 3:45 PM</div>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <div class="text-right">
+              <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
+                Welcome to the General channel!
+              </div>
+              <div class="text-xs text-gray-400 mt-1">Today at 3:46 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="p-4 border-t bg-gradient-to-r from-stone-100 to-gray-100 border-gray-200/60 flex items-center gap-3 shadow-sm">
+          <button class="text-gray-400 hover:text-indigo-400 transition">
+            <i class="fa fa-smile-o text-xl"></i>
+          </button>
+          <input
+            type="text"
+            placeholder="Type your message..."
+            class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
+          >
+          <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
+            <i class="fa fa-paper-plane-o text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+<!-- 📚 Assignments Forum Layout -->
+<div id="assignments-chat-container" class="hidden h-full bg-gradient-to-b from-white to-slate-100 rounded-r-xl border-l border-gray-200 shadow-lg">
+  <div class="flex flex-col h-full">
+
+    <!-- 🔷 Header -->
+    <div class="p-4 border-b flex justify-between items-center bg-white shadow-sm">
+      <h2 class="font-bold text-gray-700 text-lg">Assignment Help Board</h2>
+      <i class="fa fa-clipboard-list text-gray-400"></i>
+    </div>
+
+    <!-- 🔶 Posts Feed -->
+    <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
+
+      <!-- 🔸 Assignment Post -->
+      <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white">
+        <div class="flex items-center gap-3 mb-2">
+          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border border-slate-300" />
+          <div>
+            <h3 class="text-sm font-semibold text-slate-800">Jamie Tran</h3>
+            <p class="text-xs text-slate-500">Posted today at 2:15 PM</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-700 mb-3">
+          Has anyone figured out how to approach Q3(b) for the fluid mechanics assignment? I’m stuck on how to apply Bernoulli’s equation with the manometer.
+        </p>
+
+        <!-- 💬 Replies -->
+        <div class="space-y-3 border-t pt-3 mt-3">
+          <div class="flex gap-3">
+            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-9 h-9 rounded-full border border-slate-300" />
+            <div class="bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 w-full">
+              You just need to include the pressure head difference and add the height of the column — I can send a diagram if that helps!
+              <div class="text-xs text-slate-500 mt-1">— Alex • 2:22 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔸 Another Post -->
+      <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white">
+        <div class="flex items-center gap-3 mb-2">
+          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border border-slate-300" />
+          <div>
+            <h3 class="text-sm font-semibold text-slate-800">Lena Wu</h3>
+            <p class="text-xs text-slate-500">Posted today at 1:05 PM</p>
+          </div>
+        </div>
+        <p class="text-sm text-slate-700">
+          What are the page limits for Assignment 2? I can’t find it in the rubric.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- 📝 Input Bar -->
+    <div class="p-4 border-t bg-gradient-to-r from-slate-50 to-gray-100 border-gray-200 flex items-center gap-3 shadow-sm">
+      <button class="text-gray-400 hover:text-indigo-500 transition">
+        <i class="fa fa-question-circle text-xl"></i>
+      </button>
+      <input
+        type="text"
+        placeholder="Post a question about the assignment..."
+        class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
+      >
+      <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
+        <i class="fa fa-paper-plane text-sm"></i>
+      </button>
+    </div>
+
   </div>
 </div>
-
 <!-- Slide-in animation -->
 <style>
   #pageContainer { transform: translateX(100%); opacity: 0; }
@@ -136,10 +202,11 @@
   const unitCode       = "{{ unit_code }}";
   let   currentChannel = "general";
 
-  const messagesBox   = document.getElementById("chat-messages");
-  const tabBtns       = document.querySelectorAll(".tab-btn");
-  const classicChat   = document.getElementById("classic-chat");
-  const generalChat   = document.getElementById("general-chat-container");
+  const messagesBox       = document.getElementById("chat-messages");
+  const tabBtns           = document.querySelectorAll(".tab-btn");
+  const classicChat       = document.getElementById("classic-chat");
+  const generalChat       = document.getElementById("general-chat-container");
+  const assignmentsChat   = document.getElementById("assignments-chat-container");
 
   async function loadMessages () {
     if (currentChannel !== "general") {
@@ -188,8 +255,14 @@
       if (currentChannel === "general") {
         classicChat.classList.add("hidden");
         generalChat.classList.remove("hidden");
+        assignmentsChat.classList.add("hidden");
+      } else if (currentChannel === "assignments") {
+        classicChat.classList.add("hidden");
+        generalChat.classList.add("hidden");
+        assignmentsChat.classList.remove("hidden");
       } else {
         generalChat.classList.add("hidden");
+        assignmentsChat.classList.add("hidden");
         classicChat.classList.remove("hidden");
         loadMessages();
       }
