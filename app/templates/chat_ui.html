@@ -204,10 +204,10 @@
   socket.emit("join", {
     unit_code: unitCode,
     channel: currentChannel,
-    author: CURRENT_USER_NAME  // Make sure this is defined and available
+    author: CURRENT_USER_NAME
   });
 
-  async function loadMessages () {
+  async function loadMessages() {
     const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
     const data = await res.json();
 
@@ -223,7 +223,7 @@
     }
   }
 
-  function addMsg (m) {
+  function addMsg(m) {
     const wrap = document.createElement("div");
     wrap.className = "flex items-start gap-3 max-w-[75%]";
     wrap.innerHTML = `
@@ -294,18 +294,17 @@
         classicChat.classList.add("hidden");
         generalChat.classList.remove("hidden");
         assignmentsChat.classList.add("hidden");
-        loadMessages();
       } else if (currentChannel === "assignments") {
         classicChat.classList.add("hidden");
         generalChat.classList.add("hidden");
         assignmentsChat.classList.remove("hidden");
-        loadMessages();
       } else {
         generalChat.classList.add("hidden");
         assignmentsChat.classList.add("hidden");
         classicChat.classList.remove("hidden");
-        loadMessages();
       }
+
+      loadMessages();
     })
   );
 
@@ -327,13 +326,20 @@
 
   socket.on("receive_message", data => {
     if (data.channel === currentChannel && data.unit_code === unitCode) {
-      addGeneralMsg({
+      const msgData = {
         message: data.message,
         author: data.author,
-        user_id: data.user_id,
+        user_id: data.user_id || CURRENT_USER_ID,
         timestamp: data.timestamp
-      });
-      document.getElementById("general-messages").scrollTop = document.getElementById("general-messages").scrollHeight;
+      };
+  
+      if (currentChannel === "general") {
+        addGeneralMsg(msgData);
+        document.getElementById("general-messages").scrollTop = document.getElementById("general-messages").scrollHeight;
+      } else {
+        addMsg(msgData);
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+      }
     }
   });
 

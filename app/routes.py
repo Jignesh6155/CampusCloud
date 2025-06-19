@@ -795,25 +795,29 @@ def handle_join(data):
 @socketio.on('send_message')
 def handle_send_message(data):
     room = f"{data['unit_code']}_{data['channel']}"
-    join_room(room)  # Optional: Ensures sender is in the room too
+    join_room(room)
 
-    # Save to DB
-    message = UnitMessage(
-        unit_code=data['unit_code'],
-        channel=data['channel'],
-        message=data['message'],
-        user_id=data['user_id'],
-        author=data['author'],
-        timestamp=datetime.utcnow()
-    )
-    db.session.add(message)
-    db.session.commit()
+    try:
+        message = UnitMessage(
+            unit_code=data['unit_code'],
+            channel=data['channel'],
+            message=data['message'],
+            user_id=int(data['user_id']),  # 🔧 force cast to int
+            author=data['author'],
+            timestamp=datetime.utcnow()
+        )
+        db.session.add(message)
+        db.session.commit()
+        print(f"✅ Message successfully committed to DB: {message}")
+    except Exception as e:
+        print(f"❌ DB Save Error: {e}")
+        return  # optionally emit error to user
 
     emit('receive_message', {
-    'message': data['message'],
-    'author': data['author'],
-    'user_id': data['user_id'],  # ✅ Add this line
-    'timestamp': message.timestamp.isoformat(),
-    'unit_code': data['unit_code'],
-    'channel': data['channel']
-}, to=room)
+        'message': data['message'],
+        'author': data['author'],
+        'user_id': data['user_id'],
+        'timestamp': message.timestamp.isoformat(),
+        'unit_code': data['unit_code'],
+        'channel': data['channel']
+    }, to=room)

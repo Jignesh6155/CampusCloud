@@ -1,16 +1,16 @@
+# app/__init__.py
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 from flask_wtf.csrf import generate_csrf
-from flask_socketio import SocketIO  # 🔌 ADD THIS
 
-# Initialize extensions
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')  # 🔌 INIT SOCKETIO
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -28,7 +28,7 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    socketio.init_app(app)  # 🔌 LINK SOCKETIO TO APP
+    socketio.init_app(app)
 
     login_manager.login_view = 'routes.index'
 
