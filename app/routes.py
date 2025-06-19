@@ -809,11 +809,11 @@ def handle_send_message(data):
     db.session.add(message)
     db.session.commit()
 
-    # Emit to everyone in the room
     emit('receive_message', {
-        'message': data['message'],
-        'author': data['author'],
-        'timestamp': message.timestamp.isoformat(),  # frontend converts this
-        'unit_code': data['unit_code'],
-        'channel': data['channel']
-    }, to=room)
+    'message': data['message'],
+    'author': data['author'],
+    'user_id': data['user_id'],  # ✅ Add this line
+    'timestamp': message.timestamp.isoformat(),
+    'unit_code': data['unit_code'],
+    'channel': data['channel']
+}, to=room)
