@@ -767,20 +767,20 @@ def unit_messages(unit_code):
 
         return jsonify({"status": "empty"}), 400
 
-    # GET: fetch messages
-    messages = UnitMessage.query.filter_by(
-        unit_code=unit_code,
-        channel=channel
-    ).order_by(UnitMessage.timestamp.asc()).all()
+    # GET: fetch messages with user details
+    messages = db.session.query(UnitMessage, User).join(User, UnitMessage.user_id == User.id)\
+        .filter(UnitMessage.unit_code == unit_code, UnitMessage.channel == channel)\
+        .order_by(UnitMessage.timestamp.asc()).all()
 
     result = [
         {
             "message": m.message,
-            "author": m.author,
+            "author": u.display_name or "Anonymous",
             "user_id": m.user_id,
+            "profile_picture": u.profile_picture or "/static/default-avatar.png",
             "timestamp": m.timestamp.isoformat()
         }
-        for m in messages
+        for m, u in messages
     ]
 
     return jsonify(result)
