@@ -74,25 +74,9 @@
           <i class="fa fa-ellipsis-h text-gray-400"></i>
         </div>
 
-        <!-- Message Body -->
-        <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
-          <div class="flex items-start space-x-4">
-            <div class="w-10 h-10 bg-indigo-300 rounded-full shadow-sm flex items-center justify-center text-white font-semibold">A</div>
-            <div>
-              <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
-                Hi everyone 👋 Just testing the chat layout!
-              </div>
-              <div class="text-xs text-gray-400 mt-1">Today at 3:45 PM</div>
-            </div>
-          </div>
-          <div class="flex justify-end">
-            <div class="text-right">
-              <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
-                Welcome to the General channel!
-              </div>
-              <div class="text-xs text-gray-400 mt-1">Today at 3:46 PM</div>
-            </div>
-          </div>
+        <!-- ✅ ADD THIS dynamic message container -->
+        <div id="general-messages" class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
+          <!-- Messages will be injected here -->
         </div>
 
         <!-- Input Bar -->
@@ -101,11 +85,12 @@
             <i class="fa fa-smile-o text-xl"></i>
           </button>
           <input
+            id="general-input"
             type="text"
             placeholder="Type your message..."
             class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
-          >
-          <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
+          />
+          <button id="general-send-btn" class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
             <i class="fa fa-paper-plane-o text-sm"></i>
           </button>
         </div>
@@ -209,9 +194,15 @@
   const assignmentsChat   = document.getElementById("assignments-chat-container");
 
   async function loadMessages () {
-    if (currentChannel !== "general") {
-      const res  = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
-      const data = await res.json();
+    const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
+    const data = await res.json();
+  
+    if (currentChannel === "general") {
+      const container = document.getElementById("general-messages");
+      container.innerHTML = "";
+      data.forEach(addGeneralMsg);
+      container.scrollTop = container.scrollHeight;
+    } else {
       messagesBox.innerHTML = "";
       data.forEach(addMsg);
       messagesBox.scrollTop = messagesBox.scrollHeight;
@@ -233,6 +224,37 @@
         <p class="text-sm text-slate-900 whitespace-pre-wrap break-words">${m.message}</p>
       </div>`;
     messagesBox.appendChild(wrap);
+  }
+
+  function addGeneralMsg(m) {
+    const wrap = document.createElement("div");
+  
+    if (m.author === "You") {
+      wrap.className = "flex justify-end";
+      wrap.innerHTML = `
+        <div class="text-right">
+          <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
+            ${m.message}
+          </div>
+          <div class="text-xs text-gray-400 mt-1">${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      `;
+    } else {
+      wrap.className = "flex items-start space-x-4";
+      wrap.innerHTML = `
+        <div class="w-10 h-10 bg-indigo-300 rounded-full shadow-sm flex items-center justify-center text-white font-semibold">
+          ${m.author?.charAt(0)?.toUpperCase() || "A"}
+        </div>
+        <div>
+          <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
+            ${m.message}
+          </div>
+          <div class="text-xs text-gray-400 mt-1">${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      `;
+    }
+  
+    document.getElementById("general-messages").appendChild(wrap);
   }
 
   tabBtns.forEach(btn =>
@@ -268,6 +290,33 @@
       }
     })
   );
+
+  document.getElementById("general-send-btn").addEventListener("click", async () => {
+    const input = document.getElementById("general-input");
+    const msg = input.value.trim();
+  
+    if (!msg) return;
+  
+    const formData = new FormData();
+    formData.append("message", msg);
+  
+    const res = await fetch(`/units/${unitCode}/messages?channel=general`, {
+      method: "POST",
+      body: formData,
+    });
+  
+    const result = await res.json();
+    if (result.status === "success") {
+      // Render the message immediately
+      addGeneralMsg({
+        message: msg,
+        author: "You",
+        timestamp: new Date().toISOString()
+      });
+      input.value = "";
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+  });
 
   loadMessages();
 

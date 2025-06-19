@@ -164,34 +164,6 @@ def landing_forums():
         forums=other_forums,
     )
 
-@bp.route('/units-chat')
-def units_chat():
-    return render_template('units_chat.html')
-
-@bp.route('/units/<unit_code>')
-def unit_chat(unit_code):
-    return render_template('chat_ui.html', unit_code=unit_code)
-
-@bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
-def unit_messages(unit_code):
-    channel = request.args.get('channel', 'general')
-    if unit_code not in chats:
-        chats[unit_code] = {"general": [], "assignments": [], "resources": []}
-    if channel not in chats[unit_code]:
-        chats[unit_code][channel] = []
-
-    if request.method == 'POST':
-        new_msg = request.form.get('message')
-        if new_msg:
-            msg_obj = {
-                "message": new_msg,
-                "author": "Anonymous User",
-                "timestamp": datetime.utcnow().isoformat() + "Z"
-            }
-            chats[unit_code][channel].append(msg_obj)
-            return jsonify({"status": "success"})
-
-    return jsonify(chats[unit_code][channel])
 
 @bp.route('/committee-chat')
 def committee_chat():
@@ -750,3 +722,36 @@ def create_post_forum(slug):
 
     # 5️⃣  Redirect back to the same forum
     return redirect(url_for("routes.forum", slug=slug))
+
+
+@bp.route('/units-chat')
+def units_chat():
+    return render_template('units_chat.html')
+
+@bp.route('/units/<unit_code>')
+def unit_chat(unit_code):
+    return render_template('chat_ui.html', unit_code=unit_code)
+
+@bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
+def unit_messages(unit_code):
+    channel = request.args.get('channel', 'general')
+
+    # Initialize unit and channel if not already present
+    if unit_code not in chats:
+        chats[unit_code] = {"general": [], "assignments": [], "resources": []}
+    if channel not in chats[unit_code]:
+        chats[unit_code][channel] = []
+
+    if request.method == 'POST':
+        new_msg = request.form.get('message')
+        if new_msg:
+            msg_obj = {
+                "message": new_msg,
+                "author": "Anonymous User",  # Change later if user login is added
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            }
+            chats[unit_code][channel].append(msg_obj)
+            return jsonify({"status": "success"})
+
+    # Return all messages for the channel
+    return jsonify(chats[unit_code][channel])
