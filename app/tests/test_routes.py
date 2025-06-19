@@ -613,6 +613,67 @@ def test_invalid_vote_value_returns_error(client, setup_users):
 
     response = client.post(f"/comment/{comment.id}/vote", json={"vote": 99})
     assert response.status_code in (400, 422)  # Depending on how it's handled
+    
+@pytest.fixture
+def socketio_app():
+    app = create_app({
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'WTF_CSRF_ENABLED': False
+    })
+    socketio = app.extensions['socketio']
+    with app.app_context():
+        db.create_all()
+        yield app, socketio
+        db.session.remove()
+        db.drop_all()
+
+@pytest.fixture
+def socket_client(socketio_app):
+    app, socketio = socketio_app
+    test_client = app.test_client()
+    return socketio.test_client(app, flask_test_client=test_client, namespace='/')
+
+def test_room_isolation(socketio_app):
+    app, socketio = socketio_app
+    with app.app_context():
+        user1 = User(student_number='2001', email='user1@test.com', password_hash='hash', display_name='User1')
+        user2 = User(student_number='2002', email='user2@test.com', password_hash='hash', display_name='User2')
+        db.session.add_all([user1, user2])
+        db.session.commit()
+
+        client1 = socketio.test_client(app)
+        client2 = socketio.test_client(app)
+
+        # Client1 joins ENG101_general
+        client1.emit('join', {
+            'unit_code': 'ENG101',
+            'channel': 'general',
+            'author': 'User1'
+        })
+
+        # Client2 joins MATH100_general
+        client2.emit('join', {
+            'unit_code': 'MATH100',
+            'channel': 'general',
+            'author': 'User2'
+        })
+
+        # Send message from client1
+        client1.emit('send_message', {
+            'unit_code': 'ENG101',
+            'channel': 'general',
+            'message': 'ENG101 message',
+            'author': 'User1',
+            'user_id': user1.id
+        })
+
+        # Verify client2 does NOT receive the message
+        received2 = client2.get_received()
+        assert all(event['name'] != 'receive_message' for event in received2)
+
+
+
 
 
  #run using PYTHONPATH=. pytest
