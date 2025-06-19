@@ -242,8 +242,8 @@
 
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
-
-    if (m.user_id === CURRENT_USER_ID) {
+  
+    if (String(m.user_id) === String(CURRENT_USER_ID)) {
       wrap.className = "flex justify-end";
       wrap.innerHTML = `
         <div class="text-right">
@@ -271,7 +271,7 @@
         </div>
       `;
     }
-
+  
     document.getElementById("general-messages").appendChild(wrap);
   }
 
