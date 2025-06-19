@@ -200,3 +200,20 @@ class CommentVote(db.Model):
 
     def __repr__(self):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
+
+class UnitMessage(db.Model):
+    __tablename__ = 'unit_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    unit_code = db.Column(db.String(20), nullable=False)
+    channel = db.Column(db.String(20), nullable=False, default="general")
+    message = db.Column(db.Text, nullable=False)
+
+    author = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    timestamp = db.Column(db.DateTime, default=db.func.now())
+
+    user = db.relationship('User', backref='unit_messages')
+
+    def __repr__(self):
+        return f'<UnitMessage by {self.author} in {self.unit_code}/{self.channel}>'

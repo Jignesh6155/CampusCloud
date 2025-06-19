@@ -5,7 +5,7 @@ from app.forms import LoginForm, SignupForm
 from app import db
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
-from app.models import User, Forum, Post, Comment, Committee, CommentVote
+from app.models import User, Forum, Post, Comment, Committee, CommentVote, UnitMessage
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -731,36 +731,42 @@ def units_chat():
 @bp.route('/units/<unit_code>')
 def unit_chat(unit_code):
     return render_template('chat_ui.html', unit_code=unit_code)
+
 @bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 @login_required
 def unit_messages(unit_code):
-    # Get channel from query params (default to "general")
     channel = request.args.get('channel', 'general')
 
-    # Ensure the unit and channel exist in memory
-    if unit_code not in chats:
-        chats[unit_code] = {
-            "general": [],
-            "assignments": [],
-            "resources": []
-        }
-    if channel not in chats[unit_code]:
-        chats[unit_code][channel] = []
-
-    # Handle new message submission
     if request.method == 'POST':
         new_msg = request.form.get('message', '').strip()
         if new_msg:
-            msg_obj = {
-                "message": new_msg,
-                "author": current_user.display_name if current_user.is_authenticated else "Anonymous User",
-                "user_id": current_user.id if current_user.is_authenticated else None,
-                "timestamp": datetime.utcnow().isoformat() + "Z"
-            }
-            chats[unit_code][channel].append(msg_obj)
+            msg = UnitMessage(
+                unit_code=unit_code,
+                channel=channel,
+                message=new_msg,
+                author=current_user.display_name or "Anonymous User",
+                user_id=current_user.id
+            )
+            db.session.add(msg)
+            db.session.commit()
             return jsonify({"status": "success"})
 
         return jsonify({"status": "empty"}), 400
 
-    # Return message history for the requested channel
-    return jsonify(chats[unit_code][channel])
+    # GET: return all messages in this channel
+    messages = UnitMessage.query.filter_by(
+        unit_code=unit_code,
+        channel=channel
+    ).order_by(UnitMessage.timestamp.asc()).all()
+
+    result = [
+        {
+            "message": m.message,
+            "author": m.author,
+            "user_id": m.user_id,
+            "timestamp": m.timestamp.isoformat()
+        }
+        for m in messages
+    ]
+
+    return jsonify(result)
