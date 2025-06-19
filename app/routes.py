@@ -1,15 +1,25 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app, abort
-from flask_login import login_required, current_user, login_user, logout_user
-from app.utils.domain import UNIVERSITY_EMAIL_DOMAINS, sanitize_domain, UNIVERSITY_SLUG_TO_NAME
-from app.forms import LoginForm, SignupForm
-from app import db
-from sqlalchemy.orm import joinedload
-from sqlalchemy.exc import IntegrityError
-from app.models import User, Forum, Post, Comment, Committee, CommentVote, UnitMessage
+import os
+from datetime import datetime
+
+from flask import (
+    Blueprint, render_template, request, redirect,
+    url_for, flash, jsonify, session, current_app, abort
+)
+from flask_login import (
+    login_required, current_user, login_user, logout_user
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
-import os
+
+from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
+
+from app import db, socketio
+from app.models import User, Forum, Post, Comment, Committee, CommentVote, UnitMessage
+from app.forms import LoginForm, SignupForm
+from app.utils.domain import UNIVERSITY_EMAIL_DOMAINS, sanitize_domain, UNIVERSITY_SLUG_TO_NAME
+
+from flask_socketio import join_room, emit  # ✅ Needed for real-time chat
 
 bp = Blueprint('routes', __name__)
 
@@ -724,14 +734,17 @@ def create_post_forum(slug):
     return redirect(url_for("routes.forum", slug=slug))
 
 
+# 🔹 Load main unit chat landing page
 @bp.route('/units-chat')
 def units_chat():
     return render_template('units_chat.html')
 
+# 🔹 Load chat UI for a specific unit
 @bp.route('/units/<unit_code>')
 def unit_chat(unit_code):
     return render_template('chat_ui.html', unit_code=unit_code)
 
+# 🔹 Get or Post messages in a specific unit + channel
 @bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 @login_required
 def unit_messages(unit_code):
@@ -753,7 +766,7 @@ def unit_messages(unit_code):
 
         return jsonify({"status": "empty"}), 400
 
-    # GET: return all messages in this channel
+    # GET: fetch messages
     messages = UnitMessage.query.filter_by(
         unit_code=unit_code,
         channel=channel
@@ -770,3 +783,36 @@ def unit_messages(unit_code):
     ]
 
     return jsonify(result)
+
+@socketio.on('join')
+def handle_join(data):
+    room = f"{data['unit_code']}_{data['channel']}"
+    author = data.get('author', 'Unknown')
+    print(f"🟢 {author} joined {room}")
+    join_room(room)
+    
+@socketio.on('send_message')
+def handle_send_message(data):
+    room = f"{data['unit_code']}_{data['channel']}"
+    join_room(room)  # Optional: Ensures sender is in the room too
+
+    # Save to DB
+    message = UnitMessage(
+        unit_code=data['unit_code'],
+        channel=data['channel'],
+        message=data['message'],
+        user_id=data['user_id'],
+        author=data['author'],
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    # Emit to everyone in the room
+    emit('receive_message', {
+        'message': data['message'],
+        'author': data['author'],
+        'timestamp': message.timestamp.isoformat(),  # frontend converts this
+        'unit_code': data['unit_code'],
+        'channel': data['channel']
+    }, to=room)
