@@ -242,13 +242,15 @@
 
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
+    const isCurrentUser = String(m.user_id) === String(CURRENT_USER_ID);
   
-    if (String(m.user_id) === String(CURRENT_USER_ID)) {
-      wrap.className = "flex justify-end";
+    if (isCurrentUser) {
+      // Sender bubble (your message)
+      wrap.className = "flex justify-end pr-2";
       wrap.innerHTML = `
-        <div class="text-right">
-          <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
-            ${m.message}
+        <div class="max-w-md text-right">
+          <div class="bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
+            <p class="text-sm leading-relaxed break-words">${m.message}</p>
           </div>
           <div class="text-xs text-gray-400 mt-1">
             ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -256,14 +258,16 @@
         </div>
       `;
     } else {
-      wrap.className = "flex items-start space-x-4";
+      // Receiver bubble (others)
+      wrap.className = "flex items-start gap-3";
       wrap.innerHTML = `
-        <div class="w-10 h-10 bg-indigo-300 rounded-full shadow-sm flex items-center justify-center text-white font-semibold">
-          ${m.author?.charAt(0)?.toUpperCase() || "A"}
-        </div>
+        <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
+             class="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm"
+             alt="${m.author || 'User'} avatar" />
         <div>
-          <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
-            ${m.message}
+          <div class="bg-white border border-gray-200 px-5 py-3 rounded-2xl rounded-tl-none shadow-sm max-w-md">
+            <div class="font-semibold text-gray-800 text-sm mb-1">${m.author || 'Anonymous'}</div>
+            <p class="text-sm text-gray-800 leading-relaxed break-words">${m.message}</p>
           </div>
           <div class="text-xs text-gray-400 mt-1">
             ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
