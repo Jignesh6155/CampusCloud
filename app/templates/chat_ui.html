@@ -183,6 +183,7 @@
   }
 </style>
 
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
   const unitCode = "{{ unit_code }}";
   const CURRENT_USER_ID = {{ current_user.id }};
@@ -194,6 +195,13 @@
   const classicChat     = document.getElementById("classic-chat");
   const generalChat     = document.getElementById("general-chat-container");
   const assignmentsChat = document.getElementById("assignments-chat-container");
+
+  const socket = io();
+  socket.emit("join", {
+    unit_code: unitCode,
+    channel: currentChannel,
+    author: CURRENT_USER_NAME  // ✅ FIXED
+  });
 
   async function loadMessages () {
     const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
@@ -276,6 +284,7 @@
       if (currentIndicator) currentIndicator.classList.remove("opacity-0");
 
       currentChannel = btn.dataset.channel;
+      socket.emit("join", { unit_code: unitCode, channel: currentChannel });
 
       if (currentChannel === "general") {
         classicChat.classList.add("hidden");
@@ -296,32 +305,33 @@
     })
   );
 
-  document.getElementById("general-send-btn").addEventListener("click", async () => {
+  document.getElementById("general-send-btn").addEventListener("click", () => {
     const input = document.getElementById("general-input");
     const msg = input.value.trim();
-  
     if (!msg) return;
-  
-    const formData = new FormData();
-    formData.append("message", msg);
-  
-    const res = await fetch(`/units/${unitCode}/messages?channel=general`, {
-      method: "POST",
-      body: formData,
+
+    socket.emit("send_message", {
+      unit_code: unitCode,
+      channel: currentChannel,
+      message: msg,
+      user_id: CURRENT_USER_ID,
+      author: CURRENT_USER_NAME
     });
-  
-    const result = await res.json();
-    if (result.status === "success") {
+
+    input.value = "";
+  });
+
+  socket.on("receive_message", data => {
+    if (data.channel === currentChannel && data.unit_code === unitCode) {
       addGeneralMsg({
-        message: msg,
-        author: CURRENT_USER_NAME,
-        user_id: CURRENT_USER_ID,
-        timestamp: new Date().toISOString()
+        message: data.message,
+        author: data.author,
+        user_id: data.user_id,
+        timestamp: data.timestamp
       });
-      input.value = "";
       document.getElementById("general-messages").scrollTop = document.getElementById("general-messages").scrollHeight;
     }
-  }); // ✅ <-- THIS was missing
+  });
 
   window.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() =>
