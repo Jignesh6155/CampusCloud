@@ -731,27 +731,36 @@ def units_chat():
 @bp.route('/units/<unit_code>')
 def unit_chat(unit_code):
     return render_template('chat_ui.html', unit_code=unit_code)
-
 @bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
+@login_required
 def unit_messages(unit_code):
+    # Get channel from query params (default to "general")
     channel = request.args.get('channel', 'general')
 
-    # Initialize unit and channel if not already present
+    # Ensure the unit and channel exist in memory
     if unit_code not in chats:
-        chats[unit_code] = {"general": [], "assignments": [], "resources": []}
+        chats[unit_code] = {
+            "general": [],
+            "assignments": [],
+            "resources": []
+        }
     if channel not in chats[unit_code]:
         chats[unit_code][channel] = []
 
+    # Handle new message submission
     if request.method == 'POST':
-        new_msg = request.form.get('message')
+        new_msg = request.form.get('message', '').strip()
         if new_msg:
             msg_obj = {
                 "message": new_msg,
-                "author": "Anonymous User",  # Change later if user login is added
+                "author": current_user.display_name if current_user.is_authenticated else "Anonymous User",
+                "user_id": current_user.id if current_user.is_authenticated else None,
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }
             chats[unit_code][channel].append(msg_obj)
             return jsonify({"status": "success"})
 
-    # Return all messages for the channel
+        return jsonify({"status": "empty"}), 400
+
+    # Return message history for the requested channel
     return jsonify(chats[unit_code][channel])

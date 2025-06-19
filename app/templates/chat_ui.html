@@ -184,19 +184,21 @@
 </style>
 
 <script>
-  const unitCode       = "{{ unit_code }}";
-  let   currentChannel = "general";
+  const unitCode = "{{ unit_code }}";
+  const CURRENT_USER_ID = {{ current_user.id }};
+  const CURRENT_USER_NAME = "{{ current_user.display_name }}";
+  let currentChannel = "general";
 
-  const messagesBox       = document.getElementById("chat-messages");
-  const tabBtns           = document.querySelectorAll(".tab-btn");
-  const classicChat       = document.getElementById("classic-chat");
-  const generalChat       = document.getElementById("general-chat-container");
-  const assignmentsChat   = document.getElementById("assignments-chat-container");
+  const messagesBox     = document.getElementById("chat-messages");
+  const tabBtns         = document.querySelectorAll(".tab-btn");
+  const classicChat     = document.getElementById("classic-chat");
+  const generalChat     = document.getElementById("general-chat-container");
+  const assignmentsChat = document.getElementById("assignments-chat-container");
 
   async function loadMessages () {
     const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
     const data = await res.json();
-  
+
     if (currentChannel === "general") {
       const container = document.getElementById("general-messages");
       container.innerHTML = "";
@@ -228,15 +230,17 @@
 
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
-  
-    if (m.author === "You") {
+
+    if (m.user_id === CURRENT_USER_ID) {
       wrap.className = "flex justify-end";
       wrap.innerHTML = `
         <div class="text-right">
           <div class="bg-indigo-500/90 text-white px-4 py-3 rounded-2xl text-sm max-w-md shadow-md">
             ${m.message}
           </div>
-          <div class="text-xs text-gray-400 mt-1">${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          <div class="text-xs text-gray-400 mt-1">
+            ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
       `;
     } else {
@@ -249,39 +253,40 @@
           <div class="bg-white/80 border border-gray-200/70 px-4 py-3 rounded-2xl text-sm text-gray-800 shadow-sm backdrop-blur-sm">
             ${m.message}
           </div>
-          <div class="text-xs text-gray-400 mt-1">${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          <div class="text-xs text-gray-400 mt-1">
+            ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
       `;
     }
-  
+
     document.getElementById("general-messages").appendChild(wrap);
   }
 
   tabBtns.forEach(btn =>
     btn.addEventListener("click", () => {
-      // Reset all tab buttons
       tabBtns.forEach(b => {
         b.classList.remove("bg-indigo-50", "text-indigo-700", "font-semibold");
         const indicator = b.querySelector("div.w-1\\.5");
         if (indicator) indicator.classList.add("opacity-0");
       });
 
-      // Activate current tab
       btn.classList.add("bg-indigo-50", "text-indigo-700", "font-semibold");
       const currentIndicator = btn.querySelector("div.w-1\\.5");
       if (currentIndicator) currentIndicator.classList.remove("opacity-0");
 
-      // Switch content
       currentChannel = btn.dataset.channel;
 
       if (currentChannel === "general") {
         classicChat.classList.add("hidden");
         generalChat.classList.remove("hidden");
         assignmentsChat.classList.add("hidden");
+        loadMessages();
       } else if (currentChannel === "assignments") {
         classicChat.classList.add("hidden");
         generalChat.classList.add("hidden");
         assignmentsChat.classList.remove("hidden");
+        loadMessages();
       } else {
         generalChat.classList.add("hidden");
         assignmentsChat.classList.add("hidden");
@@ -307,21 +312,24 @@
   
     const result = await res.json();
     if (result.status === "success") {
-      // Render the message immediately
       addGeneralMsg({
         message: msg,
-        author: "You",
+        author: CURRENT_USER_NAME,
+        user_id: CURRENT_USER_ID,
         timestamp: new Date().toISOString()
       });
       input.value = "";
-      messagesBox.scrollTop = messagesBox.scrollHeight;
+      document.getElementById("general-messages").scrollTop = document.getElementById("general-messages").scrollHeight;
     }
+  }); // ✅ <-- THIS was missing
+
+  window.addEventListener("DOMContentLoaded", () => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        document.getElementById("pageContainer").classList.add("slide-in")
+      )
+    );
+    loadMessages();
   });
-
-  loadMessages();
-
-  window.addEventListener("DOMContentLoaded", () =>
-    requestAnimationFrame(() => requestAnimationFrame(() =>
-      document.getElementById("pageContainer").classList.add("slide-in"))));
 </script>
 {% endblock %}
