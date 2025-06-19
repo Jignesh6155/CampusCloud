@@ -741,8 +741,9 @@ def units_chat():
 
 # 🔹 Load chat UI for a specific unit
 @bp.route('/units/<unit_code>')
+@login_required
 def unit_chat(unit_code):
-    return render_template('chat_ui.html', unit_code=unit_code)
+    return render_template('chat_ui.html', unit_code=unit_code, current_user=current_user)
 
 # 🔹 Get or Post messages in a specific unit + channel
 @bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])

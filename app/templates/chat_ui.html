@@ -186,7 +186,7 @@
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
   const unitCode = "{{ unit_code }}";
-  const CURRENT_USER_ID = {{ current_user.id }};
+  const CURRENT_USER_ID = "{{ current_user.id }}";
   const CURRENT_USER_NAME = "{{ current_user.display_name }}";
   let currentChannel = "general";
 
@@ -197,10 +197,14 @@
   const assignmentsChat = document.getElementById("assignments-chat-container");
 
   const socket = io();
+
+  console.log("Joining with user:", CURRENT_USER_ID, CURRENT_USER_NAME);
+
+  // Initial join
   socket.emit("join", {
     unit_code: unitCode,
     channel: currentChannel,
-    author: CURRENT_USER_NAME  // ✅ FIXED
+    author: CURRENT_USER_NAME  // Make sure this is defined and available
   });
 
   async function loadMessages () {
