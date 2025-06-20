@@ -132,11 +132,12 @@
         <i class="fa fa-question-circle text-xl"></i>
       </button>
       <input
+        id="assignments-input"
         type="text"
         placeholder="Post a question about the assignment..."
         class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm"
-      >
-      <button class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
+      />
+      <button id="assignments-send-btn" class="text-white bg-indigo-600 hover:bg-indigo-700 transition px-4 py-2 rounded-full shadow-md">
         <i class="fa fa-paper-plane text-sm"></i>
       </button>
     </div>
@@ -264,6 +265,22 @@
   
     document.getElementById("general-messages").appendChild(wrap);
   }
+
+  document.getElementById("assignments-send-btn").addEventListener("click", () => {
+    const input = document.getElementById("assignments-input");
+    const msg = input.value.trim();
+    if (!msg) return;
+  
+    socket.emit("send_message", {
+      unit_code: unitCode,
+      channel: currentChannel,  // should be 'assignments' at this point
+      message: msg,
+      user_id: CURRENT_USER_ID,
+      author: CURRENT_USER_NAME
+    });
+  
+    input.value = "";
+  });
 
   // 🧭 Tabs
   tabBtns.forEach(btn =>
