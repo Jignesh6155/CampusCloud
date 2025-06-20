@@ -202,18 +202,30 @@ class CommentVote(db.Model):
         return f'<CommentVote User {self.user_id} on Comment {self.comment_id} | Vote {self.vote}>'
 
 class UnitMessage(db.Model):
-    __tablename__ = 'unit_messages'
+    __tablename__ = "unit_messages"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id        = db.Column(db.Integer, primary_key=True)
     unit_code = db.Column(db.String(20), nullable=False)
-    channel = db.Column(db.String(20), nullable=False, default="general")
-    message = db.Column(db.Text, nullable=False)
+    channel   = db.Column(db.String(20), nullable=False, default="general")
+    message   = db.Column(db.Text,       nullable=False)
 
-    author = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    author    = db.Column(db.String(100), nullable=False)
+    user_id   = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     timestamp = db.Column(db.DateTime, default=db.func.now())
 
-    user = db.relationship('User', backref='unit_messages')
+    # 🔹 NEW — thread support
+    parent_id = db.Column(db.Integer,
+                          db.ForeignKey("unit_messages.id", ondelete="CASCADE"),
+                          nullable=True)
+    replies   = db.relationship(
+        "UnitMessage",
+        backref=db.backref("parent", remote_side=[id]),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="dynamic"
+    )
+
+    user = db.relationship("User", backref="unit_messages")
 
     def __repr__(self):
-        return f'<UnitMessage by {self.author} in {self.unit_code}/{self.channel}>'
+        return f"<UnitMessage #{self.id} in {self.unit_code}/{self.channel}>"

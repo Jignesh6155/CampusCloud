@@ -760,23 +760,28 @@ def unit_chat(unit_code):
     )
 
 # 🔹 GET / POST messages
-@bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
+# 🔹 GET / POST messages
+@bp.route("/units/<unit_code>/messages", methods=["GET", "POST"])
 @login_required
 def unit_messages(unit_code):
-    channel = request.args.get('channel', 'general')
+    channel = request.args.get("channel", "general")
 
     # ---------- POST ----------
-    if request.method == 'POST':
-        new_msg = request.form.get('message', '').strip()
+    if request.method == "POST":
+        data      = request.get_json() or request.form
+        new_msg   = (data.get("message") or "").strip()
+        parent_id = data.get("parent_id")          # may be None / ""
+
         if not new_msg:
             return jsonify({"status": "empty"}), 400
 
         msg = UnitMessage(
-            unit_code=unit_code,
-            channel=channel,
-            message=new_msg,
-            author=current_user.display_name or "Anonymous User",
-            user_id=current_user.id
+            unit_code = unit_code.upper(),
+            channel   = channel,
+            message   = new_msg,
+            author    = current_user.display_name or "Anonymous User",
+            user_id   = current_user.id,
+            parent_id = parent_id or None          # store if provided
         )
         db.session.add(msg)
         db.session.commit()
@@ -786,23 +791,24 @@ def unit_messages(unit_code):
     messages = (
         db.session.query(UnitMessage, User)
         .join(User, UnitMessage.user_id == User.id)
-        .filter(UnitMessage.unit_code == unit_code, UnitMessage.channel == channel)
+        .filter(UnitMessage.unit_code == unit_code.upper(),
+                UnitMessage.channel   == channel)
         .order_by(UnitMessage.timestamp.asc())
         .all()
     )
 
-    result = [
-        {
-            "id": m.id,     # ✅ now included
-            "message": m.message,
-            "author": u.display_name or "Anonymous",
-            "user_id": m.user_id,
-            "profile_picture": u.profile_picture or "/static/default-avatar.png",
-            "timestamp": m.timestamp.isoformat()
-        }
-        for m, u in messages
-    ]
+    result = [{
+        "id"             : m.id,
+        "message"        : m.message,
+        "author"         : u.display_name or "Anonymous",
+        "user_id"        : m.user_id,
+        "profile_picture": u.profile_picture or "/static/default-avatar.png",
+        "timestamp"      : m.timestamp.isoformat(),
+        "parent_id"      : m.parent_id            # 🔸 include!
+    } for m, u in messages]
+
     return jsonify(result)
+
 
 # 🔹 DELETE message (RESTful path + short alias) -----------------
 @bp.route('/units/<unit_code>/messages/<int:msg_id>', methods=['DELETE'])
@@ -835,18 +841,20 @@ def handle_join(data):
     join_room(room)
     print(f"🟢 {data.get('author', 'Unknown')} joined {room}")
 
-@socketio.on('send_message')
+@socketio.on("send_message")
 def handle_send_message(data):
     room = f"{data['unit_code']}_{data['channel']}"
     join_room(room)
+
     try:
         message = UnitMessage(
-            unit_code=data['unit_code'],
-            channel=data['channel'],
-            message=data['message'],
-            user_id=int(data['user_id']),
-            author=data['author'],
-            timestamp=datetime.utcnow()
+            unit_code = data["unit_code"],
+            channel   = data["channel"],
+            message   = data["message"],
+            user_id   = int(data["user_id"]),
+            author    = data["author"],
+            parent_id = data.get("parent_id"),      # 🔸 NEW
+            timestamp = datetime.utcnow()
         )
         db.session.add(message)
         db.session.commit()
@@ -855,33 +863,32 @@ def handle_send_message(data):
         print("❌ DB save error:", e)
         return
 
-    emit(
-        'receive_message',
-        {
-            "id": message.id,          # ✅ include ID
-            "message": data['message'],
-            "author": data['author'],
-            "user_id": data['user_id'],
-            "timestamp": message.timestamp.isoformat(),
-            "unit_code": data['unit_code'],
-            "channel": data['channel']
-        },
-        to=room
-    )
+    emit("receive_message", {
+        "id"        : message.id,
+        "unit_code" : message.unit_code,
+        "channel"   : message.channel,
+        "message"   : message.message,
+        "author"    : message.author,
+        "user_id"   : message.user_id,
+        "timestamp" : message.timestamp.isoformat(),
+        "parent_id" : message.parent_id           # 🔸 include!
+    }, to=room)
     
-@bp.route('/units/<unit_code>/assignments')
+@bp.route("/units/<unit_code>/assignments")
 @login_required
 def unit_assignments_channel(unit_code):
-    # Get messages specifically for this unit and the 'assignments' channel
+    # Only top-level posts (parent_id is NULL) so replies are injected by JS
     assignment_messages = (
         UnitMessage.query
-        .filter_by(unit_code=unit_code.upper(), channel='assignments')
+        .filter_by(unit_code=unit_code.upper(),
+                   channel="assignments",
+                   parent_id=None)               # 🔸 filter
         .order_by(UnitMessage.timestamp.asc())
         .all()
     )
 
     return render_template(
-        'unit_chat.html',  # Or a separate template if needed
+        "unit_chat.html",
         unit_code=unit_code.upper(),
         assignment_messages=assignment_messages,
         current_user=current_user
