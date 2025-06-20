@@ -743,37 +743,47 @@ def units_chat():
 @bp.route('/units/<unit_code>')
 @login_required
 def unit_chat(unit_code):
-    return render_template('chat_ui.html', unit_code=unit_code, current_user=current_user)
+    return render_template(
+        'chat_ui.html',
+        unit_code=unit_code,
+        current_user=current_user
+    )
 
-# 🔹 Get or Post messages in a specific unit + channel
+# 🔹 GET / POST messages
 @bp.route('/units/<unit_code>/messages', methods=['GET', 'POST'])
 @login_required
 def unit_messages(unit_code):
     channel = request.args.get('channel', 'general')
 
+    # ---------- POST ----------
     if request.method == 'POST':
         new_msg = request.form.get('message', '').strip()
-        if new_msg:
-            msg = UnitMessage(
-                unit_code=unit_code,
-                channel=channel,
-                message=new_msg,
-                author=current_user.display_name or "Anonymous User",
-                user_id=current_user.id
-            )
-            db.session.add(msg)
-            db.session.commit()
-            return jsonify({"status": "success"})
+        if not new_msg:
+            return jsonify({"status": "empty"}), 400
 
-        return jsonify({"status": "empty"}), 400
+        msg = UnitMessage(
+            unit_code=unit_code,
+            channel=channel,
+            message=new_msg,
+            author=current_user.display_name or "Anonymous User",
+            user_id=current_user.id
+        )
+        db.session.add(msg)
+        db.session.commit()
+        return jsonify({"status": "success", "id": msg.id})
 
-    # GET: fetch messages with user details
-    messages = db.session.query(UnitMessage, User).join(User, UnitMessage.user_id == User.id)\
-        .filter(UnitMessage.unit_code == unit_code, UnitMessage.channel == channel)\
-        .order_by(UnitMessage.timestamp.asc()).all()
+    # ---------- GET ----------
+    messages = (
+        db.session.query(UnitMessage, User)
+        .join(User, UnitMessage.user_id == User.id)
+        .filter(UnitMessage.unit_code == unit_code, UnitMessage.channel == channel)
+        .order_by(UnitMessage.timestamp.asc())
+        .all()
+    )
 
     result = [
         {
+            "id": m.id,     # ✅ now included
             "message": m.message,
             "author": u.display_name or "Anonymous",
             "user_id": m.user_id,
@@ -782,42 +792,69 @@ def unit_messages(unit_code):
         }
         for m, u in messages
     ]
-
     return jsonify(result)
 
+# 🔹 DELETE message (RESTful path + short alias) -----------------
+@bp.route('/units/<unit_code>/messages/<int:msg_id>', methods=['DELETE'])
+@bp.route('/delete-message/<int:msg_id>', methods=['DELETE'])   # matches JS fetch
+@login_required
+def delete_unit_message(unit_code=None, msg_id=None):
+    """Delete one message if the current user owns it."""
+    msg = UnitMessage.query.get_or_404(msg_id)
+
+    # If the long RESTful route is used, verify unit_code matches
+    if unit_code and msg.unit_code != unit_code:
+        return jsonify({"error": "Message does not belong to this unit"}), 400
+
+    if msg.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    room = f"{msg.unit_code}_{msg.channel}"
+    db.session.delete(msg)
+    db.session.commit()
+
+    # Optional: notify everyone else in the room
+    socketio.emit('message_deleted', {"id": msg_id}, to=room)
+
+    return jsonify({"success": True})
+
+# ---------- Socket.IO handlers ----------------
 @socketio.on('join')
 def handle_join(data):
     room = f"{data['unit_code']}_{data['channel']}"
-    author = data.get('author', 'Unknown')
-    print(f"🟢 {author} joined {room}")
     join_room(room)
-    
+    print(f"🟢 {data.get('author', 'Unknown')} joined {room}")
+
 @socketio.on('send_message')
 def handle_send_message(data):
     room = f"{data['unit_code']}_{data['channel']}"
     join_room(room)
-
     try:
         message = UnitMessage(
             unit_code=data['unit_code'],
             channel=data['channel'],
             message=data['message'],
-            user_id=int(data['user_id']),  # 🔧 force cast to int
+            user_id=int(data['user_id']),
             author=data['author'],
             timestamp=datetime.utcnow()
         )
         db.session.add(message)
         db.session.commit()
-        print(f"✅ Message successfully committed to DB: {message}")
+        print("✅ Message committed:", message)
     except Exception as e:
-        print(f"❌ DB Save Error: {e}")
-        return  # optionally emit error to user
+        print("❌ DB save error:", e)
+        return
 
-    emit('receive_message', {
-        'message': data['message'],
-        'author': data['author'],
-        'user_id': data['user_id'],
-        'timestamp': message.timestamp.isoformat(),
-        'unit_code': data['unit_code'],
-        'channel': data['channel']
-    }, to=room)
+    emit(
+        'receive_message',
+        {
+            "id": message.id,          # ✅ include ID
+            "message": data['message'],
+            "author": data['author'],
+            "user_id": data['user_id'],
+            "timestamp": message.timestamp.isoformat(),
+            "unit_code": data['unit_code'],
+            "channel": data['channel']
+        },
+        to=room
+    )
