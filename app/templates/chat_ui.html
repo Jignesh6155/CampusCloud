@@ -110,7 +110,18 @@
     <!-- 🔶 Posts Feed -->
     <div id="assignments-messages" class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
       {% for msg in assignment_messages %}
-        <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white" id="msg-{{ msg.id }}">
+        <div class="post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white" id="msg-{{ msg.id }}">
+
+          {# ▸ Delete button (visible only to author) #}
+          {% if msg.user_id == current_user.id %}
+            <button onclick="showDeleteModal('{{ msg.id }}')"
+                    class="absolute top-3 right-3 text-slate-400 hover:text-red-600
+                          font-bold text-lg leading-none transition-opacity
+                          opacity-0 hover:opacity-100">
+              &times;
+            </button>
+          {% endif %}
+
           <div class="flex items-center gap-3 mb-2">
             <img src="{{ msg.user.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
                 class="w-10 h-10 rounded-full border border-slate-300" />
@@ -123,7 +134,8 @@
               </p>
             </div>
           </div>
-          <p class="text-sm text-slate-700">{{ msg.message }}</p>
+
+          <p class="text-sm text-slate-700 whitespace-pre-line">{{ msg.message }}</p>
         </div>
       {% else %}
         <div class="text-sm text-gray-500 italic">
@@ -232,10 +244,21 @@
   // helper for assignments
   function addAssignmentMsg(m) {
     const wrap = document.createElement("div");
-    wrap.id    = `msg-${m.id}`;
-    wrap.className =
-      "post-card rounded-xl shadow border border-slate-200 p-4 bg-white";
+    wrap.id = `msg-${m.id}`;
+    wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white";
+
+    const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
+
     wrap.innerHTML = `
+      ${isCurrentUser ? `
+        <button onclick="showDeleteModal('${m.id}')"
+                class="absolute top-3 right-3 text-slate-400 hover:text-red-600
+                      font-bold text-lg leading-none transition-opacity
+                      opacity-0 hover:opacity-100">
+          &times;
+        </button>` : ''
+      }
+
       <div class="flex items-center gap-3 mb-2">
         <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
             class="w-10 h-10 rounded-full border border-slate-300" />
@@ -248,9 +271,10 @@
       </div>
       <p class="text-sm text-slate-700">${m.message}</p>
     `;
+
     assignmentsMessagesBox.appendChild(wrap);
   }
-
+  
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
     wrap.id = `msg-${m.id}`;
