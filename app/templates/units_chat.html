@@ -36,29 +36,60 @@
     </div>
   </div>
 
-    <!-- 📚 Units Section (Scrollable) -->
-    <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8" id="unitScrollWindow">
-      <div id="unitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
-        {% for unit in units %}
-        <a href="/units/{{ unit['UNIT CODE'] | upper }}" class="group bg-white border border-indigo-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-indigo-500 hover:bg-indigo-50">
-          <div class="flex flex-col justify-between h-full space-y-3">
-            <div>
-              <h2 class="text-lg font-semibold text-indigo-700 group-hover:text-indigo-800">
-                {{ unit['UNIT CODE'] | upper }} – {{ unit['UNIT NAME'] }}
-              </h2>
-              <p class="text-sm text-slate-500 mt-1">Discuss assignments, labs, and lectures</p>
-            </div>
-            <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
-              <span>📌 0 posts</span>
-              <i class="fas fa-arrow-right group-hover:text-indigo-500 transition"></i>
-            </div>
-          </div>
-        </a>
+  <!-- 📚 Units Section (Grouped & Scrollable) -->
+  <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8" id="unitScrollWindow">
+    <div id="unitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
+
+      {% set base_colors = ['indigo', 'green', 'blue', 'purple', 'pink', 'yellow', 'orange', 'cyan', 'lime', 'amber', 'sky', 'fuchsia', 'rose', 'red', 'teal'] %}
+
+      {# Group units by 4-char prefix if possible, else fallback to 3 letters #}
+      {% set grouped_units = {} %}
+      {% for unit in units %}
+        {% set code = unit['UNIT CODE'] | upper %}
+        {% if code[3] is defined and code[3].isalpha() %}
+          {% set prefix = code[:4] %}
         {% else %}
-        <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
+          {% set prefix = code[:3] %}
+        {% endif %}
+        {% if prefix not in grouped_units %}
+          {% set _ = grouped_units.update({prefix: []}) %}
+        {% endif %}
+        {% set _ = grouped_units[prefix].append(unit) %}
+      {% endfor %}
+
+      {% set sorted_prefixes = grouped_units.keys() | list | sort %}
+      {% for i in range(sorted_prefixes | length) %}
+        {% set prefix = sorted_prefixes[i] %}
+        {% set color = base_colors[i % base_colors | length] %}
+        {% set unit_list = grouped_units[prefix] %}
+        <div class="col-span-full mt-6">
+          <div class="inline-block bg-{{ color }}-50 border-l-4 border-{{ color }}-400 text-{{ color }}-700 px-4 py-1 rounded-md shadow-sm text-sm font-medium tracking-wide">
+            {{ prefix }} Units
+          </div>
+        </div>
+        {% for unit in unit_list %}
+          <a href="/units/{{ unit['UNIT CODE'] | upper }}"
+             class="group bg-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 hover:bg-{{ color }}-50 transition">
+            <div class="flex flex-col justify-between h-full space-y-3">
+              <div>
+                <h2 class="text-lg font-semibold text-{{ color }}-700 group-hover:text-{{ color }}-800">
+                  {{ unit['UNIT CODE'] | upper }} – {{ unit['UNIT NAME'] }}
+                </h2>
+                <p class="text-sm text-slate-500 mt-1"></p>
+              </div>
+              <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
+                <span>📌 0 posts</span>
+                <i class="fas fa-arrow-right group-hover:text-{{ color }}-500 transition"></i>
+              </div>
+            </div>
+          </a>
         {% endfor %}
-      </div>
+      {% else %}
+        <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
+      {% endfor %}
+
     </div>
+  </div>
 
   <!-- 🧑‍🔬 Majors Section (Static Placeholder for Now) -->
   <div id="majorGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -74,7 +105,6 @@
         </div>
       </div>
     </a>
-    <!-- Add more majors here if needed -->
   </div>
 </div>
 
