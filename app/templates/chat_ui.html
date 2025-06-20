@@ -110,73 +110,87 @@
             <i class="fa fa-clipboard-list text-gray-400"></i>
           </div>
 
-          <!-- 🔶 Posts Feed -->
-          <div id="assignments-messages"
-               class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
-            {% if assignment_messages %}
-              {% for msg in assignment_messages %}
-                <!-- Top-level post -->
-                <div class="post-card relative rounded-xl shadow border border-slate-200
-                            p-4 bg-white" id="msg-{{ msg.id }}">
-                  {% if msg.user_id == current_user.id %}
-                    <button onclick="showDeleteModal('{{ msg.id }}')"
-                            class="absolute top-3 right-3 text-slate-400 hover:text-red-600
-                                   font-bold text-lg leading-none opacity-0
-                                   hover:opacity-100 transition-opacity">
-                      &times;
-                    </button>
-                  {% endif %}
+        <!-- 🔶 Posts Feed -->
+        <div id="assignments-messages"
+            class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
+          {% if assignment_messages %}
+            {% for msg in assignment_messages %}
 
-                  <!-- Author -->
-                  <div class="flex items-center gap-3 mb-2">
-                    <img src="{{ msg.user.profile_picture or
-                                'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-                         class="w-10 h-10 rounded-full border border-slate-300"/>
-                    <div>
-                      <h3 class="text-sm font-semibold text-slate-800">
-                        {{ msg.user.display_name or msg.author }}
-                      </h3>
-                      <p class="text-xs text-slate-500">
-                        Posted {{ msg.timestamp.strftime('%b %d, %I:%M %p') }}
-                      </p>
-                    </div>
-                  </div>
+              <!-- ─── Top-level post ─────────────────────────────────────────── -->
+              <div class="post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white"
+                  id="msg-{{ msg.id }}">
 
-                  <!-- Content -->
-                  <p class="text-sm text-slate-700 whitespace-pre-line">{{ msg.message }}</p>
-
-                  <!-- Reply trigger -->
-                  <button onclick="toggleReplyBox('{{ msg.id }}')"
-                          class="mt-3 text-sm text-indigo-600 hover:underline font-medium">
-                    Reply
+                {% if msg.user_id == current_user.id %}
+                  <button onclick="showDeleteModal('{{ msg.id }}')"
+                          class="absolute top-3 right-3 text-slate-400 hover:text-red-600
+                                font-bold text-lg leading-none opacity-0 hover:opacity-100 transition-opacity">
+                    &times;
                   </button>
+                {% endif %}
 
-                  <!-- Reply box + thread -->
-                  <div id="reply-box-{{ msg.id }}" class="hidden mt-3 space-y-3">
+                <!-- Author + time -->
+                <div class="flex items-center gap-3 mb-2">
+                  <img src="{{ msg.user.profile_picture or
+                              'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                      class="w-10 h-10 rounded-full border border-slate-300"/>
+                  <div>
+                    <h3 class="text-sm font-semibold text-slate-800">
+                      {{ msg.user.display_name or msg.author }}
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                      Posted {{ msg.timestamp.strftime('%b %d, %I:%M %p') }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Main message -->
+                <p class="text-sm text-slate-700 whitespace-pre-line">{{ msg.message }}</p>
+
+                <!-- Reply button -->
+                <button onclick="toggleReplyBox('{{ msg.id }}')"
+                        class="mt-3 text-sm text-indigo-600 hover:underline font-medium">
+                  Reply
+                </button>
+
+                <!-- Thread container -->
+                <div id="thread-{{ msg.id }}" class="mt-3">
+                  <!-- Composer (hidden until “Reply” clicked) -->
+                  <div id="reply-box-{{ msg.id }}" class="hidden mb-3">
                     <div class="flex gap-2">
                       <input id="reply-input-{{ msg.id }}" type="text"
-                             placeholder="Write a reply…"
-                             class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm
+                            placeholder="Write a reply…"
+                            class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm
                                     focus:outline-none focus:ring focus:ring-indigo-200"/>
                       <button onclick="sendReply('{{ msg.id }}')"
                               class="text-white bg-indigo-600 hover:bg-indigo-700
-                                     text-sm px-4 py-1 rounded-md shadow">
+                                    text-sm px-4 py-1 rounded-md shadow">
                         Send
                       </button>
                     </div>
-
-                    <!-- Thread replies -->
-                    <div id="replies-for-{{ msg.id }}"
-                         class="space-y-2 pl-4 border-l-2 border-indigo-200"></div>
                   </div>
+
+                  <!-- Collapse / expand toggle -->
+                  <button id="collapse-btn-{{ msg.id }}"
+                          onclick="collapseThread('{{ msg.id }}')"
+                          class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                    <span id="arrow-{{ msg.id }}">▾</span>
+                    <span id="reply-count-{{ msg.id }}">0</span> replies
+                  </button>
+
+                  <!-- Replies list -->
+                  <div id="replies-for-{{ msg.id }}"
+                      class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2"></div>
                 </div>
-              {% endfor %}
-            {% else %}
-              <div class="text-sm text-gray-500 italic">
-                No assignment messages yet. Be the first to post a question!
               </div>
-            {% endif %}
-          </div>
+              <!-- ────────────────────────────────────────────────────────────── -->
+
+            {% endfor %}
+          {% else %}
+            <div class="text-sm text-gray-500 italic">
+              No assignment messages yet. Be the first to post a question!
+            </div>
+          {% endif %}
+        </div>
 
           <!-- Input Bar -->
           <div class="p-4 border-t bg-gradient-to-r from-slate-50 to-gray-100 border-gray-200
@@ -235,12 +249,13 @@
 <!-- ========== SCRIPTS ========== -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+/* ---------- GLOBALS ---------- */
 const unitCode          = "{{ unit_code }}";
 const CURRENT_USER_ID   = "{{ current_user.id }}";
 const CURRENT_USER_NAME = "{{ current_user.display_name }}";
 
-let currentChannel   = "general";
-let deleteMessageId  = null;
+let currentChannel  = "general";
+let deleteMessageId = null;
 
 const messagesBox            = document.getElementById("chat-messages");
 const tabBtns                = document.querySelectorAll(".tab-btn");
@@ -251,9 +266,10 @@ const assignmentsMessagesBox = document.getElementById("assignments-messages");
 
 const socket = io();
 
-/* ---------- JOIN INITIAL CHANNEL ---------- */
-socket.emit("join", { unit_code: unitCode, channel: currentChannel,
-                      author: CURRENT_USER_NAME });
+/* ---------- INITIAL JOIN ---------- */
+socket.emit("join", { unit_code: unitCode,
+                      channel  : currentChannel,
+                      author   : CURRENT_USER_NAME });
 
 /* ---------- LOAD MESSAGES ---------- */
 async function loadMessages() {
@@ -261,10 +277,10 @@ async function loadMessages() {
   const data = await res.json();
 
   if (currentChannel === "general") {
-    const container = document.getElementById("general-messages");
-    container.innerHTML = "";
+    const box = document.getElementById("general-messages");
+    box.innerHTML = "";
     data.forEach(addGeneralMsg);
-    container.scrollTop = container.scrollHeight;
+    box.scrollTop = box.scrollHeight;
   } else if (currentChannel === "assignments") {
     assignmentsMessagesBox.innerHTML = "";
     data.forEach(addAssignmentMsg);
@@ -272,90 +288,113 @@ async function loadMessages() {
   }
 }
 
-/* ---------- ASSIGNMENT POST RENDER ---------- */
-function buildReplyEl(reply) {
-  const el      = document.createElement("div");
-  const timeStr = new Date(reply.timestamp)
-                    .toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
-  el.className  = "bg-gray-100 rounded px-3 py-2 text-sm";
-  el.innerHTML  = `<span class="font-semibold">${reply.author}</span>
-                   <span class="text-gray-500 text-xs ml-1">${timeStr}</span><br>
-                   ${reply.message}`;
+/* ========== ASSIGNMENTS RENDER ========== */
+
+/* reply bubble */
+function buildReplyEl(r) {
+  const t  = new Date(r.timestamp)
+              .toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  const el = document.createElement("div");
+  el.className = "bg-gray-100 rounded-lg px-3 py-2 text-sm";
+  el.innerHTML = `<span class="font-semibold">${r.author}</span>
+                  <span class="text-gray-500 text-xs ml-1">${t}</span><br>${r.message}`;
   return el;
 }
 
+/* collapse / expand whole thread */
+function collapseThread(id) {
+  const list  = document.getElementById(`replies-for-${id}`);
+  const arrow = document.getElementById(`arrow-${id}`);
+  list.classList.toggle("hidden");
+  arrow.textContent = list.classList.contains("hidden") ? "▸" : "▾";
+}
+
+/* main renderer */
 function addAssignmentMsg(m) {
+  /* ---- Reply bubble ---- */
   if (m.parent_id) {
-    /* === It's a reply – attach to thread === */
-    const thread = document.getElementById(`replies-for-${m.parent_id}`);
-    if (thread) thread.appendChild(buildReplyEl(m));
+    const list = document.getElementById(`replies-for-${m.parent_id}`);
+    if (list) {
+      list.appendChild(buildReplyEl(m));
+      /* increment visible counter */
+      const cnt = document.getElementById(`reply-count-${m.parent_id}`);
+      cnt.textContent = parseInt(cnt.textContent) + 1;
+    }
     return;
   }
 
-  /* === Top-level post === */
+  /* ---- Top-level post ---- */
   const wrap = document.createElement("div");
   wrap.id    = `msg-${m.id}`;
-  wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white group";
+  wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white";
 
-  const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
-  const timeStr       = new Date(m.timestamp).toLocaleString();
+  const isMe = Number(m.user_id) === Number(CURRENT_USER_ID);
+  const time = new Date(m.timestamp).toLocaleString();
 
   wrap.innerHTML = `
-    ${isCurrentUser ? `
-      <button onclick="showDeleteModal('${m.id}')"
-              class="absolute top-3 right-3 text-slate-400
-                     group-hover:text-red-600 font-bold text-lg leading-none
-                     opacity-0 group-hover:opacity-100 transition-opacity">
-        &times;
-      </button>` : ""
-    }
+    ${isMe ? `<button onclick="showDeleteModal('${m.id}')"
+                     class="absolute top-3 right-3 text-slate-400 hover:text-red-600
+                            font-bold text-lg leading-none opacity-0 hover:opacity-100
+                            transition-opacity">&times;</button>` : ""}
 
     <div class="flex items-center gap-3 mb-2">
       <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
            class="w-10 h-10 rounded-full border border-slate-300"/>
       <div>
         <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
-        <p class="text-xs text-slate-500">${timeStr}</p>
+        <p class="text-xs text-slate-500">${time}</p>
       </div>
     </div>
 
     <p class="text-sm text-slate-700 whitespace-pre-line">${m.message}</p>
 
-    <!-- Reply trigger -->
     <button onclick="toggleReplyBox('${m.id}')"
             class="mt-3 text-sm text-indigo-600 hover:underline font-medium">
       Reply
     </button>
 
-    <!-- Reply box + thread -->
-    <div id="reply-box-${m.id}" class="hidden mt-3 space-y-3">
-      <div class="flex gap-2">
-        <input id="reply-input-${m.id}" type="text" placeholder="Write a reply…"
-               class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm
-                      focus:outline-none focus:ring focus:ring-indigo-200"/>
-        <button onclick="sendReply('${m.id}')"
-                class="text-white bg-indigo-600 hover:bg-indigo-700 text-sm
-                       px-4 py-1 rounded-md shadow">
-          Send
-        </button>
+    <div id="thread-${m.id}" class="mt-3">
+      <!-- composer -->
+      <div id="reply-box-${m.id}" class="hidden mb-3">
+        <div class="flex gap-2">
+          <input id="reply-input-${m.id}" type="text"
+                 placeholder="Write a reply…"
+                 class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm
+                        focus:outline-none focus:ring focus:ring-indigo-200"/>
+          <button onclick="sendReply('${m.id}')"
+                  class="text-white bg-indigo-600 hover:bg-indigo-700
+                         text-sm px-4 py-1 rounded-md shadow">
+            Send
+          </button>
+        </div>
       </div>
+
+      <!-- collapse / count -->
+      <button id="collapse-btn-${m.id}"
+              onclick="collapseThread('${m.id}')"
+              class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+        <span id="arrow-${m.id}">▾</span>
+        <span id="reply-count-${m.id}">0</span> replies
+      </button>
+
+      <!-- replies list -->
       <div id="replies-for-${m.id}"
-           class="space-y-2 pl-4 border-l-2 border-indigo-200"></div>
+           class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2"></div>
     </div>
   `;
 
   assignmentsMessagesBox.appendChild(wrap);
 }
 
-/* ---------- GENERAL CHAT RENDER ---------- */
+/* ========== GENERAL CHAT RENDER ========== */
 function addGeneralMsg(m) {
   const wrap = document.createElement("div");
   wrap.id    = `msg-${m.id}`;
-  const isMe = Number(m.user_id) === Number(CURRENT_USER_ID);
-  const time = new Date(m.timestamp)
+  const me   = Number(m.user_id) === Number(CURRENT_USER_ID);
+  const t    = new Date(m.timestamp)
                  .toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
 
-  if (isMe) {
+  if (me) {
     wrap.className = "flex justify-end pr-2";
     wrap.innerHTML = `
       <div class="relative max-w-md text-right group">
@@ -364,12 +403,10 @@ function addGeneralMsg(m) {
           <button onclick="showDeleteModal('${m.id}')"
                   class="absolute top-2 right-2 text-white/70 hover:text-white
                          text-sm font-bold leading-none z-20 opacity-0
-                         group-hover:opacity-100 transition-opacity">
-            &times;
-          </button>
-          <p class="text-sm leading-relaxed break-words">${m.message}</p>
+                         group-hover:opacity-100 transition-opacity">&times;</button>
+          <p class="text-sm break-words">${m.message}</p>
         </div>
-        <div class="text-xs text-gray-400 mt-1">${time}</div>
+        <div class="text-xs text-gray-400 mt-1">${t}</div>
       </div>`;
   } else {
     wrap.className = "flex items-start gap-3";
@@ -380,16 +417,16 @@ function addGeneralMsg(m) {
         <div class="bg-white border border-gray-200 px-5 py-3 rounded-2xl
                     rounded-tl-none shadow-sm max-w-md">
           <div class="font-semibold text-gray-800 text-sm mb-1">${m.author}</div>
-          <p class="text-sm text-gray-800 break-words">${m.message}</p>
+          <p class="text-sm break-words">${m.message}</p>
         </div>
-        <div class="text-xs text-gray-400 mt-1">${time}</div>
+        <div class="text-xs text-gray-400 mt-1">${t}</div>
       </div>`;
   }
 
   document.getElementById("general-messages").appendChild(wrap);
 }
 
-/* ---------- SEND NEW POST ---------- */
+/* ========== SEND HANDLERS ========== */
 document.getElementById("assignments-send-btn")
         .addEventListener("click", () => {
   const input = document.getElementById("assignments-input");
@@ -406,7 +443,6 @@ document.getElementById("assignments-send-btn")
   input.value = "";
 });
 
-/* ---------- REPLIES ---------- */
 function toggleReplyBox(id) {
   document.getElementById(`reply-box-${id}`).classList.toggle("hidden");
 }
@@ -427,30 +463,6 @@ function sendReply(parentId) {
   input.value = "";
 }
 
-/* ---------- CHANNEL TABS ---------- */
-tabBtns.forEach(btn => btn.addEventListener("click", () => {
-  tabBtns.forEach(b => {
-    b.classList.remove("bg-indigo-50","text-indigo-700","font-semibold");
-    const ind = b.querySelector("div.w-1\\.5");
-    if (ind) ind.classList.add("opacity-0");
-  });
-
-  btn.classList.add("bg-indigo-50","text-indigo-700","font-semibold");
-  const indNow = btn.querySelector("div.w-1\\.5");
-  if (indNow) indNow.classList.remove("opacity-0");
-
-  currentChannel = btn.dataset.channel;
-  socket.emit("join", { unit_code: unitCode, channel: currentChannel });
-
-  /* show / hide containers */
-  generalChat.classList.toggle("hidden", currentChannel !== "general");
-  assignmentsChat.classList.toggle("hidden", currentChannel !== "assignments");
-  classicChat.classList.toggle("hidden",
-    currentChannel === "general" || currentChannel === "assignments");
-
-  loadMessages();
-}));
-
 /* ---------- GENERAL SEND ---------- */
 document.getElementById("general-send-btn").addEventListener("click", () => {
   const input = document.getElementById("general-input");
@@ -467,23 +479,45 @@ document.getElementById("general-send-btn").addEventListener("click", () => {
   input.value = "";
 });
 
-/* ---------- RECEIVE ---------- */
+/* ========== CHANNEL SWITCHING ========== */
+tabBtns.forEach(btn => btn.addEventListener("click", () => {
+  tabBtns.forEach(b => {
+    b.classList.remove("bg-indigo-50","text-indigo-700","font-semibold");
+    const ind = b.querySelector("div.w-1\\.5");
+    if (ind) ind.classList.add("opacity-0");
+  });
+
+  btn.classList.add("bg-indigo-50","text-indigo-700","font-semibold");
+  const ind = btn.querySelector("div.w-1\\.5");
+  if (ind) ind.classList.remove("opacity-0");
+
+  currentChannel = btn.dataset.channel;
+  socket.emit("join", { unit_code: unitCode, channel: currentChannel });
+
+  generalChat.classList.toggle("hidden", currentChannel !== "general");
+  assignmentsChat.classList.toggle("hidden", currentChannel !== "assignments");
+  classicChat.classList.toggle("hidden",
+    currentChannel === "general" || currentChannel === "assignments");
+
+  loadMessages();
+}));
+
+/* ========== SOCKET RECEIVE ========== */
 socket.on("receive_message", data => {
   if (data.unit_code !== unitCode) return;
 
   if (data.channel === "general" && currentChannel === "general") {
     addGeneralMsg(data);
-    const gm = document.getElementById("general-messages");
-    gm.scrollTop = gm.scrollHeight;
-
-  } else if (data.channel === "assignments" &&
-             currentChannel === "assignments") {
+    document.getElementById("general-messages").scrollTop =
+      document.getElementById("general-messages").scrollHeight;
+  }
+  if (data.channel === "assignments" && currentChannel === "assignments") {
     addAssignmentMsg(data);
     assignmentsMessagesBox.scrollTop = assignmentsMessagesBox.scrollHeight;
   }
 });
 
-/* ---------- UI STARTUP ---------- */
+/* ========== PAGE STARTUP ========== */
 window.addEventListener("DOMContentLoaded", () => {
   requestAnimationFrame(() =>
     requestAnimationFrame(() =>
@@ -491,7 +525,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadMessages();
 });
 
-/* ---------- DELETE MODAL ---------- */
+/* ========== DELETE MODAL ========== */
 function showDeleteModal(id) {
   deleteMessageId = id;
   document.getElementById("deleteModal").classList.remove("hidden");
