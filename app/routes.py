@@ -742,6 +742,7 @@ def units_chat():
 
     if university == "University of Western Australia":
         df = pd.read_excel("app/data/Units_UWA.xlsx")
+        df.columns = df.columns.str.strip()  # Clean column names
         units = df.to_dict(orient="records")
     else:
         units = []
