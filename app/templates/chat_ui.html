@@ -108,47 +108,22 @@
     </div>
 
     <!-- 🔶 Posts Feed -->
+    <!-- 🔶 Posts Feed -->
     <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
-
-      <!-- 🔸 Assignment Post -->
-      <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white">
-        <div class="flex items-center gap-3 mb-2">
-          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border border-slate-300" />
-          <div>
-            <h3 class="text-sm font-semibold text-slate-800">Jamie Tran</h3>
-            <p class="text-xs text-slate-500">Posted today at 2:15 PM</p>
-          </div>
-        </div>
-        <p class="text-sm text-slate-700 mb-3">
-          Has anyone figured out how to approach Q3(b) for the fluid mechanics assignment? I’m stuck on how to apply Bernoulli’s equation with the manometer.
-        </p>
-
-        <!-- 💬 Replies -->
-        <div class="space-y-3 border-t pt-3 mt-3">
-          <div class="flex gap-3">
-            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-9 h-9 rounded-full border border-slate-300" />
-            <div class="bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 w-full">
-              You just need to include the pressure head difference and add the height of the column — I can send a diagram if that helps!
-              <div class="text-xs text-slate-500 mt-1">— Alex • 2:22 PM</div>
+      {% for msg in assignment_messages %}
+        <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white" id="msg-{{ msg.id }}">
+          <div class="flex items-center gap-3 mb-2">
+            <img src="{{ msg.user.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}" class="w-10 h-10 rounded-full border border-slate-300" />
+            <div>
+              <h3 class="text-sm font-semibold text-slate-800">{{ msg.user.display_name or msg.author }}</h3>
+              <p class="text-xs text-slate-500">Posted {{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</p>
             </div>
           </div>
+          <p class="text-sm text-slate-700">{{ msg.message }}</p>
         </div>
-      </div>
-
-      <!-- 🔸 Another Post -->
-      <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white">
-        <div class="flex items-center gap-3 mb-2">
-          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border border-slate-300" />
-          <div>
-            <h3 class="text-sm font-semibold text-slate-800">Lena Wu</h3>
-            <p class="text-xs text-slate-500">Posted today at 1:05 PM</p>
-          </div>
-        </div>
-        <p class="text-sm text-slate-700">
-          What are the page limits for Assignment 2? I can’t find it in the rubric.
-        </p>
-      </div>
-
+      {% else %}
+        <div class="text-sm text-gray-500 italic">No assignment messages yet. Be the first to post a question!</div>
+      {% endfor %}
     </div>
 
     <!-- 📝 Input Bar -->

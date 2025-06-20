@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6 space-y-6 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold text-indigo-700">{{ unit_code }} – Assignments</h1>
+
+  <!-- 📝 Message Form -->
+  <form method="POST" action="{{ url_for('routes.unit_assignments', unit_code=unit_code) }}">
+    {{ form.hidden_tag() }}
+    <div class="flex gap-2">
+      {{ form.message(class="flex-1 input input-bordered w-full", placeholder="Type your message...") }}
+      <button type="submit" class="btn btn-primary">Send</button>
+    </div>
+  </form>
+
+  <!-- 💬 Messages Feed -->
+  <div class="space-y-4">
+    {% for msg in messages %}
+    <div class="chat {% if msg.user_id == current_user.id %}chat-end{% else %}chat-start{% endif %}">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img src="{{ msg.user.profile_picture or url_for('static', filename='img/default.png') }}">
+        </div>
+      </div>
+      <div class="chat-header">
+        {{ msg.user.display_name or msg.author }}
+        <time class="text-xs opacity-50 ml-2">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</time>
+      </div>
+      <div class="chat-bubble">{{ msg.message }}</div>
+    </div>
+    {% else %}
+    <p class="text-gray-400">No assignment messages yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

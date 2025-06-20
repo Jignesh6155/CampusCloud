@@ -868,3 +868,21 @@ def handle_send_message(data):
         },
         to=room
     )
+    
+@bp.route('/units/<unit_code>/assignments')
+@login_required
+def unit_assignments_channel(unit_code):
+    # Get messages specifically for this unit and the 'assignments' channel
+    assignment_messages = (
+        UnitMessage.query
+        .filter_by(unit_code=unit_code.upper(), channel='assignments')
+        .order_by(UnitMessage.timestamp.asc())
+        .all()
+    )
+
+    return render_template(
+        'unit_chat.html',  # Or a separate template if needed
+        unit_code=unit_code.upper(),
+        assignment_messages=assignment_messages,
+        current_user=current_user
+    )
