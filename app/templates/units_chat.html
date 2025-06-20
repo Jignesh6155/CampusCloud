@@ -14,9 +14,7 @@
     <span class="text-sm font-medium text-gray-700">Units</span>
     <label class="relative inline-flex items-center cursor-pointer w-11 h-6">
       <input type="checkbox" id="sectionToggle" class="sr-only peer" onchange="toggleSection()" />
-      <!-- Track -->
       <div class="w-11 h-6 bg-blue-300 peer-checked:bg-green-300 border border-gray-400 rounded-full transition-colors duration-300"></div>
-      <!-- Knob -->
       <div class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full border border-gray-300 transition-transform duration-300 peer-checked:translate-x-5"></div>
     </label>
     <span class="text-sm font-medium text-gray-700">Majors</span>
@@ -38,24 +36,29 @@
     </div>
   </div>
 
-  <!-- 📚 Units Section -->
+  <!-- 📚 Units Section (Dynamically Rendered) -->
   <div id="unitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-    <a href="/units/ENG101" class="group bg-white border border-indigo-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-indigo-500 hover:bg-indigo-50">
+    {% for unit in units %}
+    <a href="/units/{{ unit['UNIT CODE'] | upper }}" class="group bg-white border border-indigo-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-indigo-500 hover:bg-indigo-50">
       <div class="flex flex-col justify-between h-full space-y-3">
         <div>
-          <h2 class="text-lg font-semibold text-indigo-700 group-hover:text-indigo-800">ENG101 – Intro to Engineering</h2>
+          <h2 class="text-lg font-semibold text-indigo-700 group-hover:text-indigo-800">
+            {{ unit['UNIT CODE'] | upper }} – {{ unit['UNIT NAME'] }}
+          </h2>
           <p class="text-sm text-slate-500 mt-1">Discuss assignments, labs, and lectures</p>
         </div>
         <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
-          <span>📌 84 posts</span>
+          <span>📌 0 posts</span>
           <i class="fas fa-arrow-right group-hover:text-indigo-500 transition"></i>
         </div>
       </div>
     </a>
-    <!-- More units... -->
+    {% else %}
+    <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
+    {% endfor %}
   </div>
 
-  <!-- 🧑‍🔬 Majors Section -->
+  <!-- 🧑‍🔬 Majors Section (Static Placeholder for Now) -->
   <div id="majorGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
     <a href="/majors/computer-science" class="group bg-white border border-green-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-green-400">
       <div class="flex flex-col justify-between h-full space-y-3">
@@ -69,15 +72,15 @@
         </div>
       </div>
     </a>
-    <!-- More majors... -->
+    <!-- Add more majors here if needed -->
   </div>
-  </div>
+</div>
 
 <!-- 🔧 Scripts -->
 <script>
   function toggleSection() {
     const isChecked = document.getElementById('sectionToggle').checked;
-    const showUnits = !isChecked; // When NOT checked, show units (blue)
+    const showUnits = !isChecked;
     document.getElementById('unitGrid').classList.toggle('hidden', !showUnits);
     document.getElementById('majorGrid').classList.toggle('hidden', showUnits);
   }
