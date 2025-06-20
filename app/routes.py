@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import pandas as pd
 
 from flask import (
     Blueprint, render_template, request, redirect,
@@ -734,10 +735,18 @@ def create_post_forum(slug):
     return redirect(url_for("routes.forum", slug=slug))
 
 
-# 🔹 Load main unit chat landing page
 @bp.route('/units-chat')
+@login_required
 def units_chat():
-    return render_template('units_chat.html')
+    university = sanitize_domain(current_user.email)
+
+    if university == "University of Western Australia":
+        df = pd.read_excel("app/data/Units_UWA.xlsx")
+        units = df.to_dict(orient="records")
+    else:
+        units = []
+
+    return render_template("units_chat.html", units=units, university=university)
 
 # 🔹 Load chat UI for a specific unit
 @bp.route('/units/<unit_code>')
