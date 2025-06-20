@@ -108,21 +108,27 @@
     </div>
 
     <!-- 🔶 Posts Feed -->
-    <!-- 🔶 Posts Feed -->
-    <div class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
+    <div id="assignments-messages" class="flex-1 px-6 py-4 overflow-y-auto space-y-6">
       {% for msg in assignment_messages %}
         <div class="post-card rounded-xl shadow border border-slate-200 p-4 bg-white" id="msg-{{ msg.id }}">
           <div class="flex items-center gap-3 mb-2">
-            <img src="{{ msg.user.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}" class="w-10 h-10 rounded-full border border-slate-300" />
+            <img src="{{ msg.user.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                class="w-10 h-10 rounded-full border border-slate-300" />
             <div>
-              <h3 class="text-sm font-semibold text-slate-800">{{ msg.user.display_name or msg.author }}</h3>
-              <p class="text-xs text-slate-500">Posted {{ msg.timestamp.strftime('%b %d, %I:%M %p') }}</p>
+              <h3 class="text-sm font-semibold text-slate-800">
+                {{ msg.user.display_name or msg.author }}
+              </h3>
+              <p class="text-xs text-slate-500">
+                Posted {{ msg.timestamp.strftime('%b %d, %I:%M %p') }}
+              </p>
             </div>
           </div>
           <p class="text-sm text-slate-700">{{ msg.message }}</p>
         </div>
       {% else %}
-        <div class="text-sm text-gray-500 italic">No assignment messages yet. Be the first to post a question!</div>
+        <div class="text-sm text-gray-500 italic">
+          No assignment messages yet. Be the first to post a question!
+        </div>
       {% endfor %}
     </div>
 
@@ -196,7 +202,7 @@
   const classicChat     = document.getElementById("classic-chat");
   const generalChat     = document.getElementById("general-chat-container");
   const assignmentsChat = document.getElementById("assignments-chat-container");
-
+  const assignmentsMessagesBox = document.getElementById("assignments-messages");
   const socket = io();
 
   // Socket Join
@@ -208,7 +214,7 @@
 
   // 🔁 Load all messages
   async function loadMessages() {
-    const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
+    const res  = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
     const data = await res.json();
 
     if (currentChannel === "general") {
@@ -216,11 +222,33 @@
       container.innerHTML = "";
       data.forEach(addGeneralMsg);
       container.scrollTop = container.scrollHeight;
-    } else {
-      messagesBox.innerHTML = "";
-      data.forEach(addMsg);
-      messagesBox.scrollTop = messagesBox.scrollHeight;
+    } else if (currentChannel === "assignments") {
+      assignmentsMessagesBox.innerHTML = "";
+      data.forEach(addAssignmentMsg);          // renamed helper
+      assignmentsMessagesBox.scrollTop = assignmentsMessagesBox.scrollHeight;
     }
+  }
+
+  // helper for assignments
+  function addAssignmentMsg(m) {
+    const wrap = document.createElement("div");
+    wrap.id    = `msg-${m.id}`;
+    wrap.className =
+      "post-card rounded-xl shadow border border-slate-200 p-4 bg-white";
+    wrap.innerHTML = `
+      <div class="flex items-center gap-3 mb-2">
+        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            class="w-10 h-10 rounded-full border border-slate-300" />
+        <div>
+          <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
+          <p class="text-xs text-slate-500">
+            ${new Date(m.timestamp).toLocaleString()}
+          </p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700">${m.message}</p>
+    `;
+    assignmentsMessagesBox.appendChild(wrap);
   }
 
   function addGeneralMsg(m) {
@@ -264,6 +292,24 @@
     }
   
     document.getElementById("general-messages").appendChild(wrap);
+  }
+
+  function addMsg(m) {
+    const wrap = document.createElement("div");
+    wrap.id = `msg-${m.id}`;
+    wrap.className = "post-card rounded-xl shadow border border-slate-200 p-4 bg-white";
+    wrap.innerHTML = `
+      <div class="flex items-center gap-3 mb-2">
+        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border border-slate-300" />
+        <div>
+          <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
+          <p class="text-xs text-slate-500">${new Date(m.timestamp).toLocaleString()}</p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700">${m.message}</p>
+    `;
+
+    messagesBox.appendChild(wrap);
   }
 
   document.getElementById("assignments-send-btn").addEventListener("click", () => {
@@ -323,23 +369,16 @@
     input.value = "";
   });
 
-  // 🔁 Receive new messages
   socket.on("receive_message", data => {
-    if (data.channel === currentChannel && data.unit_code === unitCode) {
-      const msgData = {
-        id: data.id || Math.random().toString(36).slice(2),
-        message: data.message,
-        author: data.author,
-        user_id: data.user_id || CURRENT_USER_ID,
-        timestamp: data.timestamp
-      };
-
+    if (data.unit_code === unitCode && data.channel === currentChannel) {
+      const msgData = { ...data };
       if (currentChannel === "general") {
         addGeneralMsg(msgData);
-        document.getElementById("general-messages").scrollTop = document.getElementById("general-messages").scrollHeight;
-      } else {
-        addMsg(msgData);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
+        document.getElementById("general-messages").scrollTop =
+          document.getElementById("general-messages").scrollHeight;
+      } else if (currentChannel === "assignments") {
+        addAssignmentMsg(msgData);
+        assignmentsMessagesBox.scrollTop = assignmentsMessagesBox.scrollHeight;
       }
     }
   });
