@@ -247,45 +247,22 @@
     }
   }
 
-  // 💬 For classic tabs (with delete icon)
-  function addMsg(m) {
-    const wrap = document.createElement("div");
-    wrap.className = "flex items-start gap-3 max-w-[75%]";
-    wrap.id = `msg-${m.id}`;
-    const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
-
-    wrap.innerHTML = `
-      <div class="relative max-w-md text-right z-10">
-        <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md overflow-visible">
-          <p class="text-sm leading-relaxed break-words">${m.message}</p>
-          ${isCurrentUser ? `
-          <button onclick="showDeleteModal('${m.id}')" class="absolute top-1 right-1 text-white/70 hover:text-white transition">
-            <i class="fa fa-ellipsis-h"></i>
-          </button>` : ""}
-        </div>
-        <div class="text-xs text-gray-400 mt-1">
-          ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
-      </div>
-    `;
-    messagesBox.appendChild(wrap);
-  }
-
-  // 💬 For general tab
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
     wrap.id = `msg-${m.id}`;
     const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
-
+  
     if (isCurrentUser) {
       wrap.className = "flex justify-end pr-2";
       wrap.innerHTML = `
-        <div class="max-w-md text-right relative">
-          <div class="bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
-            <p class="text-sm leading-relaxed break-words">${m.message}</p>
-            <button onclick="showDeleteModal('${m.id}')" class="absolute top-1 right-1 text-white/70 hover:text-white transition">
-              <i class="fa fa-ellipsis-h"></i>
+        <div class="relative max-w-md text-right group">
+          <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
+            <!-- ❌ Hidden by default, shows on hover -->
+            <button onclick="showDeleteModal('${m.id}')"
+                    class="absolute top-1 right-1 text-white/70 hover:text-white text-sm font-bold leading-none z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              &times;
             </button>
+            <p class="text-sm leading-relaxed break-words">${m.message}</p>
           </div>
           <div class="text-xs text-gray-400 mt-1">
             ${new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -309,7 +286,7 @@
         </div>
       `;
     }
-
+  
     document.getElementById("general-messages").appendChild(wrap);
   }
 
