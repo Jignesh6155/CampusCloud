@@ -5,17 +5,26 @@
 
   <!-- 🌟 Page Header -->
   <div class="text-center mb-12">
-    <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">Explore Study Chats</h1>
-    <p class="text-slate-500 text-lg">Join discussions by unit or major</p>
+    <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+      Explore Study Chats
+    </h1>
+    <p class="text-slate-500 text-lg">
+      Join discussions by unit or major
+    </p>
   </div>
 
   <!-- 🔁 Toggle Switch with Labels on Both Sides -->
   <div class="flex justify-center items-center gap-3 mb-6">
     <span class="text-sm font-medium text-gray-700">Units</span>
     <label class="relative inline-flex items-center cursor-pointer w-11 h-6">
-      <input type="checkbox" id="sectionToggle" class="sr-only peer" onchange="toggleSection()" />
-      <div class="w-11 h-6 bg-blue-300 peer-checked:bg-green-300 border border-gray-400 rounded-full transition-colors duration-300"></div>
-      <div class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full border border-gray-300 transition-transform duration-300 peer-checked:translate-x-5"></div>
+      <input type="checkbox" id="sectionToggle" class="sr-only peer"
+             onchange="toggleSection()" />
+      <div
+        class="w-11 h-6 bg-blue-300 peer-checked:bg-green-300 border border-gray-400 rounded-full transition-colors duration-300">
+      </div>
+      <div
+        class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full border border-gray-300 transition-transform duration-300 peer-checked:translate-x-5">
+      </div>
     </label>
     <span class="text-sm font-medium text-gray-700">Majors</span>
   </div>
@@ -26,23 +35,21 @@
       <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
         <i class="fas fa-search"></i>
       </span>
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search units or majors..."
-        class="w-full pl-11 pr-5 py-3 text-sm border border-slate-300 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white placeholder-slate-400 transition"
-        onkeyup="filterCards()"
-      />
+      <input id="searchInput" type="text" placeholder="Search units or majors..."
+             class="w-full pl-11 pr-5 py-3 text-sm border border-slate-300 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white placeholder-slate-400 transition"
+             onkeyup="filterCards()"/>
     </div>
   </div>
 
   <!-- 📚 Units Section (Grouped & Scrollable) -->
-  <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8" id="unitScrollWindow">
-    <div id="unitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
+  <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8"
+       id="unitScrollWindow">
+    <div id="unitGrid"
+         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
 
-      {% set base_colors = ['indigo', 'green', 'blue', 'purple', 'pink', 'yellow', 'orange', 'cyan', 'lime', 'amber', 'sky', 'fuchsia', 'rose', 'red', 'teal'] %}
+      {% set base_colors = ['indigo','green','blue','purple','pink','yellow','orange','cyan','lime','amber','sky','fuchsia','rose','red','teal'] %}
 
-      {# Group units by 4-char prefix if possible, else fallback to 3 letters #}
+      {# ---- group by prefix ---- #}
       {% set grouped_units = {} %}
       {% for unit in units %}
         {% set code = unit['UNIT CODE'] | upper %}
@@ -60,24 +67,32 @@
       {% set sorted_prefixes = grouped_units.keys() | list | sort %}
       {% for i in range(sorted_prefixes | length) %}
         {% set prefix = sorted_prefixes[i] %}
-        {% set color = base_colors[i % base_colors | length] %}
+        {% set color  = base_colors[i % (base_colors | length)] %}
         {% set unit_list = grouped_units[prefix] %}
-        <div class="col-span-full mt-6">
-          <div class="inline-block bg-{{ color }}-50 border-l-4 border-{{ color }}-400 text-{{ color }}-700 px-4 py-1 rounded-md shadow-sm text-sm font-medium tracking-wide">
+
+        <!-- ▸ Section header -->
+        <div class="col-span-full mt-6 unit-section-header"
+             data-prefix="{{ prefix }}">
+          <div
+            class="inline-block bg-{{ color }}-50 border-l-4 border-{{ color }}-400 text-{{ color }}-700 px-4 py-1 rounded-md shadow-sm text-sm font-medium tracking-wide">
             {{ prefix }} Units
           </div>
         </div>
+
+        {# cards #}
         {% for unit in unit_list %}
           <a href="/units/{{ unit['UNIT CODE'] | upper }}"
-             class="group bg-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 hover:bg-{{ color }}-50 transition">
+             class="group bg-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 hover:bg-{{ color }}-50 transition unit-card"
+             data-prefix="{{ prefix }}">
             <div class="flex flex-col justify-between h-full space-y-3">
               <div>
-                <h2 class="text-lg font-semibold text-{{ color }}-700 group-hover:text-{{ color }}-800">
+                <h2
+                  class="text-lg font-semibold text-{{ color }}-700 group-hover:text-{{ color }}-800">
                   {{ unit['UNIT CODE'] | upper }} – {{ unit['UNIT NAME'] }}
                 </h2>
-                <p class="text-sm text-slate-500 mt-1"></p>
               </div>
-              <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
+              <div
+                class="flex justify-between text-sm text-slate-400 border-t pt-2">
                 <span>📌 0 posts</span>
                 <i class="fas fa-arrow-right group-hover:text-{{ color }}-500 transition"></i>
               </div>
@@ -85,21 +100,30 @@
           </a>
         {% endfor %}
       {% else %}
-        <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
+        <p class="text-center text-slate-500 col-span-full">
+          No units found for your university.
+        </p>
       {% endfor %}
-
     </div>
   </div>
 
   <!-- 🧑‍🔬 Majors Section (Static Placeholder for Now) -->
-  <div id="majorGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-    <a href="/majors/computer-science" class="group bg-white border border-green-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-green-400">
+  <div id="majorGrid"
+       class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <a href="/majors/computer-science"
+       class="group bg-white border border-green-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-green-400">
       <div class="flex flex-col justify-between h-full space-y-3">
         <div>
-          <h2 class="text-lg font-semibold text-green-700 group-hover:text-green-800">Computer Science</h2>
-          <p class="text-sm text-slate-500 mt-1">Programming help, job tips, project discussions</p>
+          <h2
+            class="text-lg font-semibold text-green-700 group-hover:text-green-800">
+            Computer Science
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">
+            Programming help, job tips, project discussions
+          </p>
         </div>
-        <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
+        <div
+          class="flex justify-between text-sm text-slate-400 border-t pt-2">
           <span>📌 121 discussions</span>
           <i class="fas fa-arrow-right group-hover:text-green-500 transition"></i>
         </div>
@@ -111,19 +135,28 @@
 <!-- 🔧 Scripts -->
 <script>
   function toggleSection() {
-    const isChecked = document.getElementById('sectionToggle').checked;
-    const showUnits = !isChecked;
-    document.getElementById('unitGrid').classList.toggle('hidden', !showUnits);
-    document.getElementById('majorGrid').classList.toggle('hidden', showUnits);
+    const isChecked  = document.getElementById('sectionToggle').checked;
+    document.getElementById('unitGrid').classList.toggle('hidden',  isChecked);
+    document.getElementById('majorGrid').classList.toggle('hidden', !isChecked);
   }
 
   function filterCards() {
-    const input = document.getElementById('searchInput').value.toLowerCase().trim();
-    const allCards = [...document.querySelectorAll('#unitGrid a'), ...document.querySelectorAll('#majorGrid a')];
+    const query = document.getElementById('searchInput').value
+                   .toLowerCase().trim();
 
-    allCards.forEach(card => {
-      const text = card.innerText.toLowerCase().trim();
-      card.classList.toggle('hidden', !text.includes(input));
+    // 1️⃣  filter individual cards
+    document.querySelectorAll('#unitGrid a.unit-card, #majorGrid a').forEach(card => {
+      const match = card.innerText.toLowerCase().includes(query);
+      card.classList.toggle('hidden', !match);
+    });
+
+    // 2️⃣  hide section headers with zero visible cards
+    document.querySelectorAll('#unitGrid .unit-section-header').forEach(header => {
+      const prefix = header.dataset.prefix;
+      const anyVisible = !!document.querySelector(
+        `#unitGrid a.unit-card[data-prefix="${prefix}"]:not(.hidden)`
+      );
+      header.classList.toggle('hidden', !anyVisible);
     });
   }
 </script>
