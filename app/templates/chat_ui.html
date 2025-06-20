@@ -241,40 +241,39 @@
     }
   }
 
-  // helper for assignments
-  function addAssignmentMsg(m) {
-    const wrap = document.createElement("div");
-    wrap.id = `msg-${m.id}`;
-    wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white";
-
-    const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
-
-    wrap.innerHTML = `
-      ${isCurrentUser ? `
-        <button onclick="showDeleteModal('${m.id}')"
-                class="absolute top-3 right-3 text-slate-400 hover:text-red-600
-                      font-bold text-lg leading-none transition-opacity
-                      opacity-0 hover:opacity-100">
-          &times;
-        </button>` : ''
-      }
-
-      <div class="flex items-center gap-3 mb-2">
-        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-            class="w-10 h-10 rounded-full border border-slate-300" />
-        <div>
-          <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
-          <p class="text-xs text-slate-500">
-            ${new Date(m.timestamp).toLocaleString()}
-          </p>
+    function addAssignmentMsg(m) {
+      const wrap = document.createElement("div");
+      wrap.id = `msg-${m.id}`;
+      wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white group";
+    
+      const isCurrentUser = Number(m.user_id) === Number(CURRENT_USER_ID);
+    
+      wrap.innerHTML = `
+        ${isCurrentUser ? `
+          <button onclick="showDeleteModal('${m.id}')"
+                  class="absolute top-3 right-3 text-slate-400 group-hover:text-red-600
+                        font-bold text-lg leading-none transition-opacity
+                        opacity-0 group-hover:opacity-100">
+            &times;
+          </button>` : ''
+        }
+    
+        <div class="flex items-center gap-3 mb-2">
+          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              class="w-10 h-10 rounded-full border border-slate-300" />
+          <div>
+            <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
+            <p class="text-xs text-slate-500">
+              ${new Date(m.timestamp).toLocaleString()}
+            </p>
+          </div>
         </div>
-      </div>
-      <p class="text-sm text-slate-700">${m.message}</p>
-    `;
+        <p class="text-sm text-slate-700">${m.message}</p>
+      `;
+    
+      assignmentsMessagesBox.appendChild(wrap);
+    }
 
-    assignmentsMessagesBox.appendChild(wrap);
-  }
-  
   function addGeneralMsg(m) {
     const wrap = document.createElement("div");
     wrap.id = `msg-${m.id}`;
