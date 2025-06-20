@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from app.models import User, Post, Comment
 from app.utils.domain import sanitize_domain
 from app.models import Forum
+from app.models import UnitMessage
+
 
 @pytest.fixture
 def app_context():
@@ -672,6 +674,85 @@ def test_room_isolation(socketio_app):
         received2 = client2.get_received()
         assert all(event['name'] != 'receive_message' for event in received2)
 
+
+def test_delete_own_message_success(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    # Add message
+    message = UnitMessage(
+        unit_code="ENG101",
+        channel="general",
+        message="This will be deleted",
+        user_id=user1.id,
+        author=user1.display_name
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    msg_id = message.id
+    assert UnitMessage.query.get(msg_id) is not None
+
+    # Delete the message
+    response = client.delete(f'/units/ENG101/messages/{msg_id}')
+    assert response.status_code == 200
+    assert response.get_json()['success'] is True
+    assert UnitMessage.query.get(msg_id) is None
+
+
+def test_delete_other_users_message_forbidden(client, setup_users):
+    user1, user2 = setup_users
+    login_user(client, user1.id)
+
+    # User2 sends message
+    message = UnitMessage(
+        unit_code="ENG101",
+        channel="general",
+        message="Not yours to delete",
+        user_id=user2.id,
+        author=user2.display_name
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    msg_id = message.id
+
+    # User1 tries to delete User2's message
+    response = client.delete(f'/units/ENG101/messages/{msg_id}')
+    assert response.status_code == 403
+    assert b'Unauthorized' in response.data
+    assert UnitMessage.query.get(msg_id) is not None
+
+
+def test_delete_message_wrong_unit(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    # Create message in unit ABC123
+    message = UnitMessage(
+        unit_code="ABC123",
+        channel="general",
+        message="Wrong unit code",
+        user_id=user1.id,
+        author=user1.display_name
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    # Try deleting it using different unit_code in URL
+    response = client.delete(f'/units/ENG101/messages/{message.id}')
+    assert response.status_code == 400
+    assert b'Message does not belong to this unit' in response.data
+    assert UnitMessage.query.get(message.id) is not None
+
+
+def test_delete_nonexistent_message(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    # Attempt to delete a non-existent message ID
+    response = client.delete('/units/ENG101/messages/9999')
+    assert response.status_code == 404
 
 
 
