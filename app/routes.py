@@ -930,3 +930,17 @@ def create_meetup():
     db.session.add(new_meetup)
     db.session.commit()
     return redirect(url_for('routes.study_groups'))
+
+# ✅ DELETE MEETUP: Only the owner can delete
+@bp.route('/study-groups/delete/<int:meetup_id>', methods=['POST'])
+@login_required
+def delete_meetup(meetup_id):
+    meetup = Meetup.query.get_or_404(meetup_id)
+
+    # Only the creator can delete it (if not anonymous)
+    if meetup.user_id != current_user.id:
+        abort(403)
+
+    db.session.delete(meetup)
+    db.session.commit()
+    return jsonify({"status": "deleted"})

@@ -39,7 +39,17 @@
     <!-- Right: Meetup posts list -->
     <div class="w-2/3 max-h-[80vh] overflow-y-auto pr-2 space-y-4">
       {% for meetup in meetups %}
-        <div class="bg-white rounded-xl shadow border border-slate-200 p-4 flex flex-col gap-2">
+        <div id="meetup-{{ meetup.id }}" class="relative bg-white rounded-xl shadow border border-slate-200 p-4 flex flex-col gap-2">
+
+          {% if meetup.user_id == current_user.id %}
+            <!-- Delete icon (top-right corner) -->
+            <button onclick="deleteMeetup({{ meetup.id }})"
+                    class="absolute top-3 right-4 text-slate-400 hover:text-red-600 transition text-sm"
+                    title="Delete this meetup">
+              &times;
+            </button>
+          {% endif %}
+
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-slate-800">{{ meetup.title }}</h3>
             <span class="px-2 py-1 text-xs rounded-full 
@@ -104,6 +114,21 @@ function toggleRSVP(meetupId) {
         button.classList.remove("font-semibold");
       }
     });
+}
+
+function deleteMeetup(id) {
+  if (!confirm("Are you sure you want to delete this meetup?")) return;
+
+  fetch(`/study-groups/delete/${id}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "deleted") {
+        document.getElementById(`meetup-${id}`)?.remove();
+      } else {
+        alert(data.message || "Could not delete meetup.");
+      }
+    })
+    .catch(() => alert("Error deleting meetup. Please try again."));
 }
 </script>
 
