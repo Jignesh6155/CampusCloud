@@ -16,54 +16,67 @@
       <h2 class="text-lg font-semibold text-slate-700">Post a Meetup</h2>
 
       <form action="/study-groups/new" method="POST" class="flex flex-col gap-5 text-sm">
-
         <!-- Title -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Topic / Subject<span class="text-red-500">*</span></span>
           <input name="title" type="text" required
-                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" placeholder="e.g. Calculus revision" />
+                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 
+                 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition"
+                 placeholder="e.g. Calculus revision" />
         </label>
-      
+
         <!-- Location -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Location</span>
           <input name="location" type="text" placeholder="Library G.20"
-                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
+                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 
+                 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
         </label>
-      
+
         <!-- Date & Time -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Date &amp; Time</span>
           <input name="time" type="datetime-local"
-                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
+                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 
+                 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
         </label>
-      
+
+        <!-- Unit Code (optional) -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Unit Code <span class="text-slate-400 text-xs">(optional)</span></span>
+          <input name="unit_code" type="text" placeholder="e.g. MATH1011"
+                 class="uppercase tracking-wide w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm 
+                 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
+        </label>
+
         <!-- Type -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Type</span>
           <select name="type"
-                  class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition">
+                  class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm text-slate-700 
+                  focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition">
             <option value="">Select a type…</option>
             <option value="Study">Study</option>
             <option value="Social">Social</option>
             <option value="Other">Other</option>
           </select>
         </label>
-      
+
         <!-- Description -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Description</span>
           <textarea name="description" rows="4" placeholder="What will be covered?"
-                    class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition"></textarea>
+                    class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 
+                    resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition"></textarea>
         </label>
-      
+
         <!-- Anonymous toggle -->
         <label class="flex items-center gap-2 text-sm text-slate-600 select-none">
           <input type="checkbox" id="anonymous" name="anonymous"
                  class="shrink-0 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
           Post anonymously
         </label>
-      
+
         <button type="submit"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-full shadow transition">
           Post Meetup
@@ -84,7 +97,12 @@
           {% endif %}
 
           <header class="flex items-start justify-between">
-            <h3 class="text-lg font-semibold text-slate-800">{{ meetup.title }}</h3>
+            <h3 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              {{ meetup.title }}
+              {% if meetup.unit_code %}
+                <span class="text-sm text-slate-500 font-normal">• {{ meetup.unit_code }}</span>
+              {% endif %}
+            </h3>
             <span class="px-2 py-0.5 rounded-full text-xs
               {% if meetup.type == 'Study' %} bg-indigo-100 text-indigo-600
               {% elif meetup.type == 'Social' %} bg-green-100 text-green-600
@@ -131,21 +149,30 @@
 
 <script>
 function toggleRSVP(id){
-  fetch(`/study-groups/rsvp/${id}`,{method:'POST'})
-    .then(r=>r.json()).then(d=>{
-      const c=document.getElementById(`rsvp-count-${id}`);
-      const b=document.getElementById(`rsvp-btn-${id}`);
-      if(d.status==="added"){c.textContent=`RSVP (${d.rsvp_count} coming)`;b.classList.add('font-semibold');}
-      else if(d.status==="removed"){c.textContent=`RSVP (${d.rsvp_count} coming)`;b.classList.remove('font-semibold');}
+  fetch(`/study-groups/rsvp/${id}`, { method: 'POST' })
+    .then(r => r.json()).then(d => {
+      const c = document.getElementById(`rsvp-count-${id}`);
+      const b = document.getElementById(`rsvp-btn-${id}`);
+      if (d.status === "added") {
+        c.textContent = `RSVP (${d.rsvp_count} coming)`;
+        b.classList.add('font-semibold');
+      } else if (d.status === "removed") {
+        c.textContent = `RSVP (${d.rsvp_count} coming)`;
+        b.classList.remove('font-semibold');
+      }
     });
 }
+
 function deleteMeetup(id){
-  if(!confirm("Delete this meetup?"))return;
-  fetch(`/study-groups/delete/${id}`,{method:'POST'})
-    .then(r=>r.json()).then(d=>{
-      if(d.status==="deleted"){document.getElementById(`meetup-${id}`)?.remove();}
-      else{alert(d.message||"Could not delete.");}
-    }).catch(()=>alert("Network error, try again."));
+  if (!confirm("Delete this meetup?")) return;
+  fetch(`/study-groups/delete/${id}`, { method: 'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.status === "deleted") {
+        document.getElementById(`meetup-${id}`)?.remove();
+      } else {
+        alert(d.message || "Could not delete.");
+      }
+    }).catch(() => alert("Network error, try again."));
 }
 </script>
 
