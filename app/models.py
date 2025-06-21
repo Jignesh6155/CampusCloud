@@ -250,6 +250,8 @@ class Meetup(db.Model):
     type = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=db.func.now())
 
+    unit_code = db.Column(db.String(20), nullable=True)  # ✅ Optional Unit Code
+
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     user = db.relationship('User', backref='meetups')
 

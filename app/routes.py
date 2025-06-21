@@ -918,6 +918,7 @@ def create_meetup():
     description = request.form.get('description')
     type        = request.form.get('type')
     time        = request.form.get('time')
+    unit_code   = request.form.get('unit_code')  # Optional
     anonymous   = request.form.get('anonymous') == 'on'
 
     new_meetup = Meetup(
@@ -926,8 +927,10 @@ def create_meetup():
         description=description,
         type=type,
         time=datetime.strptime(time, "%Y-%m-%dT%H:%M") if time else None,
-        user_id=None if anonymous else current_user.id
+        user_id=None if anonymous else current_user.id,
+        unit_code=unit_code.upper() if unit_code else None  # Store as uppercase
     )
+
     db.session.add(new_meetup)
     db.session.commit()
     return redirect(url_for('routes.study_groups'))
