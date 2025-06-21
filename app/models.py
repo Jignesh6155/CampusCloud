@@ -24,6 +24,13 @@ user_followers = db.Table(
     db.Column('followed_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
 )
 
+meetup_rsvps = db.Table('meetup_rsvps',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE')),
+    db.Column('meetup_id', db.Integer, db.ForeignKey('meetups.id', ondelete='CASCADE')),
+    db.UniqueConstraint('user_id', 'meetup_id', name='unique_user_meetup_rsvp')
+)
+
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -240,8 +247,14 @@ class Meetup(db.Model):
     location = db.Column(db.String(200))
     time = db.Column(db.DateTime)
     rsvp_count = db.Column(db.Integer, default=0)
-    type = db.Column(db.String(50))  # ← ADD THIS LINE
+    type = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     user = db.relationship('User', backref='meetups')
+
+    rsvped_users = db.relationship(
+        'User',
+        secondary=meetup_rsvps,
+        backref='rsvped_meetups'
+    )

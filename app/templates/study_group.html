@@ -1,4 +1,3 @@
-<!-- study_group.html -->
 {% extends "base.html" %}
 {% block content %}
 
@@ -66,9 +65,13 @@
           <p class="text-slate-700 text-sm">{{ meetup.description }}</p>
 
           <div class="flex items-center justify-between mt-2 text-xs text-slate-600">
-            <button onclick="rsvp({{ meetup.id }})" class="flex items-center space-x-1 text-indigo-600 hover:underline transition">
+            <button onclick="toggleRSVP({{ meetup.id }})"
+                    class="flex items-center space-x-1 text-indigo-600 hover:underline transition {% if current_user in meetup.rsvped_users %}font-semibold{% endif %}"
+                    id="rsvp-btn-{{ meetup.id }}">
               <i class="fas fa-user-plus"></i>
-              <span id="rsvp-count-{{ meetup.id }}">RSVP ({{ meetup.rsvp_count }} coming)</span>
+              <span id="rsvp-count-{{ meetup.id }}">
+                RSVP ({{ meetup.rsvped_users | length }} coming)
+              </span>
             </button>
             <div class="flex gap-1">
               <span class="bg-slate-100 px-2 py-1 rounded-full lowercase">{{ meetup.type }}</span>
@@ -86,12 +89,19 @@
 </div>
 
 <script>
-function rsvp(meetupId) {
+function toggleRSVP(meetupId) {
   fetch(`/study-groups/rsvp/${meetupId}`, { method: 'POST' })
     .then(res => res.json())
     .then(data => {
-      if (data.status === "success") {
-        document.getElementById(`rsvp-count-${meetupId}`).innerText = `RSVP (${data.rsvp_count} coming)`;
+      const countSpan = document.getElementById(`rsvp-count-${meetupId}`);
+      const button = document.getElementById(`rsvp-btn-${meetupId}`);
+
+      if (data.status === "added") {
+        countSpan.innerText = `RSVP (${data.rsvp_count} coming)`;
+        button.classList.add("font-semibold");
+      } else if (data.status === "removed") {
+        countSpan.innerText = `RSVP (${data.rsvp_count} coming)`;
+        button.classList.remove("font-semibold");
       }
     });
 }

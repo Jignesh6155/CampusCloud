@@ -888,13 +888,26 @@ def study_groups():
     return render_template('study_group.html', meetups=meetups)
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
+@login_required
 def rsvp_meetup(meetup_id):
     meetup = Meetup.query.get(meetup_id)
-    if meetup:
-        meetup.rsvp_count += 1
+    if not meetup:
+        return jsonify({"status": "error", "message": "Meetup not found"})
+
+    if current_user in meetup.rsvped_users:
+        meetup.rsvped_users.remove(current_user)
         db.session.commit()
-        return jsonify({"status": "success", "rsvp_count": meetup.rsvp_count})
-    return jsonify({"status": "error", "message": "Meetup not found"})
+        return jsonify({
+            "status": "removed",
+            "rsvp_count": len(meetup.rsvped_users)
+        })
+    else:
+        meetup.rsvped_users.append(current_user)
+        db.session.commit()
+        return jsonify({
+            "status": "added",
+            "rsvp_count": len(meetup.rsvped_users)
+        })
 
 @bp.route('/study-groups/new', methods=['POST'])
 @login_required
