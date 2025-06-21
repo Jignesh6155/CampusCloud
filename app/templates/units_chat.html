@@ -66,41 +66,40 @@
         <!-- Section Header -->
         <div class="col-span-full mt-6 unit-section-header" data-prefix="{{ prefix }}">
           <div class="flex items-center justify-center w-full">
-            <div class="flex-grow h-px bg-{{ color }}-400"></div>
-            <div class="mx-4 text-sm font-semibold tracking-wide text-{{ color }}-700">
+            <div class="flex-grow h-px bg-blue-400"></div>
+            <div class="mx-4 text-sm font-semibold tracking-wide text-blue-700">
               {{ prefix }} Units
             </div>
-            <div class="flex-grow h-px bg-{{ color }}-400"></div>
+            <div class="flex-grow h-px bg-blue-400"></div>
           </div>
         </div>
 
         <!-- Unit Cards -->
         {% for unit in unit_list %}
           <a href="/units/{{ unit['UNIT CODE'] | upper }}"
-             class="group relative bg-gradient-to-br from-{{ color }}-50 to-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 transition unit-card"
-             data-prefix="{{ prefix }}">
-            <span class="absolute inset-0 rounded-xl ring-1 ring-inset ring-{{ color }}-100 group-hover:ring-{{ color }}-300 transition"></span>
-            <div class="relative flex flex-col justify-between h-full space-y-2">
+            class="group bg-white border border-zinc-300 rounded-xl p-4 shadow-md transition-all hover:shadow-lg hover:border-indigo-500 hover:bg-indigo-50 unit-card"
+            data-prefix="{{ prefix }}">
+            <div class="flex flex-col justify-between h-full space-y-2">
               <div>
-                <h2 class="text-lg font-semibold text-zinc-800 group-hover:text-slate-900 leading-snug">
+                <h2 class="text-lg font-semibold text-black group-hover:text-black leading-snug">
                   {{ unit['UNIT CODE'] | upper }}
                 </h2>
-                <p class="text-sm text-slate-600 mt-1 leading-tight">
+                <p class="text-sm text-gray-600 mt-1 leading-tight">
                   {{ unit['UNIT NAME'] }}
                 </p>
               </div>
-              <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
+              <div class="flex justify-between text-sm text-gray-400 border-t pt-2">
                 <span>📌 0 posts</span>
-                <i class="fas fa-arrow-right group-hover:text-{{ color }}-500 transition"></i>
+                <i class="fas fa-arrow-right group-hover:text-indigo-500 transition"></i>
               </div>
             </div>
           </a>
         {% endfor %}
-      {% else %}
-        <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
-      {% endfor %}
-    </div>
-  </div>
+        {% else %}
+          <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
+        {% endfor %}
+        </div>
+        </div>
 
   <!-- 🧑‍🔬 Majors Section -->
   <div id="majorGrid"
