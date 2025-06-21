@@ -229,3 +229,19 @@ class UnitMessage(db.Model):
 
     def __repr__(self):
         return f"<UnitMessage #{self.id} in {self.unit_code}/{self.channel}>"
+    
+    
+class Meetup(db.Model):
+    __tablename__ = 'meetups'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(200))
+    time = db.Column(db.DateTime)
+    rsvp_count = db.Column(db.Integer, default=0)
+    type = db.Column(db.String(50))  # ← ADD THIS LINE
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    user = db.relationship('User', backref='meetups')

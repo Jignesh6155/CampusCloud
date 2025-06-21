@@ -19,6 +19,7 @@ from app import db, socketio
 from app.models import User, Forum, Post, Comment, Committee, CommentVote, UnitMessage
 from app.forms import LoginForm, SignupForm
 from app.utils.domain import UNIVERSITY_EMAIL_DOMAINS, sanitize_domain, UNIVERSITY_SLUG_TO_NAME
+from app.models import Meetup
 
 from flask_socketio import join_room, emit  # ✅ Needed for real-time chat
 
@@ -208,12 +209,6 @@ def committee_messages(committee_name):
 
     return jsonify(committee_chats[committee_name][channel])
 
-# --------------------
-# Study Groups / Meetups
-# --------------------
-@bp.route('/study-groups')
-def study_groups():
-    return render_template('study_group.html', meetups=meetups)
 
 @bp.route('/create-post', methods=['POST'])
 @login_required
@@ -260,13 +255,7 @@ def create_post():
         return redirect(url_for('routes.forum', slug=forum.university_domain.split('.')[0].lower()))
     return redirect(url_for('routes.general_forum'))
 
-@bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
-def rsvp_meetup(meetup_id):
-    for meetup in meetups:
-        if meetup["id"] == meetup_id:
-            meetup["rsvp_count"] += 1
-            return jsonify({"status": "success", "rsvp_count": meetup["rsvp_count"]})
-    return jsonify({"status": "error", "message": "Meetup not found"})
+
 
 # --------------------
 # Profile Page
@@ -893,3 +882,38 @@ def unit_assignments_channel(unit_code):
         assignment_messages=assignment_messages,
         current_user=current_user
     )
+@bp.route('/study-groups')
+def study_groups():
+    meetups = Meetup.query.order_by(Meetup.time.asc()).all()
+    return render_template('study_group.html', meetups=meetups)
+
+@bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
+def rsvp_meetup(meetup_id):
+    meetup = Meetup.query.get(meetup_id)
+    if meetup:
+        meetup.rsvp_count += 1
+        db.session.commit()
+        return jsonify({"status": "success", "rsvp_count": meetup.rsvp_count})
+    return jsonify({"status": "error", "message": "Meetup not found"})
+
+@bp.route('/study-groups/new', methods=['POST'])
+@login_required
+def create_meetup():
+    title       = request.form.get('title')
+    location    = request.form.get('location')
+    description = request.form.get('description')
+    type        = request.form.get('type')
+    time        = request.form.get('time')
+    anonymous   = request.form.get('anonymous') == 'on'
+
+    new_meetup = Meetup(
+        title=title,
+        location=location,
+        description=description,
+        type=type,
+        time=datetime.strptime(time, "%Y-%m-%dT%H:%M") if time else None,
+        user_id=None if anonymous else current_user.id
+    )
+    db.session.add(new_meetup)
+    db.session.commit()
+    return redirect(url_for('routes.study_groups'))
