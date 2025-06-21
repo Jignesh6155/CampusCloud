@@ -5,6 +5,9 @@ from app.models import User, Post, Comment
 from app.utils.domain import sanitize_domain
 from app.models import Forum
 from app.models import UnitMessage
+from app.models import Meetup
+from datetime import datetime, timedelta
+
 
 
 @pytest.fixture
@@ -19,6 +22,20 @@ def app_context():
         yield app
         db.session.remove()
         db.drop_all()
+@pytest.fixture
+def setup_meetup(setup_users):
+    user1, _ = setup_users
+    meetup = Meetup(
+        title="Test Meetup",
+        description="Study session",
+        location="Room 101",
+        time=datetime.now() + timedelta(days=1),
+        type="Study",
+        user_id=user1.id
+    )
+    db.session.add(meetup)
+    db.session.commit()
+    return meetup
 
 def test_valid_signup(client):
     response = client.post('/signup', data={
@@ -754,15 +771,39 @@ def test_delete_nonexistent_message(client, setup_users):
     response = client.delete('/units/ENG101/messages/9999')
     assert response.status_code == 404
 
+ 
+def test_rsvp_meetup(client, setup_users, setup_meetup):
+    user1, _ = setup_users
+    meetup = setup_meetup
+    login_user(client, user1.id)
 
+    # RSVP for the first time
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'added'
+    assert data['rsvp_count'] == 1
 
+    # RSVP again (should remove)
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'removed'
+    assert data['rsvp_count'] == 0
 
+    # RSVP again (add back)
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'added'
+    assert data['rsvp_count'] == 1
+    
+def test_rsvp_requires_login(client, setup_meetup):
+    meetup = setup_meetup
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code in (302, 401)  # Redirect to login or unauthorized
+    
+    
  #run using PYTHONPATH=. pytest
  #PYTHONPATH=. pytest -v
  #PYTHONPATH=. pytest -v -p no:warnings
-
-
- 
- 
- 
- 
