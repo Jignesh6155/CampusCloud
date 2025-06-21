@@ -13,23 +13,18 @@
     </p>
   </div>
 
-  <!-- 🔁 Toggle Switch with Labels on Both Sides -->
+  <!-- 🔁 Toggle Switch -->
   <div class="flex justify-center items-center gap-3 mb-6">
     <span class="text-sm font-medium text-gray-700">Units</span>
     <label class="relative inline-flex items-center cursor-pointer w-11 h-6">
-      <input type="checkbox" id="sectionToggle" class="sr-only peer"
-             onchange="toggleSection()" />
-      <div
-        class="w-11 h-6 bg-blue-300 peer-checked:bg-green-300 border border-gray-400 rounded-full transition-colors duration-300">
-      </div>
-      <div
-        class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full border border-gray-300 transition-transform duration-300 peer-checked:translate-x-5">
-      </div>
+      <input type="checkbox" id="sectionToggle" class="sr-only peer" onchange="toggleSection()" />
+      <div class="w-11 h-6 bg-blue-300 peer-checked:bg-green-300 border border-gray-400 rounded-full transition-colors duration-300"></div>
+      <div class="absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full border border-gray-300 transition-transform duration-300 peer-checked:translate-x-5"></div>
     </label>
     <span class="text-sm font-medium text-gray-700">Majors</span>
   </div>
 
-  <!-- 🔍 Shared Search Bar -->
+  <!-- 🔍 Search Bar -->
   <div class="flex justify-center mb-8">
     <div class="relative w-full max-w-xl">
       <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
@@ -41,15 +36,13 @@
     </div>
   </div>
 
-  <!-- 📚 Units Section (Grouped & Scrollable) -->
-  <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8"
-       id="unitScrollWindow">
-    <div id="unitGrid"
-         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
+  <!-- 📚 Units Section -->
+  <div class="h-[600px] overflow-y-auto rounded-xl shadow-inner px-1 mb-8" id="unitScrollWindow">
+    <div id="unitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pr-2">
 
       {% set base_colors = ['indigo','green','blue','purple','pink','yellow','orange','cyan','lime','amber','sky','fuchsia','rose','red','teal'] %}
 
-      {# ---- group by prefix ---- #}
+      {# Group units by prefix #}
       {% set grouped_units = {} %}
       {% for unit in units %}
         {% set code = unit['UNIT CODE'] | upper %}
@@ -70,7 +63,7 @@
         {% set color  = base_colors[i % (base_colors | length)] %}
         {% set unit_list = grouped_units[prefix] %}
 
-        <!-- ▸ Section header -->
+        <!-- Section Header -->
         <div class="col-span-full mt-6 unit-section-header" data-prefix="{{ prefix }}">
           <div class="flex items-center justify-center w-full">
             <div class="flex-grow h-px bg-{{ color }}-400"></div>
@@ -81,20 +74,22 @@
           </div>
         </div>
 
-        {# cards #}
+        <!-- Unit Cards -->
         {% for unit in unit_list %}
           <a href="/units/{{ unit['UNIT CODE'] | upper }}"
-             class="group bg-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 hover:bg-{{ color }}-50 transition unit-card"
+             class="group relative bg-gradient-to-br from-{{ color }}-50 to-white border border-{{ color }}-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-{{ color }}-500 transition unit-card"
              data-prefix="{{ prefix }}">
-            <div class="flex flex-col justify-between h-full space-y-3">
+            <span class="absolute inset-0 rounded-xl ring-1 ring-inset ring-{{ color }}-100 group-hover:ring-{{ color }}-300 transition"></span>
+            <div class="relative flex flex-col justify-between h-full space-y-2">
               <div>
-                <h2
-                  class="text-lg font-semibold text-{{ color }}-700 group-hover:text-{{ color }}-800">
-                  {{ unit['UNIT CODE'] | upper }} – {{ unit['UNIT NAME'] }}
+                <h2 class="text-lg font-bold text-{{ color }}-700 group-hover:text-{{ color }}-800 leading-snug">
+                  {{ unit['UNIT CODE'] | upper }}
                 </h2>
+                <p class="text-sm text-slate-600 mt-1 leading-tight">
+                  {{ unit['UNIT NAME'] }}
+                </p>
               </div>
-              <div
-                class="flex justify-between text-sm text-slate-400 border-t pt-2">
+              <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
                 <span>📌 0 posts</span>
                 <i class="fas fa-arrow-right group-hover:text-{{ color }}-500 transition"></i>
               </div>
@@ -102,30 +97,27 @@
           </a>
         {% endfor %}
       {% else %}
-        <p class="text-center text-slate-500 col-span-full">
-          No units found for your university.
-        </p>
+        <p class="text-center text-slate-500 col-span-full">No units found for your university.</p>
       {% endfor %}
     </div>
   </div>
 
-  <!-- 🧑‍🔬 Majors Section (Static Placeholder for Now) -->
+  <!-- 🧑‍🔬 Majors Section -->
   <div id="majorGrid"
        class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
     <a href="/majors/computer-science"
-       class="group bg-white border border-green-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-green-400">
-      <div class="flex flex-col justify-between h-full space-y-3">
+       class="group relative bg-gradient-to-br from-green-50 to-white border border-green-300 rounded-xl p-4 shadow-md hover:shadow-lg hover:border-green-400 transition-transform">
+      <span class="absolute inset-0 rounded-xl ring-1 ring-inset ring-green-100 group-hover:ring-green-300 transition"></span>
+      <div class="relative flex flex-col justify-between h-full space-y-3">
         <div>
-          <h2
-            class="text-lg font-semibold text-green-700 group-hover:text-green-800">
+          <h2 class="text-lg font-semibold text-green-700 group-hover:text-green-800">
             Computer Science
           </h2>
           <p class="text-sm text-slate-500 mt-1">
             Programming help, job tips, project discussions
           </p>
         </div>
-        <div
-          class="flex justify-between text-sm text-slate-400 border-t pt-2">
+        <div class="flex justify-between text-sm text-slate-400 border-t pt-2">
           <span>📌 121 discussions</span>
           <i class="fas fa-arrow-right group-hover:text-green-500 transition"></i>
         </div>
@@ -137,27 +129,20 @@
 <!-- 🔧 Scripts -->
 <script>
   function toggleSection() {
-    const isChecked  = document.getElementById('sectionToggle').checked;
-    document.getElementById('unitGrid').classList.toggle('hidden',  isChecked);
+    const isChecked = document.getElementById('sectionToggle').checked;
+    document.getElementById('unitGrid').classList.toggle('hidden', isChecked);
     document.getElementById('majorGrid').classList.toggle('hidden', !isChecked);
   }
 
   function filterCards() {
-    const query = document.getElementById('searchInput').value
-                   .toLowerCase().trim();
-
-    // 1️⃣  filter individual cards
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
     document.querySelectorAll('#unitGrid a.unit-card, #majorGrid a').forEach(card => {
       const match = card.innerText.toLowerCase().includes(query);
       card.classList.toggle('hidden', !match);
     });
-
-    // 2️⃣  hide section headers with zero visible cards
     document.querySelectorAll('#unitGrid .unit-section-header').forEach(header => {
       const prefix = header.dataset.prefix;
-      const anyVisible = !!document.querySelector(
-        `#unitGrid a.unit-card[data-prefix="${prefix}"]:not(.hidden)`
-      );
+      const anyVisible = !!document.querySelector(`#unitGrid a.unit-card[data-prefix="${prefix}"]:not(.hidden)`);
       header.classList.toggle('hidden', !anyVisible);
     });
   }
