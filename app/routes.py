@@ -930,8 +930,8 @@ def create_meetup():
         flash("All required fields must be filled in.", "error")
         return redirect(url_for('routes.study_groups'))
 
-    if not description or len(description.strip()) < 30 or len(description.strip()) > 500:
-        flash("Description must be between 30 and 500 characters.", "error")
+    if not description or len(description.strip()) < 5 or len(description.strip()) > 500:
+        flash("Description must be between 5 and 500 characters.", "error")
         return redirect(url_for('routes.study_groups'))
 
     # ✅ Get user's university from email
