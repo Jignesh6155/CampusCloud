@@ -882,10 +882,13 @@ def unit_assignments_channel(unit_code):
         assignment_messages=assignment_messages,
         current_user=current_user
     )
+    
 @bp.route('/study-groups')
+@login_required
 def study_groups():
-    meetups = Meetup.query.all()
-    meetups.sort(key=lambda m: len(m.rsvped_users), reverse=True)    
+    university = sanitize_domain(current_user.email)
+    meetups = Meetup.query.filter_by(university=university).all()
+    meetups.sort(key=lambda m: len(m.rsvped_users), reverse=True)
     return render_template('study_group.html', meetups=meetups)
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
@@ -910,6 +913,7 @@ def rsvp_meetup(meetup_id):
             "rsvp_count": len(meetup.rsvped_users)
         })
 
+# ✅ CREATE MEETUP
 @bp.route('/study-groups/new', methods=['POST'])
 @login_required
 def create_meetup():
@@ -918,26 +922,30 @@ def create_meetup():
     description = request.form.get('description')
     type        = request.form.get('type')
     time        = request.form.get('time')
-    unit_code   = request.form.get('unit_code')  # Optional
+    unit_code   = request.form.get('unit_code')
     anonymous   = request.form.get('anonymous') == 'on'
 
-    # Validation
+    # ⛔️ Validate required fields
     if not title or not location or not type or not time:
         flash("All required fields must be filled in.", "error")
         return redirect(url_for('routes.study_groups'))
 
-    if not description or len(description.strip()) < 30 or len(description) > 500:
+    if not description or len(description.strip()) < 30 or len(description.strip()) > 500:
         flash("Description must be between 30 and 500 characters.", "error")
         return redirect(url_for('routes.study_groups'))
 
+    # ✅ Get user's university from email
+    university = sanitize_domain(current_user.email)
+
     new_meetup = Meetup(
-        title=title,
-        location=location,
-        description=description,
+        title=title.strip(),
+        location=location.strip(),
+        description=description.strip(),
         type=type,
-        time=datetime.strptime(time, "%Y-%m-%dT%H:%M") if time else None,
+        time=datetime.strptime(time, "%Y-%m-%dT%H:%M"),
+        unit_code=unit_code.upper().strip() if unit_code else None,
         user_id=None if anonymous else current_user.id,
-        unit_code=unit_code.upper() if unit_code else None
+        university=university
     )
 
     db.session.add(new_meetup)
@@ -952,7 +960,6 @@ def create_meetup():
 def delete_meetup(meetup_id):
     meetup = Meetup.query.get_or_404(meetup_id)
 
-    # Only the creator can delete it (if not anonymous)
     if meetup.user_id != current_user.id:
         abort(403)
 
