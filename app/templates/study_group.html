@@ -23,22 +23,21 @@
           <input name="title" type="text" required
                  class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" placeholder="e.g. Calculus revision" />
         </label>
-
-        <!-- Location & Time (two-column on wide screens) -->
-        <div class="flex flex-col sm:flex-row gap-5">
-          <label class="flex-1 flex flex-col gap-1">
-            <span class="font-medium text-slate-600">Location</span>
-            <input name="location" type="text" placeholder="Library G.20"
-                   class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
-          </label>
-
-          <label class="flex-1 flex flex-col gap-1">
-            <span class="font-medium text-slate-600">Date &amp; Time</span>
-            <input name="time" type="datetime-local"
-                   class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
-          </label>
-        </div>
-
+      
+        <!-- Location -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Location</span>
+          <input name="location" type="text" placeholder="Library G.20"
+                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
+        </label>
+      
+        <!-- Date & Time -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Date &amp; Time</span>
+          <input name="time" type="datetime-local"
+                 class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition" />
+        </label>
+      
         <!-- Type -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Type</span>
@@ -50,21 +49,21 @@
             <option value="Other">Other</option>
           </select>
         </label>
-
+      
         <!-- Description -->
         <label class="flex flex-col gap-1">
           <span class="font-medium text-slate-600">Description</span>
           <textarea name="description" rows="4" placeholder="What will be covered?"
                     class="w-full rounded-lg border border-slate-300 bg-white/90 px-3 py-2 shadow-sm placeholder-slate-400 resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300/40 transition"></textarea>
         </label>
-
+      
         <!-- Anonymous toggle -->
         <label class="flex items-center gap-2 text-sm text-slate-600 select-none">
           <input type="checkbox" id="anonymous" name="anonymous"
                  class="shrink-0 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
           Post anonymously
         </label>
-
+      
         <button type="submit"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-full shadow transition">
           Post Meetup
