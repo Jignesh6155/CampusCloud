@@ -1,5 +1,6 @@
 import pytest
 from app import create_app, db
+from flask_login import logout_user
 from sqlalchemy.exc import IntegrityError
 from app.models import User, Post, Comment
 from app.utils.domain import sanitize_domain
@@ -7,7 +8,6 @@ from app.models import Forum
 from app.models import UnitMessage
 from app.models import Meetup
 from datetime import datetime, timedelta
-
 
 
 @pytest.fixture
@@ -22,6 +22,7 @@ def app_context():
         yield app
         db.session.remove()
         db.drop_all()
+        
 @pytest.fixture
 def setup_meetup(setup_users):
     user1, _ = setup_users
@@ -31,7 +32,8 @@ def setup_meetup(setup_users):
         location="Room 101",
         time=datetime.now() + timedelta(days=1),
         type="Study",
-        user_id=user1.id
+        user_id=user1.id,
+        university="UWA"  # ✅ Add the required field here
     )
     db.session.add(meetup)
     db.session.commit()
@@ -803,6 +805,118 @@ def test_rsvp_requires_login(client, setup_meetup):
     response = client.post(f'/study-groups/rsvp/{meetup.id}')
     assert response.status_code in (302, 401)  # Redirect to login or unauthorized
     
+def test_delete_message_wrong_unit(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    message = UnitMessage(
+        unit_code="ABC123",
+        channel="general",
+        message="Wrong unit code",
+        user_id=user1.id,
+        author=user1.display_name
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    response = client.delete(f'/units/ENG101/messages/{message.id}')
+    assert response.status_code == 400
+    assert b'Message does not belong to this unit' in response.data
+    assert UnitMessage.query.get(message.id) is not None
+
+
+def test_delete_nonexistent_message(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.delete('/units/ENG101/messages/9999')
+    assert response.status_code == 404
+
+
+def test_rsvp_meetup(client, setup_users, setup_meetup):
+    user1, _ = setup_users
+    meetup = setup_meetup
+    login_user(client, user1.id)
+
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'added'
+    assert data['rsvp_count'] == 1
+
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'removed'
+    assert data['rsvp_count'] == 0
+
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'added'
+    assert data['rsvp_count'] == 1
+
+
+def test_rsvp_requires_login(client, setup_meetup):
+    meetup = setup_meetup
+    response = client.post(f'/study-groups/rsvp/{meetup.id}')
+    assert response.status_code in (302, 401)
+
+
+def test_create_meetup_requires_fields(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.post('/study-groups/new', data={
+        'title': '',
+        'location': '',
+        'type': '',
+        'time': '',
+        'description': 'Short desc'
+    }, follow_redirects=True)
+
+    assert b"All required fields must be filled in." in response.data
+
+
+def test_create_meetup_invalid_description(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.post('/study-groups/new', data={
+        'title': 'Meetup Test',
+        'location': 'Room 101',
+        'type': 'Study',
+        'time': '2025-12-12T10:00',
+        'description': 'Too short'
+    }, follow_redirects=True)
+
+    assert b"Description must be between 30 and 500 characters." in response.data
+
+
+def test_create_valid_meetup_and_delete(client, setup_users):
+    user1, _ = setup_users
+    login_user(client, user1.id)
+
+    response = client.post('/study-groups/new', data={
+        'title': 'Test Meetup',
+        'location': 'Library',
+        'type': 'Group Study',
+        'time': '2025-12-12T10:00',
+        'description': 'This is a valid description with more than thirty characters.'
+    }, follow_redirects=True)
+
+    assert b"Meetup posted successfully!" in response.data
+
+    meetup = Meetup.query.filter_by(title="Test Meetup").first()
+    assert meetup is not None
+
+    response = client.post(f'/study-groups/delete/{meetup.id}')
+    assert response.status_code == 200
+    assert response.get_json()['status'] == 'deleted'
+    assert Meetup.query.get(meetup.id) is None
+
+
+
     
  #run using PYTHONPATH=. pytest
  #PYTHONPATH=. pytest -v
