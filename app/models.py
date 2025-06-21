@@ -249,6 +249,8 @@ class Meetup(db.Model):
     rsvp_count = db.Column(db.Integer, default=0)
     type = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=db.func.now())
+    university = db.Column(db.String(100), nullable=False)
+
 
     unit_code = db.Column(db.String(20), nullable=True)  # ✅ Optional Unit Code
 
