@@ -921,6 +921,15 @@ def create_meetup():
     unit_code   = request.form.get('unit_code')  # Optional
     anonymous   = request.form.get('anonymous') == 'on'
 
+    # Validation
+    if not title or not location or not type or not time:
+        flash("All required fields must be filled in.", "error")
+        return redirect(url_for('routes.study_groups'))
+
+    if not description or len(description.strip()) < 30 or len(description) > 500:
+        flash("Description must be between 30 and 500 characters.", "error")
+        return redirect(url_for('routes.study_groups'))
+
     new_meetup = Meetup(
         title=title,
         location=location,
@@ -928,12 +937,14 @@ def create_meetup():
         type=type,
         time=datetime.strptime(time, "%Y-%m-%dT%H:%M") if time else None,
         user_id=None if anonymous else current_user.id,
-        unit_code=unit_code.upper() if unit_code else None  # Store as uppercase
+        unit_code=unit_code.upper() if unit_code else None
     )
 
     db.session.add(new_meetup)
     db.session.commit()
+    flash("Meetup posted successfully!", "success")
     return redirect(url_for('routes.study_groups'))
+
 
 # ✅ DELETE MEETUP: Only the owner can delete
 @bp.route('/study-groups/delete/<int:meetup_id>', methods=['POST'])
