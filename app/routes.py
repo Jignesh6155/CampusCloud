@@ -884,7 +884,8 @@ def unit_assignments_channel(unit_code):
     )
 @bp.route('/study-groups')
 def study_groups():
-    meetups = Meetup.query.order_by(Meetup.time.asc()).all()
+    meetups = Meetup.query.all()
+    meetups.sort(key=lambda m: len(m.rsvped_users), reverse=True)    
     return render_template('study_group.html', meetups=meetups)
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
