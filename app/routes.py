@@ -934,7 +934,6 @@ def create_meetup():
         flash("Description must be between 5 and 500 characters.", "error")
         return redirect(url_for('routes.study_groups'))
 
-    # ✅ Get user's university from email
     university = sanitize_domain(current_user.email)
 
     new_meetup = Meetup(
@@ -944,7 +943,8 @@ def create_meetup():
         type=type,
         time=datetime.strptime(time, "%Y-%m-%dT%H:%M"),
         unit_code=unit_code.upper().strip() if unit_code else None,
-        user_id=None if anonymous else current_user.id,
+        user_id=current_user.id,  # Always save user
+        anonymous=anonymous,      # Show anonymous on frontend
         university=university
     )
 
@@ -954,14 +954,14 @@ def create_meetup():
     return redirect(url_for('routes.study_groups'))
 
 
-# ✅ DELETE MEETUP: Only the owner can delete
+# ✅ DELETE MEETUP: Only the original poster (even if anonymous) can delete
 @bp.route('/study-groups/delete/<int:meetup_id>', methods=['POST'])
 @login_required
 def delete_meetup(meetup_id):
     meetup = Meetup.query.get_or_404(meetup_id)
 
     if meetup.user_id != current_user.id:
-        abort(403)
+        abort(403)  # Not allowed
 
     db.session.delete(meetup)
     db.session.commit()

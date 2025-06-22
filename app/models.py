@@ -250,6 +250,8 @@ class Meetup(db.Model):
     type = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=db.func.now())
     university = db.Column(db.String(100), nullable=False)
+    anonymous = db.Column(db.Boolean, default=False)
+
 
 
     unit_code = db.Column(db.String(20), nullable=True)  # ✅ Optional Unit Code
