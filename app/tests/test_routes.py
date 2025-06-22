@@ -887,10 +887,10 @@ def test_create_meetup_invalid_description(client, setup_users):
         'location': 'Room 101',
         'type': 'Study',
         'time': '2025-12-12T10:00',
-        'description': 'Too short'
+        'description': 'Too'
     }, follow_redirects=True)
 
-    assert b"Description must be between 30 and 500 characters." in response.data
+    assert b"Description must be between 5 and 500 characters." in response.data
 
 
 def test_create_valid_meetup_and_delete(client, setup_users):
