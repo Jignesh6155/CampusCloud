@@ -22,8 +22,14 @@
     <!-- ◢ Meetups list -->
     <section class="w-full space-y-6">
       {% for meetup in meetups %}
-        <article id="meetup-{{ meetup.id }}"
-                 class="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col gap-3">
+            <article id="meetup-{{ meetup.id }}"
+            class="relative bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-3
+            {% if meetup.time %}
+            {% if meetup.time > now %} border border-green-400
+                {% else %} border border-red-300
+                {% endif %}
+            {% else %} border border-slate-200
+            {% endif %}">
 
           {% if meetup.user_id == current_user.id %}
             <button onclick="deleteMeetup({{ meetup.id }})"

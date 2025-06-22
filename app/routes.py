@@ -888,9 +888,17 @@ def unit_assignments_channel(unit_code):
 def study_groups():
     university = sanitize_domain(current_user.email)
     meetups = Meetup.query.filter_by(university=university).all()
-    meetups.sort(key=lambda m: len(m.rsvped_users), reverse=True)
-    return render_template('study_group.html', meetups=meetups)
 
+    now_time = datetime.now()
+
+    meetups.sort(
+        key=lambda m: (
+            m.time < now_time,                  # False (upcoming) sorts before True (past)
+            -len(m.rsvped_users)                # Within group, sort by RSVP count DESC
+        )
+    )
+
+    return render_template('study_group.html', meetups=meetups, now=now_time)
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
 @login_required
 def rsvp_meetup(meetup_id):
