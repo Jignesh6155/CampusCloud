@@ -891,14 +891,21 @@ def study_groups():
 
     now_time = datetime.now()
 
+    # 🔽 Custom sorting logic:
+    # 1. Upcoming events (m.time > now_time) come first → m.time < now_time is False (0), so they sort before past events
+    # 2. Within upcoming events: more RSVPs first (descending), then sooner time (ascending)
+    # 3. Within past events: recent past first (descending time)
+
     meetups.sort(
         key=lambda m: (
-            m.time < now_time,                  # False (upcoming) sorts before True (past)
-            -len(m.rsvped_users)                # Within group, sort by RSVP count DESC
+            m.time < now_time,              # ➤ Upcoming (False) before Past (True)
+            -len(m.rsvped_users) if m.time > now_time else 0,   # ➤ RSVP DESC for upcoming
+            m.time if m.time > now_time else -m.time.timestamp()  # ➤ ASC time for upcoming, DESC for past
         )
     )
 
     return render_template('study_group.html', meetups=meetups, now=now_time)
+
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
 @login_required
 def rsvp_meetup(meetup_id):
