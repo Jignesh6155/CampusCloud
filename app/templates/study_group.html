@@ -59,8 +59,10 @@
               <span class="text-xs text-slate-400 italic">Anonymous</span>
             {% endif %}
           {% elif meetup.user %}
-            <a href="#" class="text-xs text-indigo-600 hover:underline">{{ meetup.user.display_name }}</a>
-          {% endif %}
+          <a href="{{ url_for('routes.view_profile', user_id=meetup.user.id) }}"
+          class="text-xs text-indigo-600 hover:underline">
+         {{ meetup.user.display_name }}
+       </a>          {% endif %}
 
           <p class="text-xs text-slate-600">
             📍 {{ meetup.location or "TBA" }} &nbsp;|&nbsp;

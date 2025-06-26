@@ -914,6 +914,7 @@ def test_create_valid_meetup_and_delete(client, setup_users):
     assert response.status_code == 200
     assert response.get_json()['status'] == 'deleted'
     assert Meetup.query.get(meetup.id) is None
+    
 
 
 

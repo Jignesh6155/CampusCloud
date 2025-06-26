@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 import pandas as pd
 from datetime import datetime, timedelta
+from app.models import Meetup  # Make sure Meetup is imported
+
 
 from flask import (
     Blueprint, render_template, request, redirect,
@@ -891,12 +893,24 @@ def study_groups():
     now_time = datetime.now()
     cutoff = now_time - timedelta(days=1)
 
-    # Only show meetups less than 24 hours old or upcoming
+    # 🔴 Step 1: Permanently delete expired meetups from the database
+    expired_meetups = Meetup.query.filter(
+        Meetup.university == university,
+        Meetup.time < cutoff
+    ).all()
+
+    for meetup in expired_meetups:
+        db.session.delete(meetup)
+
+    db.session.commit()
+
+    # ✅ Step 2: Load remaining valid meetups
     meetups = Meetup.query.filter(
         Meetup.university == university,
         Meetup.time >= cutoff
     ).all()
 
+    # Sorting logic
     meetups.sort(
         key=lambda m: (
             m.time < now_time,              
@@ -904,7 +918,6 @@ def study_groups():
             m.time if m.time > now_time else -m.time.timestamp()
         )
     )
-
     return render_template('study_group.html', meetups=meetups, now=now_time)
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
@@ -981,3 +994,9 @@ def delete_meetup(meetup_id):
     db.session.delete(meetup)
     db.session.commit()
     return jsonify({"status": "deleted"})
+
+@bp.route('/profile/<int:user_id>')
+@login_required
+def view_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('profile.html', user=user)
