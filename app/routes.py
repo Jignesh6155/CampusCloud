@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import pandas as pd
+from datetime import datetime, timedelta
 
 from flask import (
     Blueprint, render_template, request, redirect,
@@ -887,20 +888,20 @@ def unit_assignments_channel(unit_code):
 @login_required
 def study_groups():
     university = sanitize_domain(current_user.email)
-    meetups = Meetup.query.filter_by(university=university).all()
-
     now_time = datetime.now()
+    cutoff = now_time - timedelta(days=1)
 
-    # 🔽 Custom sorting logic:
-    # 1. Upcoming events (m.time > now_time) come first → m.time < now_time is False (0), so they sort before past events
-    # 2. Within upcoming events: more RSVPs first (descending), then sooner time (ascending)
-    # 3. Within past events: recent past first (descending time)
+    # Only show meetups less than 24 hours old or upcoming
+    meetups = Meetup.query.filter(
+        Meetup.university == university,
+        Meetup.time >= cutoff
+    ).all()
 
     meetups.sort(
         key=lambda m: (
-            m.time < now_time,              # ➤ Upcoming (False) before Past (True)
-            -len(m.rsvped_users) if m.time > now_time else 0,   # ➤ RSVP DESC for upcoming
-            m.time if m.time > now_time else -m.time.timestamp()  # ➤ ASC time for upcoming, DESC for past
+            m.time < now_time,              
+            -len(m.rsvped_users) if m.time > now_time else 0,
+            m.time if m.time > now_time else -m.time.timestamp()
         )
     )
 
