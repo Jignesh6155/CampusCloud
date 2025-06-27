@@ -4,6 +4,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 from app.models import Meetup  # Make sure Meetup is imported
 from app.models import TutorAd
+import stripe
+
 
 
 
@@ -1007,7 +1009,7 @@ def view_profile(user_id):
 @bp.route('/tutor-ads/new', methods=['GET', 'POST'])
 @login_required
 def create_tutor_ad():
-    next_page = request.args.get('next', '/study-groups')  # default fallback
+    next_page = request.args.get('next', '/study-groups')
 
     if request.method == 'POST':
         session['pending_ad'] = {
@@ -1017,49 +1019,71 @@ def create_tutor_ad():
             'location': request.form.get('location'),
             'description': request.form.get('description'),
         }
-        session['return_to'] = next_page  # save return target
+        session['return_to'] = next_page
 
         return redirect(url_for('routes.payment_page'))
 
     return render_template('create_tutor_ad.html')
 
-@bp.route('/tutor-ads/payment', methods=['GET', 'POST'])
+@bp.route('/tutor-ads/payment', methods=['GET'])
 @login_required
 def payment_page():
-    if request.method == 'POST':
-        ad_data = session.pop('pending_ad', None)
-        return_to = session.pop('return_to', url_for('routes.post_tutor_ad'))
-
-        if not ad_data:
-            flash("Missing ad data. Please try again.", "error")
-            return redirect(url_for('routes.create_tutor_ad'))
-
-        new_ad = TutorAd(
-            name=ad_data['name'],
-            subject=ad_data['subject'],
-            rate=int(ad_data['rate']),
-            location=ad_data['location'],
-            description=ad_data['description'],
-            university=current_user.university or 'unknown',
-            created_at=datetime.utcnow()
-        )
-        db.session.add(new_ad)
-        db.session.commit()
-
-        return redirect(url_for('routes.payment_page', success=1, next=return_to))
-
-    # GET method
     return_to = request.args.get('next', url_for('routes.post_tutor_ad'))
-    return render_template("payment_page.html", total_price=10.00, return_to=return_to)
+    success_url = url_for('routes.payment_success', _external=True) + f"?next={return_to}"
+    cancel_url = url_for('routes.create_tutor_ad', _external=True)
+
+    session_data = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+            'price_data': {
+                'currency': 'usd',
+                'unit_amount': 1000,
+                'product_data': {
+                    'name': 'Tutor Ad Posting Fee',
+                },
+            },
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+
+    return render_template(
+        'payment_page.html',
+        checkout_session_id=session_data.id,
+        stripe_public_key=os.getenv("STRIPE_PUBLIC_KEY")
+    )
+
+
+@bp.route('/tutor-ads/payment/success', methods=['GET'])
+@login_required
+def payment_success():
+    ad_data = session.pop('pending_ad', None)
+    return_to = request.args.get('next', url_for('routes.post_tutor_ad'))
+
+    if not ad_data:
+        flash("Missing ad data. Please try again.", "error")
+        return redirect(url_for('routes.create_tutor_ad'))
+
+    new_ad = TutorAd(
+        name=ad_data['name'],
+        subject=ad_data['subject'],
+        rate=int(ad_data['rate']),
+        location=ad_data['location'],
+        description=ad_data['description'],
+        university=current_user.university or 'unknown',
+        created_at=datetime.utcnow()
+    )
+    db.session.add(new_ad)
+    db.session.commit()
+
+    flash("✅ Payment was successful. Your ad is now live!", "success")
+    return redirect(return_to)
+
 
 @bp.route('/tutor-ads', methods=['GET'])
 @login_required
 def post_tutor_ad():
     tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
     return render_template('study_group.html', tutor_ads=tutor_ads)
-
-@bp.route('/tutor-ads/payment/success', methods=['GET'])
-@login_required
-def mock_payment_success():
-    flash("✅ Payment was successful. Your ad is live!", "success")
-    return redirect(url_for('routes.post_tutor_ad'))

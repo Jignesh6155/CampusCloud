@@ -1,11 +1,13 @@
 # app/__init__.py
 import os
+import stripe  # ✅ Required for stripe.api_key
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf.csrf import generate_csrf
+from dotenv import load_dotenv  # ✅ Required to load .env variables
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -13,8 +15,14 @@ login_manager = LoginManager()
 socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
 
 def create_app(test_config=None):
+    # ✅ Load .env variables before doing anything else
+    load_dotenv()
+
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'w$$a9#^b2av#m2#jQ$s*G831!!6kgY@'
+    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
+    # ✅ Set Stripe API key from environment
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     DB_PATH = os.path.join(BASE_DIR, '../instance/app.db')
