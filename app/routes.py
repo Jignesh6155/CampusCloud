@@ -914,7 +914,10 @@ def study_groups():
         Meetup.time >= cutoff
     ).all()
 
-    # Sorting logic
+    # ✅ Step 3: Load tutor ads (all or filtered by university if needed)
+    tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
+
+    # Step 4: Sort meetups: future ones by popularity, then past ones by recency
     meetups.sort(
         key=lambda m: (
             m.time < now_time,              
@@ -922,7 +925,8 @@ def study_groups():
             m.time if m.time > now_time else -m.time.timestamp()
         )
     )
-    return render_template('study_group.html', meetups=meetups, now=now_time)
+
+    return render_template('study_group.html', meetups=meetups, tutor_ads=tutor_ads, now=now_time)
 
 @bp.route('/study-groups/rsvp/<int:meetup_id>', methods=['POST'])
 @login_required
@@ -1018,6 +1022,8 @@ def create_tutor_ad():
             'rate': request.form.get('rate'),
             'location': request.form.get('location'),
             'description': request.form.get('description'),
+            'email': request.form.get('email'),
+            'phone': request.form.get('phone')  # Optional
         }
         session['return_to'] = next_page
 
@@ -1074,6 +1080,8 @@ def payment_success():
         location=ad_data['location'],
         description=ad_data['description'],
         university=current_user.university or 'unknown',
+        email=ad_data['email'],                    # ✅ Required
+        phone=ad_data.get('phone') or None,        # ✅ Optional
         created_at=datetime.utcnow()
     )
     db.session.add(new_ad)

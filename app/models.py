@@ -275,6 +275,8 @@ class TutorAd(db.Model):
     location = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     university = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), nullable=False)  # ✅ Required
+    phone = db.Column(db.String(20), nullable=True)    # ✅ Optional
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
 
