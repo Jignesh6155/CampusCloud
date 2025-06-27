@@ -1014,7 +1014,11 @@ def create_tutor_ad():
             'location': request.form.get('location'),
             'description': request.form.get('description'),
         }
-        return redirect(url_for('routes.payment_page', success=1))
+
+        # return redirect(url_for('routes.payment_page', success=1))
+
+        # ✅ CORRECT: go to payment form first
+        return redirect(url_for('routes.payment_page'))
 
     return render_template('create_tutor_ad.html')
 
@@ -1037,13 +1041,14 @@ def payment_page():
             university=current_user.university or 'unknown',
             created_at=datetime.utcnow()
         )
-
         db.session.add(new_ad)
         db.session.commit()
 
-        return redirect(url_for('routes.payment_success'))
+        # ✅ Redirect to same page with success query
+        return redirect(url_for('routes.payment_page', success=1))
 
-    return render_template('payment_page.html', total_price=10.00)
+    # GET method
+    return render_template("payment_page.html", total_price=10.00)
 
 @bp.route('/tutor-ads', methods=['GET'])
 @login_required
