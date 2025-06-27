@@ -1009,7 +1009,7 @@ def view_profile(user_id):
 @bp.route('/tutor-ads/new', methods=['GET', 'POST'])
 @login_required
 def create_tutor_ad():
-    next_page = request.args.get('next', '/study-groups')
+    next_page = request.args.get('next', url_for('routes.view_study_groups'))
 
     if request.method == 'POST':
         session['pending_ad'] = {
@@ -1021,14 +1021,15 @@ def create_tutor_ad():
         }
         session['return_to'] = next_page
 
-        return redirect(url_for('routes.payment_page'))
+        return redirect(url_for('routes.payment_page', next=next_page))
 
     return render_template('create_tutor_ad.html')
+
 
 @bp.route('/tutor-ads/payment', methods=['GET'])
 @login_required
 def payment_page():
-    return_to = request.args.get('next', url_for('routes.post_tutor_ad'))
+    return_to = request.args.get('next') or session.get('return_to') or url_for('routes.view_study_groups')
     success_url = url_for('routes.payment_success', _external=True) + f"?next={return_to}"
     cancel_url = url_for('routes.create_tutor_ad', _external=True)
 
@@ -1037,7 +1038,7 @@ def payment_page():
         line_items=[{
             'price_data': {
                 'currency': 'usd',
-                'unit_amount': 1000,
+                'unit_amount': 1000,  # $10.00
                 'product_data': {
                     'name': 'Tutor Ad Posting Fee',
                 },
@@ -1060,7 +1061,7 @@ def payment_page():
 @login_required
 def payment_success():
     ad_data = session.pop('pending_ad', None)
-    return_to = request.args.get('next', url_for('routes.post_tutor_ad'))
+    return_to = request.args.get('next', url_for('routes.view_study_groups'))
 
     if not ad_data:
         flash("Missing ad data. Please try again.", "error")
@@ -1082,8 +1083,8 @@ def payment_success():
     return redirect(return_to)
 
 
-@bp.route('/tutor-ads', methods=['GET'])
+@bp.route('/study-groups', methods=['GET'])
 @login_required
-def post_tutor_ad():
+def view_study_groups():
     tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
     return render_template('study_group.html', tutor_ads=tutor_ads)
