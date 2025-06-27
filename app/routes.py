@@ -3,6 +3,8 @@ from datetime import datetime
 import pandas as pd
 from datetime import datetime, timedelta
 from app.models import Meetup  # Make sure Meetup is imported
+from app.models import TutorAd
+
 
 
 from flask import (
@@ -1005,8 +1007,9 @@ def view_profile(user_id):
 @bp.route('/tutor-ads/new', methods=['GET', 'POST'])
 @login_required
 def create_tutor_ad():
+    next_page = request.args.get('next', '/study-groups')  # default fallback
+
     if request.method == 'POST':
-        # Temporarily save form data in session
         session['pending_ad'] = {
             'name': request.form.get('name'),
             'subject': request.form.get('subject'),
@@ -1014,10 +1017,8 @@ def create_tutor_ad():
             'location': request.form.get('location'),
             'description': request.form.get('description'),
         }
+        session['return_to'] = next_page  # save return target
 
-        # return redirect(url_for('routes.payment_page', success=1))
-
-        # ✅ CORRECT: go to payment form first
         return redirect(url_for('routes.payment_page'))
 
     return render_template('create_tutor_ad.html')
@@ -1027,11 +1028,12 @@ def create_tutor_ad():
 def payment_page():
     if request.method == 'POST':
         ad_data = session.pop('pending_ad', None)
+        return_to = session.pop('return_to', url_for('routes.post_tutor_ad'))
+
         if not ad_data:
             flash("Missing ad data. Please try again.", "error")
             return redirect(url_for('routes.create_tutor_ad'))
 
-        # Save ad
         new_ad = TutorAd(
             name=ad_data['name'],
             subject=ad_data['subject'],
@@ -1044,17 +1046,17 @@ def payment_page():
         db.session.add(new_ad)
         db.session.commit()
 
-        # ✅ Redirect to same page with success query
-        return redirect(url_for('routes.payment_page', success=1))
+        return redirect(url_for('routes.payment_page', success=1, next=return_to))
 
     # GET method
-    return render_template("payment_page.html", total_price=10.00)
+    return_to = request.args.get('next', url_for('routes.post_tutor_ad'))
+    return render_template("payment_page.html", total_price=10.00, return_to=return_to)
 
 @bp.route('/tutor-ads', methods=['GET'])
 @login_required
 def post_tutor_ad():
     tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
-    return render_template('tutor_ads.html', tutor_ads=tutor_ads)
+    return render_template('study_group.html', tutor_ads=tutor_ads)
 
 @bp.route('/tutor-ads/payment/success', methods=['GET'])
 @login_required
