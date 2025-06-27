@@ -21,11 +21,16 @@
     <!-- ◤ Tutors Column -->
     <aside class="hidden lg:flex flex-col w-80 shrink-0">
 
-      <!-- Tutors Title -->
-      <h2 class="text-base font-semibold text-slate-700 mt-2 mb-4">Tutors at UWA</h2>
+<!-- Tutors Title + Button -->
+        <div class="mt-2 mb-4 flex items-center justify-between">
+            <h2 class="text-base font-semibold text-slate-700">Tutors at UWA</h2>
+            <button class="mr-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow transition">
+                + Post an Ad
+            </button>
+        </div>
 
       <!-- Scrollable Tutors -->
-      <div class="h-[70vh] overflow-y-scroll pr-6 border-r-2 border-dashed border-slate-300/70 space-y-6">
+      <div class="h-[70vh] overflow-y-scroll pr-6 border-r-2 border-slate-300 space-y-6">
 
         <!-- Tutor Card -->
         <article class="bg-gray-50 rounded-2xl border border-slate-400 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition">
@@ -63,14 +68,6 @@
           <p class="text-sm text-slate-700">$30&nbsp;/&nbsp;hr • Online</p>
           <button class="self-start mt-1 text-xs font-medium text-indigo-600 hover:underline">Contact</button>
         </article>
-
-        <!-- Post-an-ad Placeholder -->
-        <div class="bg-gray-50 rounded-2xl border-2 border-dashed border-slate-400 p-6 text-center flex flex-col items-center gap-4">
-          <p class="text-sm text-slate-600 font-medium">Post an ad</p>
-          <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow transition">
-            Pay &amp; Post
-          </button>
-        </div>
 
       </div>
     </aside>
