@@ -24,8 +24,9 @@
 <!-- Tutors Title + Button -->
         <div class="mt-2 mb-4 flex items-center justify-between">
             <h2 class="text-base font-semibold text-slate-700">Tutors at UWA</h2>
-            <button class="mr-4 bg-emerald-400 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow transition">
-                + Post an Ad
+            <button onclick="document.getElementById('adModal').classList.remove('hidden')"
+            class="mr-4 bg-emerald-400 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow transition">
+      + Post an Ad
             </button>
         </div>
 
@@ -155,6 +156,60 @@
   </div>
 </div>
 
+<!-- 🟢 Post an Ad Modal -->
+<div id="adModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white max-w-md w-full mx-4 p-6 rounded-xl shadow-lg relative">
+      <button onclick="document.getElementById('adModal').classList.add('hidden')"
+              class="absolute top-3 right-4 text-slate-400 hover:text-red-500 text-lg font-bold">&times;</button>
+  
+      <h2 class="text-lg font-semibold text-slate-700 mb-4">Post a Tutor Ad</h2>
+  
+      <form action="{{ url_for('routes.create_tutor_ad') }}" method="POST" class="flex flex-col gap-5 text-sm">
+        
+        <!-- Name -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Your Name<span class="text-red-500">*</span></span>
+          <input name="name" type="text" required
+                 class="rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:ring focus:ring-emerald-300" />
+        </label>
+  
+        <!-- Subject -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Subject / Skill<span class="text-red-500">*</span></span>
+          <input name="subject" type="text" required
+                 class="rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:ring focus:ring-emerald-300" />
+        </label>
+  
+        <!-- Rate -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Hourly Rate (AUD)<span class="text-red-500">*</span></span>
+          <input name="rate" type="number" min="1" required
+                 class="rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:ring focus:ring-emerald-300" />
+        </label>
+  
+        <!-- Location -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Location (Online, UWA, etc.)<span class="text-red-500">*</span></span>
+          <input name="location" type="text" required
+                 class="rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:ring focus:ring-emerald-300" />
+        </label>
+  
+        <!-- Description -->
+        <label class="flex flex-col gap-1">
+          <span class="font-medium text-slate-600">Short Description<span class="text-red-500">*</span></span>
+          <textarea name="description" rows="3" required
+                    class="rounded-lg border border-slate-300 px-3 py-2 shadow-sm resize-none focus:ring focus:ring-emerald-300"
+                    placeholder="e.g. Specialised in Year 12 Methods, flexible hours..."></textarea>
+        </label>
+  
+        <!-- 🟢 Pay Button -->
+        <button type="submit"
+                class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-full shadow transition">
+          Pay & Post Ad
+        </button>
+      </form>
+    </div>
+  </div>
 
 <!-- 🔳 Post a Meetup Modal -->
 <div id="meetupModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">

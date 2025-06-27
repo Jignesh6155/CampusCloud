@@ -2,6 +2,8 @@ from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import validates
+from datetime import datetime
+
 
 # Association table for many-to-many relationship between users and committees
 user_committees = db.Table(
@@ -264,3 +266,15 @@ class Meetup(db.Model):
         secondary=meetup_rsvps,
         backref='rsvped_meetups'
     )
+    
+class TutorAd(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    subject = db.Column(db.String(120), nullable=False)
+    rate = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    university = db.Column(db.String(120), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+

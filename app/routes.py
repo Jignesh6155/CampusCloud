@@ -1000,3 +1000,59 @@ def delete_meetup(meetup_id):
 def view_profile(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('profile.html', user=user)
+
+
+@bp.route('/tutor-ads/new', methods=['GET', 'POST'])
+@login_required
+def create_tutor_ad():
+    if request.method == 'POST':
+        # Temporarily save form data in session
+        session['pending_ad'] = {
+            'name': request.form.get('name'),
+            'subject': request.form.get('subject'),
+            'rate': request.form.get('rate'),
+            'location': request.form.get('location'),
+            'description': request.form.get('description'),
+        }
+        return redirect(url_for('routes.payment_page', success=1))
+
+    return render_template('create_tutor_ad.html')
+
+@bp.route('/tutor-ads/payment', methods=['GET', 'POST'])
+@login_required
+def payment_page():
+    if request.method == 'POST':
+        ad_data = session.pop('pending_ad', None)
+        if not ad_data:
+            flash("Missing ad data. Please try again.", "error")
+            return redirect(url_for('routes.create_tutor_ad'))
+
+        # Save ad
+        new_ad = TutorAd(
+            name=ad_data['name'],
+            subject=ad_data['subject'],
+            rate=int(ad_data['rate']),
+            location=ad_data['location'],
+            description=ad_data['description'],
+            university=current_user.university or 'unknown',
+            created_at=datetime.utcnow()
+        )
+
+        db.session.add(new_ad)
+        db.session.commit()
+
+        return redirect(url_for('routes.payment_success'))
+
+    return render_template('payment_page.html', total_price=10.00)
+
+@bp.route('/tutor-ads', methods=['GET'])
+@login_required
+def post_tutor_ad():
+    tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
+    return render_template('tutor_ads.html', tutor_ads=tutor_ads)
+
+@bp.route('/tutor-ads/payment/success', methods=['GET'])
+@login_required
+def mock_payment_success():
+    flash("✅ Payment was successful. Your ad is live!", "success")
+    return redirect(url_for('routes.post_tutor_ad'))
