@@ -738,10 +738,13 @@ def units_chat():
 
     if university == "University of Western Australia":
         df = pd.read_excel("app/data/Units_UWA.xlsx")
-        df.columns = df.columns.str.strip()  # Clean column names
-        units = df.to_dict(orient="records")
+    elif university == "Curtin University":
+        df = pd.read_csv("app/data/Units_CURTIN.csv")
     else:
-        units = []
+        df = pd.DataFrame(columns=["Unit Code", "Title"])
+
+    df.columns = df.columns.str.strip()  # Clean column names
+    units = df.to_dict(orient="records")
 
     return render_template("units_chat.html", units=units, university=university)
 
@@ -1096,3 +1099,8 @@ def payment_success():
 def view_study_groups():
     tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
     return render_template('study_group.html', tutor_ads=tutor_ads)
+
+@bp.route('/units/download')
+@login_required
+def download_units_csv():
+    return send_file('Units_CURTIN.csv', mimetype='text/csv', as_attachment=True)
