@@ -758,8 +758,6 @@ def unit_chat(unit_code):
         current_user=current_user
     )
 
-# 🔹 GET / POST messages
-# 🔹 GET / POST messages
 @bp.route("/units/<unit_code>/messages", methods=["GET", "POST"])
 @login_required
 def unit_messages(unit_code):
@@ -769,10 +767,19 @@ def unit_messages(unit_code):
     if request.method == "POST":
         data      = request.get_json() or request.form
         new_msg   = (data.get("message") or "").strip()
-        parent_id = data.get("parent_id")          # may be None / ""
+        parent_id = data.get("parent_id")
 
         if not new_msg:
             return jsonify({"status": "empty"}), 400
+
+        # 🔒 Enforce size limits based on channel
+        if channel == "general" and len(new_msg) > 300:
+            return jsonify({"status": "too_long", "limit": 300}), 400
+        elif channel == "assignments":
+            if parent_id and len(new_msg) > 500:
+                return jsonify({"status": "too_long", "limit": 500}), 400
+            elif not parent_id and len(new_msg) > 1000:
+                return jsonify({"status": "too_long", "limit": 1000}), 400
 
         msg = UnitMessage(
             unit_code = unit_code.upper(),
@@ -780,7 +787,7 @@ def unit_messages(unit_code):
             message   = new_msg,
             author    = current_user.display_name or "Anonymous User",
             user_id   = current_user.id,
-            parent_id = parent_id or None          # store if provided
+            parent_id = parent_id or None
         )
         db.session.add(msg)
         db.session.commit()
@@ -803,11 +810,10 @@ def unit_messages(unit_code):
         "user_id"        : m.user_id,
         "profile_picture": u.profile_picture or "/static/default-avatar.png",
         "timestamp"      : m.timestamp.isoformat(),
-        "parent_id"      : m.parent_id            # 🔸 include!
+        "parent_id"      : m.parent_id
     } for m, u in messages]
 
     return jsonify(result)
-
 
 # 🔹 DELETE message (RESTful path + short alias) -----------------
 @bp.route('/units/<unit_code>/messages/<int:msg_id>', methods=['DELETE'])
@@ -846,32 +852,45 @@ def handle_send_message(data):
     join_room(room)
 
     try:
+        text = data.get("message", "").strip()
+        if not text:
+            return  # empty message
+
+        # 🔒 Enforce length limits
+        if data["channel"] == "general" and len(text) > 300:
+            return
+        elif data["channel"] == "assignments":
+            if data.get("parent_id") and len(text) > 500:
+                return
+            elif not data.get("parent_id") and len(text) > 1000:
+                return
+
         message = UnitMessage(
             unit_code = data["unit_code"],
             channel   = data["channel"],
-            message   = data["message"],
+            message   = text,
             user_id   = int(data["user_id"]),
             author    = data["author"],
-            parent_id = data.get("parent_id"),      # 🔸 NEW
+            parent_id = data.get("parent_id"),
             timestamp = datetime.utcnow()
         )
         db.session.add(message)
         db.session.commit()
         print("✅ Message committed:", message)
+
+        emit("receive_message", {
+            "id"        : message.id,
+            "unit_code" : message.unit_code,
+            "channel"   : message.channel,
+            "message"   : message.message,
+            "author"    : message.author,
+            "user_id"   : message.user_id,
+            "timestamp" : message.timestamp.isoformat(),
+            "parent_id" : message.parent_id
+        }, to=room)
+
     except Exception as e:
         print("❌ DB save error:", e)
-        return
-
-    emit("receive_message", {
-        "id"        : message.id,
-        "unit_code" : message.unit_code,
-        "channel"   : message.channel,
-        "message"   : message.message,
-        "author"    : message.author,
-        "user_id"   : message.user_id,
-        "timestamp" : message.timestamp.isoformat(),
-        "parent_id" : message.parent_id           # 🔸 include!
-    }, to=room)
     
 @bp.route("/units/<unit_code>/assignments")
 @login_required

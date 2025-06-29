@@ -82,19 +82,22 @@
 
           <!-- Input -->
           <div class="p-4 border-t bg-gradient-to-r from-stone-100 to-gray-100 border-gray-200/60
-                      flex items-center gap-3 shadow-sm">
-            <button class="text-gray-400 hover:text-indigo-400 transition">
-              <i class="fa fa-smile-o text-xl"></i>
-            </button>
-            <input id="general-input" type="text" placeholder="Type your message…"
-                   class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2
-                          text-sm placeholder-gray-400 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-200 shadow-sm"/>
-            <button id="general-send-btn"
-                    class="text-white bg-indigo-600 hover:bg-indigo-700 transition
-                           px-4 py-2 rounded-full shadow-md">
-              <i class="fa fa-paper-plane-o text-sm"></i>
-            </button>
+                      flex flex-col gap-1 shadow-sm">
+            <div class="flex items-center gap-3">
+              <button class="text-gray-400 hover:text-indigo-400 transition">
+                <i class="fa fa-smile-o text-xl"></i>
+              </button>
+              <input id="general-input" type="text" placeholder="Type your message…"
+                    class="flex-1 bg-white border border-gray-200 rounded-full px-5 py-2
+                            text-sm placeholder-gray-400 focus:outline-none
+                            focus:ring-2 focus:ring-indigo-200 shadow-sm"/>
+              <button id="general-send-btn"
+                      class="text-white bg-indigo-600 hover:bg-indigo-700 transition
+                            px-4 py-2 rounded-full shadow-md">
+                <i class="fa fa-paper-plane-o text-sm"></i>
+              </button>
+            </div>
+            <div id="general-char-count" class="text-xs text-gray-500 ml-12">0 / 300</div>
           </div>
         </div>
       </div>
@@ -194,20 +197,23 @@
 
           <!-- Input Bar -->
           <div class="p-4 border-t bg-gradient-to-r from-slate-50 to-gray-100 border-gray-200
-                      flex items-center gap-3 shadow-sm">
-            <button class="text-gray-400 hover:text-indigo-500 transition">
-              <i class="fa fa-question-circle text-xl"></i>
-            </button>
-            <input id="assignments-input" type="text"
-                   placeholder="Post a question about the assignment…"
-                   class="flex-1 bg-white border border-gray-200 rounded-full
-                          px-5 py-2 text-sm placeholder-gray-400 focus:outline-none
-                          focus:ring-2 focus:ring-indigo-200 shadow-sm"/>
-            <button id="assignments-send-btn"
-                    class="text-white bg-indigo-600 hover:bg-indigo-700 transition
-                           px-4 py-2 rounded-full shadow-md">
-              <i class="fa fa-paper-plane text-sm"></i>
-            </button>
+                      flex flex-col gap-1 shadow-sm">
+            <div class="flex items-center gap-3">
+              <button class="text-gray-400 hover:text-indigo-500 transition">
+                <i class="fa fa-question-circle text-xl"></i>
+              </button>
+              <input id="assignments-input" type="text"
+                    placeholder="Post a question about the assignment…"
+                    class="flex-1 bg-white border border-gray-200 rounded-full
+                            px-5 py-2 text-sm placeholder-gray-400 focus:outline-none
+                            focus:ring-2 focus:ring-indigo-200 shadow-sm"/>
+              <button id="assignments-send-btn"
+                      class="text-white bg-indigo-600 hover:bg-indigo-700 transition
+                            px-4 py-2 rounded-full shadow-md">
+                <i class="fa fa-paper-plane text-sm"></i>
+              </button>
+            </div>
+            <div id="assignments-char-count" class="text-xs text-gray-500 ml-12">0 / 1000</div>
           </div>
         </div>
       </div>
@@ -543,5 +549,44 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
   }
   hideDeleteModal();
 });
+
+/* ========== CHARACTER COUNTS ========== */
+function updateCharCount(inputId, countId, max) {
+  const input = document.getElementById(inputId);
+  const counter = document.getElementById(countId);
+  if (!input || !counter) return;
+
+  input.addEventListener("input", () => {
+    const len = input.value.length;
+    counter.textContent = `${len} / ${max}`;
+    counter.classList.toggle("text-red-500", len > max);
+  });
+}
+
+updateCharCount("general-input", "general-char-count", 300);
+updateCharCount("assignments-input", "assignments-char-count", 1000);
+
+// Replies (added dynamically)
+const replyObserver = new MutationObserver(() => {
+  document.querySelectorAll("input[id^='reply-input-']").forEach(input => {
+    const msgId = input.id.split("reply-input-")[1];
+    const countId = `reply-char-count-${msgId}`;
+
+    if (!document.getElementById(countId)) {
+      const div = document.createElement("div");
+      div.id = countId;
+      div.className = "text-xs text-gray-500 ml-2 mt-1";
+      div.textContent = "0 / 500";
+      input.parentNode.appendChild(div);
+
+      input.addEventListener("input", () => {
+        const len = input.value.length;
+        div.textContent = `${len} / 500`;
+        div.classList.toggle("text-red-500", len > 500);
+      });
+    }
+  });
+});
+replyObserver.observe(document.body, { childList: true, subtree: true });
 </script>
 {% endblock %}
