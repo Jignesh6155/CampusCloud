@@ -309,16 +309,17 @@ function collapseThread(id) {
 
 function toggleMessage(id, fullText) {
   const para = document.getElementById(`msg-text-${id}`);
-  const btn = document.getElementById(`toggle-btn-${id}`);
-  if (!para || !btn) return;
+  if (!para) return;
 
-  if (btn.innerText === "More") {
-    para.textContent = fullText;
-    btn.innerText = "Less";
-  } else {
-    para.textContent = fullText.slice(0, MESSAGE_PREVIEW_LIMIT) + "...";
-    btn.innerText = "More";
-  }
+  const isExpanded = para.dataset.expanded === "true";
+  const shortText = fullText.slice(0, MESSAGE_PREVIEW_LIMIT) + "...";
+
+  // Update content with button always at end
+  const displayText = isExpanded ? shortText : fullText;
+  const buttonLabel = isExpanded ? "More" : "Less";
+
+  para.innerHTML = `${displayText} <button id="toggle-btn-${id}" onclick="toggleMessage('${id}', \`${fullText.replace(/`/g, "\\`")}\`)" class="text-xs text-indigo-600 hover:underline">${buttonLabel}</button>`;
+  para.dataset.expanded = isExpanded ? "false" : "true";
 }
 
 function addAssignmentMsg(m) {
