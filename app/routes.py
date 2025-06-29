@@ -893,6 +893,7 @@ def unit_assignments_channel(unit_code):
         current_user=current_user
     )
     
+# ✅ FIXED: Main study groups route - filters tutor ads and meetups by university
 @bp.route('/study-groups')
 @login_required
 def study_groups():
@@ -900,7 +901,7 @@ def study_groups():
     now_time = datetime.now()
     cutoff = now_time - timedelta(days=1)
 
-    # 🔴 Step 1: Permanently delete expired meetups from the database
+    # 🔴 Step 1: Permanently delete expired meetups
     expired_meetups = Meetup.query.filter(
         Meetup.university == university,
         Meetup.time < cutoff
@@ -911,16 +912,16 @@ def study_groups():
 
     db.session.commit()
 
-    # ✅ Step 2: Load remaining valid meetups
+    # ✅ Step 2: Load valid meetups for university
     meetups = Meetup.query.filter(
         Meetup.university == university,
         Meetup.time >= cutoff
     ).all()
 
-    # ✅ Step 3: Load tutor ads (all or filtered by university if needed)
-    tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
+    # ✅ Step 3: Load tutor ads for same university
+    tutor_ads = TutorAd.query.filter_by(university=university).order_by(TutorAd.created_at.desc()).all()
 
-    # Step 4: Sort meetups: future ones by popularity, then past ones by recency
+    # ✅ Step 4: Sort meetups by future popularity then recent past
     meetups.sort(
         key=lambda m: (
             m.time < now_time,              
@@ -1066,6 +1067,7 @@ def payment_page():
     )
 
 
+#  FIXED: Payment Success Route - saves tutor ad under user's university
 @bp.route('/tutor-ads/payment/success', methods=['GET'])
 @login_required
 def payment_success():
@@ -1076,13 +1078,15 @@ def payment_success():
         flash("Missing ad data. Please try again.", "error")
         return redirect(url_for('routes.create_tutor_ad'))
 
+    university = sanitize_domain(current_user.email)
+
     new_ad = TutorAd(
         name=ad_data['name'],
         subject=ad_data['subject'],
         rate=int(ad_data['rate']),
         location=ad_data['location'],
         description=ad_data['description'],
-        university=current_user.university or 'unknown',
+        university=university,
         email=ad_data['email'],                    # ✅ Required
         phone=ad_data.get('phone') or None,        # ✅ Optional
         created_at=datetime.utcnow()
@@ -1094,10 +1098,12 @@ def payment_success():
     return redirect(return_to)
 
 
+# ✅ FIXED: Dedicated GET route - shows only tutor ads from user's university
 @bp.route('/study-groups', methods=['GET'])
 @login_required
 def view_study_groups():
-    tutor_ads = TutorAd.query.order_by(TutorAd.created_at.desc()).all()
+    university = sanitize_domain(current_user.email)
+    tutor_ads = TutorAd.query.filter_by(university=university).order_by(TutorAd.created_at.desc()).all()
     return render_template('study_group.html', tutor_ads=tutor_ads)
 
 @bp.route('/units/download')
