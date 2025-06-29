@@ -255,31 +255,28 @@
 <!-- ========== SCRIPTS ========== -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-/* ---------- GLOBALS ---------- */
-const unitCode          = "{{ unit_code }}";
-const CURRENT_USER_ID   = "{{ current_user.id }}";
+const unitCode = "{{ unit_code }}";
+const CURRENT_USER_ID = "{{ current_user.id }}";
 const CURRENT_USER_NAME = "{{ current_user.display_name }}";
 
-let currentChannel  = "general";
+let currentChannel = "general";
 let deleteMessageId = null;
 
-const messagesBox            = document.getElementById("chat-messages");
-const tabBtns                = document.querySelectorAll(".tab-btn");
-const classicChat            = document.getElementById("classic-chat");
-const generalChat            = document.getElementById("general-chat-container");
-const assignmentsChat        = document.getElementById("assignments-chat-container");
+const MESSAGE_PREVIEW_LIMIT = 300;
+
+const messagesBox = document.getElementById("chat-messages");
+const tabBtns = document.querySelectorAll(".tab-btn");
+const classicChat = document.getElementById("classic-chat");
+const generalChat = document.getElementById("general-chat-container");
+const assignmentsChat = document.getElementById("assignments-chat-container");
 const assignmentsMessagesBox = document.getElementById("assignments-messages");
 
 const socket = io();
 
-/* ---------- INITIAL JOIN ---------- */
-socket.emit("join", { unit_code: unitCode,
-                      channel  : currentChannel,
-                      author   : CURRENT_USER_NAME });
+socket.emit("join", { unit_code: unitCode, channel: currentChannel, author: CURRENT_USER_NAME });
 
-/* ---------- LOAD MESSAGES ---------- */
 async function loadMessages() {
-  const res  = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
+  const res = await fetch(`/units/${unitCode}/messages?channel=${currentChannel}`);
   const data = await res.json();
 
   if (currentChannel === "general") {
@@ -294,12 +291,8 @@ async function loadMessages() {
   }
 }
 
-/* ========== ASSIGNMENTS RENDER ========== */
-
-/* reply bubble */
 function buildReplyEl(r) {
-  const t  = new Date(r.timestamp)
-              .toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  const t = new Date(r.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const el = document.createElement("div");
   el.className = "bg-gray-100 rounded-lg px-3 py-2 text-sm";
   el.innerHTML = `<span class="font-semibold">${r.author}</span>
@@ -307,89 +300,113 @@ function buildReplyEl(r) {
   return el;
 }
 
-/* collapse / expand whole thread */
 function collapseThread(id) {
-  const list  = document.getElementById(`replies-for-${id}`);
+  const list = document.getElementById(`replies-for-${id}`);
   const arrow = document.getElementById(`arrow-${id}`);
   list.classList.toggle("hidden");
   arrow.textContent = list.classList.contains("hidden") ? "▸" : "▾";
 }
 
-/* main renderer */
+function toggleMessage(id, fullText) {
+  const para = document.getElementById(`msg-text-${id}`);
+  const btn = document.getElementById(`toggle-btn-${id}`);
+  if (!para || !btn) return;
+
+  if (btn.innerText === "More") {
+    para.textContent = fullText;
+    btn.innerText = "Less";
+  } else {
+    para.textContent = fullText.slice(0, MESSAGE_PREVIEW_LIMIT) + "...";
+    btn.innerText = "More";
+  }
+}
+
 function addAssignmentMsg(m) {
-  /* ---- Reply bubble ---- */
   if (m.parent_id) {
     const list = document.getElementById(`replies-for-${m.parent_id}`);
     if (list) {
       list.appendChild(buildReplyEl(m));
-      /* increment visible counter */
       const cnt = document.getElementById(`reply-count-${m.parent_id}`);
       cnt.textContent = parseInt(cnt.textContent) + 1;
     }
     return;
   }
 
-  /* ---- Top-level post ---- */
   const wrap = document.createElement("div");
-  wrap.id    = `msg-${m.id}`;
+  wrap.id = `msg-${m.id}`;
   wrap.className = "post-card relative rounded-xl shadow border border-slate-200 p-4 bg-white";
-
   const isMe = Number(m.user_id) === Number(CURRENT_USER_ID);
   const time = new Date(m.timestamp).toLocaleString();
+  const isLong = m.message.length > MESSAGE_PREVIEW_LIMIT;
+
+  const displayedText = isLong
+    ? `${m.message.slice(0, MESSAGE_PREVIEW_LIMIT)}... <button id="toggle-btn-${m.id}" onclick="toggleMessage('${m.id}', \`${m.message.replace(/`/g, "\\`")}\`)" class="text-xs text-indigo-600 hover:underline">More</button>`
+    : m.message;
 
   wrap.innerHTML = `
-    ${isMe ? `<button onclick="showDeleteModal('${m.id}')"
-                     class="absolute top-3 right-3 text-slate-400 hover:text-red-600
-                            font-bold text-lg leading-none opacity-0 hover:opacity-100
-                            transition-opacity">&times;</button>` : ""}
-
+    ${isMe ? `<button onclick="showDeleteModal('${m.id}')" class="absolute top-3 right-3 text-slate-400 hover:text-red-600 font-bold text-lg leading-none opacity-0 hover:opacity-100 transition-opacity">&times;</button>` : ""}
     <div class="flex items-center gap-3 mb-2">
-      <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
-           class="w-10 h-10 rounded-full border border-slate-300"/>
+      <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-10 h-10 rounded-full border border-slate-300"/>
       <div>
         <h3 class="text-sm font-semibold text-slate-800">${m.author}</h3>
         <p class="text-xs text-slate-500">${time}</p>
       </div>
     </div>
-
-    <p class="text-sm text-slate-700 whitespace-pre-line">${m.message}</p>
-
-    <button onclick="toggleReplyBox('${m.id}')"
-            class="mt-3 text-sm text-indigo-600 hover:underline font-medium">
-      Reply
-    </button>
-
+    <p class="text-sm text-slate-700 whitespace-pre-line" id="msg-text-${m.id}">${displayedText}</p>
+    <button onclick="toggleReplyBox('${m.id}')" class="mt-3 text-sm text-indigo-600 hover:underline font-medium">Reply</button>
     <div id="thread-${m.id}" class="mt-3">
-      <!-- composer -->
       <div id="reply-box-${m.id}" class="hidden mb-3">
         <div class="flex gap-2">
-          <input id="reply-input-${m.id}" type="text"
-                 placeholder="Write a reply…"
-                 class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm
-                        focus:outline-none focus:ring focus:ring-indigo-200"/>
-          <button onclick="sendReply('${m.id}')"
-                  class="text-white bg-indigo-600 hover:bg-indigo-700
-                         text-sm px-4 py-1 rounded-md shadow">
-            Send
-          </button>
+          <input id="reply-input-${m.id}" type="text" placeholder="Write a reply…" class="flex-1 px-4 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"/>
+          <button onclick="sendReply('${m.id}')" class="text-white bg-indigo-600 hover:bg-indigo-700 text-sm px-4 py-1 rounded-md shadow">Send</button>
         </div>
       </div>
-
-      <!-- collapse / count -->
-      <button id="collapse-btn-${m.id}"
-              onclick="collapseThread('${m.id}')"
-              class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+      <button id="collapse-btn-${m.id}" onclick="collapseThread('${m.id}')" class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
         <span id="arrow-${m.id}">▾</span>
         <span id="reply-count-${m.id}">0</span> replies
       </button>
-
-      <!-- replies list -->
-      <div id="replies-for-${m.id}"
-           class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2"></div>
+      <div id="replies-for-${m.id}" class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2"></div>
     </div>
   `;
 
   assignmentsMessagesBox.appendChild(wrap);
+}
+
+function addGeneralMsg(m) {
+  const wrap = document.createElement("div");
+  wrap.id = `msg-${m.id}`;
+  const me = Number(m.user_id) === Number(CURRENT_USER_ID);
+  const t = new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const isLong = m.message.length > MESSAGE_PREVIEW_LIMIT;
+
+  const displayedText = isLong
+    ? `${m.message.slice(0, MESSAGE_PREVIEW_LIMIT)}... <button id="toggle-btn-${m.id}" onclick="toggleMessage('${m.id}', \`${m.message.replace(/`/g, "\\`")}\`)" class="text-xs text-indigo-200 hover:underline">More</button>`
+    : m.message;
+
+  if (me) {
+    wrap.className = "flex justify-end pr-2";
+    wrap.innerHTML = `
+      <div class="relative max-w-md text-right group">
+        <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
+          <button onclick="showDeleteModal('${m.id}')" class="absolute top-2 right-2 text-white/70 hover:text-white text-sm font-bold leading-none z-20 opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+          <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">${t}</div>
+      </div>`;
+  } else {
+    wrap.className = "flex items-start gap-3";
+    wrap.innerHTML = `
+      <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-10 h-10 rounded-full border border-gray-300 shadow-sm"/>
+      <div>
+        <div class="bg-white border border-gray-200 px-5 py-3 rounded-2xl rounded-tl-none shadow-sm max-w-md">
+          <div class="font-semibold text-gray-800 text-sm mb-1">${m.author}</div>
+          <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">${t}</div>
+      </div>`;
+  }
+
+  document.getElementById("general-messages").appendChild(wrap);
 }
 
 /* ========== GENERAL CHAT RENDER ========== */
