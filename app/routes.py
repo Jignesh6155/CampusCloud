@@ -5,6 +5,8 @@ import csv
 from datetime import datetime, timedelta
 from app.models import Meetup  # Make sure Meetup is imported
 from app.models import TutorAd
+from sqlalchemy import desc
+
 from app.models import Committee  # make sure you import your model
 import stripe
 
@@ -1177,6 +1179,7 @@ def create_post_committee(committee_name):
 
 
 # 🔹 4. View Individual Committee Post Thread
+# 🔹 4. View Individual Committee Post Thread (with comment sorting)
 @bp.route('/committee-post/<int:post_id>')
 @login_required
 def committee_post_thread(post_id):
@@ -1184,7 +1187,10 @@ def committee_post_thread(post_id):
     if not post.committee_id:
         abort(404)
 
-    comments = Comment.query.filter_by(post_id=post.id, parent_id=None).order_by(Comment.created_at.desc()).all()
+    # Fetch and sort top-level comments by score, then creation time
+    comments = Comment.query.filter_by(post_id=post.id, parent_id=None).all()
+    comments.sort(key=lambda c: (c.score, c.created_at), reverse=True)
+
     return render_template(
         'committee_thread.html',
         post=post,
@@ -1261,4 +1267,11 @@ def committee_post_comment(committee_name, post_id):
     db.session.add(new_comment)
     db.session.commit()
 
-    return jsonify({'message': 'Comment posted successfully'}), 200
+    return jsonify({
+        'status': 'success',
+        'author_name': current_user.display_name,
+        'timestamp': new_comment.created_at.strftime('%b %d, %Y %I:%M %p'),
+        'content': new_comment.content,
+        'score': new_comment.score,
+        'comment_id': new_comment.id
+    }), 200
