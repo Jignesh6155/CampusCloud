@@ -293,10 +293,20 @@ async function loadMessages() {
 
 function buildReplyEl(r) {
   const t = new Date(r.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const isLong = r.message.length > MESSAGE_PREVIEW_LIMIT;
+  const safeMessage = r.message.replace(/`/g, "\\`");  // prevent backtick issues
+  const shortText = r.message.slice(0, MESSAGE_PREVIEW_LIMIT) + "...";
+  const displayed = isLong
+    ? `${shortText} <button id="toggle-btn-${r.id}" onclick="toggleMessage('${r.id}', \`${safeMessage}\`)" class="text-xs text-indigo-600 hover:underline">More</button>`
+    : r.message;
+
   const el = document.createElement("div");
   el.className = "bg-gray-100 rounded-lg px-3 py-2 text-sm";
-  el.innerHTML = `<span class="font-semibold">${r.author}</span>
-                  <span class="text-gray-500 text-xs ml-1">${t}</span><br>${r.message}`;
+  el.innerHTML = `
+    <span class="font-semibold">${r.author}</span>
+    <span class="text-gray-500 text-xs ml-1">${t}</span><br>
+    <p id="msg-text-${r.id}" data-expanded="false">${displayed}</p>
+  `;
   return el;
 }
 
