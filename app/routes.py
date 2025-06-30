@@ -1242,3 +1242,23 @@ def delete_committee_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({'status': 'success'})
+
+# Committee: Post Comment to a Committee Post
+@bp.route('/committee/<string:committee_name>/post/<int:post_id>/comment', methods=['POST'])
+@login_required
+def committee_post_comment(committee_name, post_id):
+    data = request.get_json()
+    content = data.get("content", "").strip()
+
+    if not content:
+        return jsonify({'error': 'Empty comment'}), 400
+
+    new_comment = Comment(
+        content=content,
+        post_id=post_id,
+        user_id=current_user.id
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+
+    return jsonify({'message': 'Comment posted successfully'}), 200
