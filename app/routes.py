@@ -5,6 +5,7 @@ import csv
 from datetime import datetime, timedelta
 from app.models import Meetup  # Make sure Meetup is imported
 from app.models import TutorAd
+from app.models import Committee  # make sure you import your model
 import stripe
 
 
@@ -1102,23 +1103,35 @@ def download_units_csv():
     return send_file('Units_CURTIN.csv', mimetype='text/csv', as_attachment=True)
 
 
-# 🔹 1. Landing Page for All Committees
 @bp.route('/committee-chat')
 @login_required
 def committee_chat():
-    csv_path = os.path.join(current_app.root_path, 'data', 'Committees_UWA.csv')  # ✅ Corrected path
-    committees = []
+    # CSV path (make sure this is correct)
+    csv_path = os.path.join(current_app.root_path, 'data', 'Committees_UWA.csv')
+    new_committees = []
 
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            committees.append({
-                'name': row['name'],
-                'slug': row['slug'],
-                'description': row['description'],
-                'icon': row['icon']
-            })
+            slug = row['slug'].strip().lower()
+            # Check if already exists
+            existing = Committee.query.filter_by(slug=slug).first()
+            if not existing:
+                committee = Committee(
+                    name=row['name'].strip(),
+                    slug=slug,
+                    description=row.get('description', '').strip()
+                )
+                db.session.add(committee)
+                new_committees.append(committee)
 
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+    # Fetch all committees to render
+    committees = Committee.query.order_by(Committee.name.asc()).all()
     return render_template('committee_chat_landing.html', committees=committees)
 
 # 🔹 2. Committee Page — Show All Posts for This Committee
