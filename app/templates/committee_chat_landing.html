@@ -1,41 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="px-6 py-16 w-full">
 
-<!-- Title bar -->
-<div class="w-full bg-slate-100 text-slate-800 py-6 px-6 flex items-center gap-2">
-  <h1 class="text-2xl font-bold">Committee Chats</h1>
-  <span class="text-2xl">👥</span>
-</div>
-
-<!-- Search bar -->
-<div class="p-4 bg-slate-100">
-  <div class="max-w-4xl mx-auto">
-    <input
-      type="text"
-      placeholder="Search for a committee..."
-      class="w-full px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
-    />
+  <!-- 🌟 Header -->
+  <div class="text-center mb-16">
+    <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight mb-4">Explore Committee Chats</h1>
+    <p class="text-slate-500 text-lg">Connect with student committees across your university</p>
   </div>
-</div>
 
-<!-- Committee Cards -->
-<div class="p-4 bg-slate-100">
-  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+  <!-- 🔍 Search Bar -->
+  <div class="flex justify-center mb-14">
+    <div class="relative w-full max-w-xl">
+      <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
+        <i class="fas fa-search"></i>
+      </span>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search for a committee..."
+        class="w-full pl-11 pr-5 py-3 text-sm border border-slate-300 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white placeholder-slate-400 transition"
+        onkeyup="filterCommittees()"
+      />
+    </div>
+  </div>
 
+  <!-- 🧩 Committee Grid -->
+  <div id="committeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
     {% for committee in committees %}
     <a href="{{ url_for('routes.committee_ui', committee_name=committee.slug) }}"
-       class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
-        <i class="fas {{ committee.icon }}"></i>
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ committee.name }}</h3>
-        <p class="text-sm text-slate-500">{{ committee.description }}</p>
+       class="group bg-white border border-zinc-200 rounded-2xl p-5 shadow-md transition-all hover:shadow-lg hover:border-indigo-400 hover:bg-indigo-50">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-lg">
+          <i class="fas {{ committee.icon }}"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-slate-800 group-hover:text-slate-900">{{ committee.name }}</h3>
+          <p class="text-sm text-slate-500">{{ committee.description }}</p>
+        </div>
       </div>
     </a>
     {% endfor %}
-
   </div>
 </div>
 
+<!-- 🔧 Filter Script -->
+<script>
+  function filterCommittees() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.getElementById('committeeGrid').children;
+
+    for (let card of cards) {
+      const text = card.textContent.toLowerCase();
+      card.classList.toggle('hidden', !text.includes(input));
+    }
+  }
+</script>
 {% endblock %}
