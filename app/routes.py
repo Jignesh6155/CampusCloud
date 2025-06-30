@@ -184,37 +184,7 @@ def landing_forums():
     )
 
 
-@bp.route('/committee-chat')
-def committee_chat():
-    return render_template('committee_chat_landing.html')
 
-@bp.route('/committee/<committee_name>')
-def committee_ui(committee_name):
-    is_authorized = False  # Example toggle for testing
-    return render_template('committee_ui.html', committee_name=committee_name, is_authorized=is_authorized)
-
-@bp.route('/committee/<committee_name>/messages', methods=['GET', 'POST'])
-def committee_messages(committee_name):
-    channel = request.args.get('channel', 'general')
-
-    if committee_name not in committee_chats:
-        committee_chats[committee_name] = {"announcements": [], "general": []}
-
-    if channel not in committee_chats[committee_name]:
-        committee_chats[committee_name][channel] = []
-
-    if request.method == 'POST':
-        new_msg = request.form.get('message')
-        if new_msg:
-            msg_obj = {
-                "message": new_msg,
-                "author": "Anonymous User",
-                "timestamp": datetime.utcnow().isoformat() + "Z"
-            }
-            committee_chats[committee_name][channel].append(msg_obj)
-            return jsonify({"status": "success"})
-
-    return jsonify(committee_chats[committee_name][channel])
 
 
 @bp.route('/create-post', methods=['POST'])
@@ -1129,3 +1099,101 @@ def view_study_groups():
 @login_required
 def download_units_csv():
     return send_file('Units_CURTIN.csv', mimetype='text/csv', as_attachment=True)
+
+
+# 🔹 1. Landing Page for All Committees
+@bp.route('/committee-chat')
+@login_required
+def committee_chat():
+    committees = Committee.query.order_by(Committee.name.asc()).all()
+    return render_template('committee_chat_landing.html', committees=committees)
+
+# 🔹 2. Committee Page — Show All Posts for This Committee
+@bp.route('/committee/<committee_name>')
+@login_required
+def committee_ui(committee_name):
+    committee = Committee.query.filter_by(slug=committee_name).first_or_404()
+    posts = Post.query.filter_by(committee_id=committee.id).order_by(Post.created_at.desc()).all()
+    return render_template('committee_ui.html', committee=committee, posts=posts)
+
+# 🔹 3. Create Post in Committee
+@bp.route('/committee/<committee_name>/create-post', methods=['POST'])
+@login_required
+def create_post_committee(committee_name):
+    committee = Committee.query.filter_by(slug=committee_name).first_or_404()
+
+    title = request.form.get("title", "").strip() or None
+    content = request.form.get("content", "").strip()
+    if not content:
+        flash("Content is required.", "error")
+        return redirect(request.referrer or url_for("routes.committee_ui", committee_name=committee_name))
+
+    image_url = None
+    image_file = request.files.get("image")
+    if image_file and image_file.filename:
+        filename = secure_filename(image_file.filename)
+        upload_path = os.path.join(current_app.root_path, "static", "uploads")
+        os.makedirs(upload_path, exist_ok=True)
+        image_file.save(os.path.join(upload_path, filename))
+        image_url = f"static/uploads/{filename}"
+
+    post = Post(
+        title=title,
+        content=content,
+        user_id=current_user.id,
+        committee_id=committee.id,
+        image_url=image_url
+    )
+    db.session.add(post)
+    db.session.commit()
+    flash("Post created!", "success")
+    return redirect(url_for("routes.committee_ui", committee_name=committee_name))
+
+# 🔹 4. View Individual Committee Post Thread
+@bp.route('/committee/<committee_name>/post/<int:post_id>')
+@login_required
+def committee_post_thread(committee_name, post_id):
+    post = Post.query.get_or_404(post_id)
+    if not post.committee_id:
+        abort(404)
+
+    comments = Comment.query.filter_by(post_id=post_id, parent_id=None).order_by(Comment.created_at.desc()).all()
+    return render_template(
+        'committee_post_thread.html',
+        post=post,
+        comments=comments,
+        back_url=url_for("routes.committee_ui", committee_name=committee_name),
+        back_label=f"{post.committee.name} Committee"
+    )
+
+# 🔹 5. Like a Committee Post
+@bp.route('/committee/<committee_name>/like/<int:post_id>', methods=['POST'])
+@login_required
+def like_committee_post(committee_name, post_id):
+    post = Post.query.get_or_404(post_id)
+
+    if current_user in post.likers:
+        post.likers.remove(current_user)
+        liked = False
+    else:
+        post.likers.append(current_user)
+        liked = True
+
+    db.session.commit()
+
+    return jsonify({
+        'likes': post.likers.count(),
+        'liked': liked
+    })
+
+# 🔹 6. Delete a Committee Post
+@bp.route('/committee/<committee_name>/delete/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_committee_post(committee_name, post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    db.session.delete(post)
+    db.session.commit()
+    return jsonify({'status': 'success'})

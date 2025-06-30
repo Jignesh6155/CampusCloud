@@ -104,6 +104,7 @@ class Committee(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
+    slug = db.Column(db.String(100), nullable=False, unique=True)  # ✅ Add this line
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=db.func.now())
 

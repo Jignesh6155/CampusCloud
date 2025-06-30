@@ -1,6 +1,4 @@
-<!-- committee_chat_landing.html -->
 {% extends "base.html" %}
-
 {% block content %}
 
 <!-- Title bar -->
@@ -20,13 +18,14 @@
   </div>
 </div>
 
+<!-- Committee Cards -->
 <div class="p-4 bg-slate-100">
   <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-    <!-- Tech Committee card -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='TechCommittee') }}"
+    <!-- Tech Committee -->
+    <a href="{{ url_for('routes.committee_ui', committee_name='techcommittee') }}"
        class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
         <i class="fas fa-laptop-code"></i>
       </div>
       <div>
@@ -35,10 +34,10 @@
       </div>
     </a>
 
-    <!-- Marketing Committee card -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='MarketingCommittee') }}"
+    <!-- Marketing Committee -->
+    <a href="{{ url_for('routes.committee_ui', committee_name='marketingcommittee') }}"
        class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
         <i class="fas fa-bullhorn"></i>
       </div>
       <div>
@@ -47,10 +46,10 @@
       </div>
     </a>
 
-    <!-- Events Committee card -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='EventsCommittee') }}"
+    <!-- Events Committee -->
+    <a href="{{ url_for('routes.committee_ui', committee_name='eventscommittee') }}"
        class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
+      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
         <i class="fas fa-calendar-alt"></i>
       </div>
       <div>
@@ -58,8 +57,6 @@
         <p class="text-sm text-slate-500">Organize campus events and gatherings.</p>
       </div>
     </a>
-
-    <!-- More committees as needed -->
 
   </div>
 </div>

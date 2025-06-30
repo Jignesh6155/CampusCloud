@@ -1,167 +1,211 @@
-<!-- committee_ui.html -->
 {% extends "base.html" %}
-
 {% block content %}
+<div id="pageContainer" class="mt-10">
 
-<!-- Title bar -->
-<div class="w-full bg-slate-100 text-slate-800 py-4 px-6 flex items-center gap-2 shadow">
-  <h1 class="text-xl font-bold">{{ committee_name }} - Committee Chat</h1>
-  <span class="text-lg">👥</span>
-</div>
-
-<!-- Main Chat Interface -->
-<div class="flex h-[calc(100vh-4rem)] bg-slate-50">
-
-  <!-- Sidebar: Channels / Tabs -->
-  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
-    <div class="p-4 border-b font-semibold text-slate-700">Channels</div>
-    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="main">
-      <i class="fas fa-bullhorn text-slate-600"></i>
-      <span class="font-medium text-slate-700">Main Channel</span>
-    </button>
-    <button class="tab-btn flex items-center gap-2 p-3 hover:bg-slate-100 transition focus:bg-slate-200" data-channel="general">
-      <i class="fas fa-comments text-slate-600"></i>
-      <span class="font-medium text-slate-700">General Chat</span>
-    </button>
-  </aside>
-
-  <!-- Chat Content Area -->
-  <div class="flex-1 flex flex-col">
-
-    <!-- Messages container -->
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-      <!-- Messages loaded via AJAX -->
-    </div>
-
-    <!-- Message input area (hidden for main channel if not authorized) -->
-    <div id="message-input-area" class="p-4 border-t bg-white flex gap-2 items-start">
-      <div class="flex-shrink-0 bg-indigo-300 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold text-sm">U</div>
-      <textarea id="message-input" placeholder="Type a message..." rows="2" class="flex-1 px-4 py-2 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none"></textarea>
-      <button id="send-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-2xl hover:bg-indigo-700 transition">Send</button>
-    </div>
-
+  <!-- 🔙 Back to Committees Directory -->
+  <div class="ml-4 -mt-7 mb-2">
+    <a href="/committees" class="text-indigo-600 text-sm hover:underline transition">
+      ← Back to Committees
+    </a>
   </div>
+
+  <!-- 🧾 Committee Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between w-full">
+    <div class="flex items-center gap-2 ml-4">
+      <h1 class="text-2xl font-bold">{{ committee_name or "Committee" }}</h1>
+      <span class="text-2xl">👥</span>
+    </div>
+  </div>
+
+  <div class="p-4 bg-slate-100">
+    <div class="flex flex-col md:flex-row gap-6 p-4">
+      <!-- 📝 Committee Post Feed -->
+      <div class="flex-1 flex flex-col space-y-6">
+        <div class="flex justify-end">
+          <button id="openModal" class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition font-semibold shadow">
+            <i class="fas fa-plus mr-2"></i> New Post
+          </button>
+        </div>
+
+        <div class="relative h-[calc(100vh-250px)] overflow-y-auto pr-2">
+          <div id="postsContainer" class="space-y-6 overflow-visible">
+            {% for post in posts %}
+            <div id="post-{{ post.id }}" class="post-card rounded-xl shadow border border-slate-200 p-6 transition hover:shadow-lg bg-white cursor-pointer"
+                 onclick="expandAndRedirect({{ post.id }})">
+              <div class="flex items-center mb-3">
+                <a href="{{ url_for('routes.profile', user_id=post.author.id) }}" class="flex items-center space-x-0" onclick="event.stopPropagation();"> 
+                  <img src="{{ post.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                       alt="Avatar"
+                       class="w-10 h-10 rounded-full object-cover border border-slate-300 mr-3" />
+                  <div>
+                    <h3 class="font-semibold text-slate-800 hover:underline hover:text-indigo-600">{{ post.author.display_name or 'Anonymous' }}</h3>
+                    <p class="text-xs text-slate-500">{{ post.author.role }}, {{ post.author.university }}</p>
+                  </div>
+                </a>
+              </div>
+              {% if post.title %}
+              <h4 class="text-base font-semibold text-slate-800 mb-1">{{ post.title }}</h4>
+              {% endif %}
+              <p class="text-slate-700 text-sm leading-relaxed mb-3">{{ post.content }}</p>
+              {% if post.image_url %}
+              <div class="flex justify-center mt-3">
+                <img src="{{ '/' + post.image_url }}" alt="Post Image" class="w-2/5 rounded" />
+              </div>
+              {% endif %}
+              <div class="flex justify-between text-xs text-slate-500 mt-2">
+                <div class="flex space-x-4">
+                  <button class="flex items-center space-x-1 transition"
+                          onclick="likePost(event, {{ post.id }})">
+                    <i id="heart-icon-{{ post.id }}" class="fas fa-heart {% if current_user.is_authenticated and current_user in post.likers.all() %}liked{% endif %}"></i>
+                    <span id="like-count-{{ post.id }}">{{ post.likers.all()|length }}</span>
+                  </button>
+                  <button class="flex items-center space-x-1 hover:text-indigo-600 transition">
+                    <i class="fas fa-comment"></i><span>{{ post.comments.count() }}</span>
+                  </button>
+                </div>
+                <div class="flex space-x-2">
+                  <button onclick="openReportModal(event, {{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-flag"></i></button>
+                  {% if current_user.is_authenticated and post.author.id == current_user.id %}
+                  <button onclick="event.stopPropagation(); deletePost({{ post.id }});" class="hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- 📜 Committee Sidebar -->
+      <aside class="w-full md:w-72 sticky top-4 self-start rounded-xl shadow border border-slate-200 p-6 bg-white">
+        <h2 class="text-lg font-semibold text-slate-700 mb-3">Guidelines</h2>
+        <ul class="list-disc list-inside text-sm text-slate-600 leading-relaxed space-y-1">
+          <li>Be respectful and constructive</li>
+          <li>Stay on topic for your committee</li>
+          <li>No spam or irrelevant posts</li>
+          <li>Use titles for announcements or votes</li>
+          <li>Report anything inappropriate</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ✏️ Post Modal -->
+  <div id="postModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative">
+      <h2 class="text-xl font-bold mb-4 text-slate-800">New Committee Post</h2>
+      <form id="newPostForm" class="space-y-4"
+        <form id="newPostForm" class="space-y-4" enctype="multipart/form-data">
+        <div>
+          <label for="postTitle" class="block text-sm font-medium text-slate-600 mb-1">Title (optional)</label>
+          <input id="postTitle" name="title" type="text" placeholder="Optional title..." class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
+        </div>
+        <div>
+          <label for="postContent" class="block text-sm font-medium text-slate-600 mb-1">Content</label>
+          <textarea id="postContent" name="content" rows="4" placeholder="Write your message..." class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
+        </div>
+        <div>
+          <label for="postImage" class="block text-sm font-medium text-slate-600 mb-1">Image (optional)</label>
+          <input id="postImage" name="image" type="file" accept="image/*" class="w-full border border-slate-300 rounded-lg shadow-sm px-3 py-2 focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition" />
+        </div>
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" id="closeModal" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded shadow-sm transition">Cancel</button>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded shadow-sm transition">Post</button>
+        </div>
+      </form>
+      <button type="button" id="closeModalTop" class="absolute top-3 right-3 text-slate-500 hover:text-slate-700 transition"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
 </div>
 
-<!-- Chat logic -->
-<script>
-    const committeeName = "{{ committee_name }}";
-    let currentChannel = "announcements";
-    const messagesContainer = document.getElementById('chat-messages');
-    const input = document.getElementById('message-input');
-    const sendBtn = document.getElementById('send-btn');
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const inputArea = document.getElementById('message-input-area');
-  
-    function loadMessages() {
-      fetch(`/committee/${committeeName}/messages?channel=${currentChannel}`)
-        .then(res => res.json())
-        .then(data => {
-          messagesContainer.innerHTML = '';
-          data.forEach(msgObj => {
-            const post = document.createElement('div');
-            post.className = 'flex items-start gap-3 max-w-[75%]';
-  
-            // Profile picture
-            const avatar = document.createElement('div');
-            avatar.className = 'flex-shrink-0 bg-indigo-300 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold text-sm';
-            avatar.textContent = msgObj.author[0];
-            post.appendChild(avatar);
-  
-            // Message bubble
-            const bubble = document.createElement('div');
-            bubble.style.backgroundColor = '#dbeafe';
-            bubble.className = 'rounded-2xl shadow p-3 flex-1';
-  
-            const time = new Date(msgObj.timestamp).toLocaleString();
-            const header = document.createElement('div');
-            header.className = 'flex justify-between items-center mb-1';
-            header.innerHTML = `
-              <div class="font-semibold text-slate-800 text-sm">${msgObj.author}</div>
-              <div class="text-xs text-slate-500">${time}</div>
-            `;
-            bubble.appendChild(header);
-  
-            const content = document.createElement('div');
-            content.className = 'text-sm text-slate-900 whitespace-pre-wrap break-words';
-            content.textContent = msgObj.message;
-            bubble.appendChild(content);
-  
-            // Reaction buttons for announcements
-            if (currentChannel === "announcements") {
-              const reactions = document.createElement('div');
-              reactions.className = 'flex gap-2 mt-2';
-              ["👍", "👎", "❤️"].forEach(icon => {
-                const btn = document.createElement('button');
-                btn.className = 'text-sm hover:scale-110 transition';
-                btn.textContent = icon;
-                reactions.appendChild(btn);
-              });
-              bubble.appendChild(reactions);
-            }
-  
-            post.appendChild(bubble);
-            messagesContainer.appendChild(post);
-          });
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
+<!-- ✨ Slide-in Animation -->
+<style>
+  .post-card {
+    transition: transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  .post-card.expanding {
+    transform: scale(1.05);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    opacity: 0.8;
+    z-index: 10;
+  }
+
+  #pageContainer.slide-in {
+    animation: slideInFromRight 0.6s ease forwards;
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
     }
-  
-    loadMessages();
-    setInterval(loadMessages, 5000);
-  
-    tabButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentChannel = btn.dataset.channel;
-        tabButtons.forEach(b => b.classList.remove('bg-slate-200'));
-        btn.classList.add('bg-slate-200');
-        loadMessages();
-  
-        // Hide input area if in announcements and not authorized
-        {% if not is_authorized %}
-        if (currentChannel === "announcements") {
-          inputArea.style.display = "none";
-        } else {
-          inputArea.style.display = "flex";
-        }
-        {% else %}
-        // Authorized users can always post
-        inputArea.style.display = "flex";
-        {% endif %}
-      });
-    });
-  
-    sendBtn.addEventListener('click', () => {
-      const message = input.value.trim();
-      if (!message) return;
-  
-      // Prevent unauthorized post to announcements
-      {% if not is_authorized %}
-      if (currentChannel === "announcements") {
-        alert("You are not authorized to post in the announcements channel.");
-        return;
-      }
-      {% endif %}
-  
-      fetch(`/committee/${committeeName}/messages?channel=${currentChannel}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `message=${encodeURIComponent(message)}`
-      }).then(res => res.json()).then(data => {
-        if (data.status === 'success') {
-          input.value = '';
-          loadMessages();
-        }
-      });
-    });
-  
-    input.addEventListener('keypress', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendBtn.click();
-      }
-    });
-  </script>
-  
-  {% endblock %}
-  
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+</style>
+
+<!-- 🧠 Script for Modal, Like, Delete, Expand -->
+<script>
+  const postModal = document.getElementById('postModal');
+  document.getElementById('openModal')?.addEventListener('click', () => postModal.classList.remove('hidden'));
+  document.getElementById('closeModal')?.addEventListener('click', () => postModal.classList.add('hidden'));
+  document.getElementById('closeModalTop')?.addEventListener('click', () => postModal.classList.add('hidden'));
+
+  function expandAndRedirect(postId) {
+    const postCard = document.getElementById(`post-${postId}`);
+    const rect = postCard.getBoundingClientRect();
+    const clone = postCard.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.top = rect.top + 'px';
+    clone.style.left = rect.left + 'px';
+    clone.style.width = rect.width + 'px';
+    clone.style.height = rect.height + 'px';
+    clone.style.zIndex = 50;
+    clone.style.transition = 'transform 0.5s ease, box-shadow 0.2s ease, opacity 0.3s ease';
+    document.body.appendChild(clone);
+    postCard.style.visibility = 'hidden';
+    setTimeout(() => {
+      clone.style.transform = 'scale(1.05)';
+      clone.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
+      clone.style.opacity = 0.8;
+    }, 0);
+    setTimeout(() => {
+      window.location.href = `/committee/{{ committee_name }}/post/${postId}`;
+    }, 650);
+  }
+
+  async function likePost(event, postId) {
+    event.stopPropagation();
+    const res = await fetch(`/committee/{{ committee_name }}/like/${postId}`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById(`like-count-${postId}`).textContent = data.likes;
+      const icon = document.getElementById(`heart-icon-${postId}`);
+      icon.classList.toggle('liked', data.liked);
+    }
+  }
+
+  async function deletePost(postId) {
+    if (confirm('Delete this post?')) {
+      const response = await fetch(`/committee/{{ committee_name }}/delete/${postId}`, { method: 'DELETE' });
+      if (response.ok) document.getElementById(`post-${postId}`).remove();
+    }
+  }
+
+  function openReportModal(event, postId) {
+    event.stopPropagation();
+    alert('Report modal not yet implemented.');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('pageContainer');
+    container?.classList.add('slide-in');
+  });
+</script>
+{% endblock %}
