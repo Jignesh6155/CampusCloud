@@ -57,7 +57,7 @@
         </button>
         <div class="replies space-y-2 mt-2 hidden">
           {% for reply in comment.replies|sort(attribute='created_at') %}
-          {{ render_comment(reply, level + 2, true) }}
+          {{ render_comment(reply, level + 2, true, current_user) }}
           {% endfor %}
         </div>
       </div>

@@ -114,21 +114,33 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vote: voteValue })
     });
-
+  
     if (res.ok) {
       const data = await res.json();
+      
+      // Update score display
       document.getElementById(`comment-score-${commentId}`).textContent = data.new_score;
-
+  
+      // Get button elements
       const upBtn = document.getElementById(`upvote-${commentId}`);
       const downBtn = document.getElementById(`downvote-${commentId}`);
-
+  
+      // Reset all styles first
       upBtn.classList.remove('text-green-600', 'text-slate-500');
       downBtn.classList.remove('text-red-600', 'text-slate-500');
       upBtn.classList.add('text-slate-500');
       downBtn.classList.add('text-slate-500');
-
-      if (data.user_vote === 1) upBtn.classList.add('text-green-600');
-      else if (data.user_vote === -1) downBtn.classList.add('text-red-600');
+  
+      // Apply new style based on vote
+      if (data.user_vote === 1) {
+        upBtn.classList.remove('text-slate-500');
+        upBtn.classList.add('text-green-600');
+      } else if (data.user_vote === -1) {
+        downBtn.classList.remove('text-slate-500');
+        downBtn.classList.add('text-red-600');
+      }
+    } else {
+      console.error("Vote request failed.");
     }
   }
 
