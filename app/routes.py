@@ -773,13 +773,13 @@ def unit_messages(unit_code):
             return jsonify({"status": "empty"}), 400
 
         # 🔒 Enforce size limits based on channel
-        if channel == "general" and len(new_msg) > 300:
-            return jsonify({"status": "too_long", "limit": 300}), 400
+        if channel == "general" and len(new_msg) > 500:
+            return jsonify({"status": "too_long", "limit": 500}), 400
         elif channel == "assignments":
-            if parent_id and len(new_msg) > 500:
-                return jsonify({"status": "too_long", "limit": 500}), 400
-            elif not parent_id and len(new_msg) > 1000:
-                return jsonify({"status": "too_long", "limit": 1000}), 400
+            if parent_id and len(new_msg) > 750:
+                return jsonify({"status": "too_long", "limit": 750}), 400
+            elif not parent_id and len(new_msg) > 1500:
+                return jsonify({"status": "too_long", "limit": 1500}), 400
 
         msg = UnitMessage(
             unit_code = unit_code.upper(),
@@ -857,12 +857,12 @@ def handle_send_message(data):
             return  # empty message
 
         # 🔒 Enforce length limits
-        if data["channel"] == "general" and len(text) > 300:
+        if data["channel"] == "general" and len(text) > 500:
             return
         elif data["channel"] == "assignments":
-            if data.get("parent_id") and len(text) > 500:
+            if data.get("parent_id") and len(text) > 750:
                 return
-            elif not data.get("parent_id") and len(text) > 1000:
+            elif not data.get("parent_id") and len(text) > 1500:
                 return
 
         message = UnitMessage(
