@@ -1200,7 +1200,6 @@ def committee_post_thread(post_id):
     )
 
 
-# 🔹 5. Post Comment on Committee Post
 @bp.route('/committee-post/<int:post_id>/comment', methods=['POST'])
 @login_required
 def comment_on_committee_post(post_id):
@@ -1208,12 +1207,19 @@ def comment_on_committee_post(post_id):
     data = request.get_json()
     content = data.get("content", "").strip()
 
-    if content:
-        comment = Comment(content=content, user_id=current_user.id, post_id=post.id)
-        db.session.add(comment)
-        db.session.commit()
-        return jsonify({'status': 'success'}), 200
-    return jsonify({'error': 'No content'}), 400
+    if not content:
+        return jsonify({'error': 'No content'}), 400
+
+    comment = Comment(content=content, user_id=current_user.id, post_id=post.id)
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        'status': 'success',
+        'content': comment.content,
+        'score': comment.score if hasattr(comment, 'score') else 0
+    }), 200
+
 
 
 # 🔹 6. Like a Committee Post

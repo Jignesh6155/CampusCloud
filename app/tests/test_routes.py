@@ -7,6 +7,8 @@ from app.utils.domain import sanitize_domain
 from app.models import Forum
 from app.models import UnitMessage
 from app.models import Meetup
+from app.models import Committee, Post, Comment
+
 from datetime import datetime, timedelta
 
 
@@ -915,6 +917,73 @@ def test_create_valid_meetup_and_delete(client, setup_users):
     assert response.get_json()['status'] == 'deleted'
     assert Meetup.query.get(meetup.id) is None
     
+@pytest.fixture
+def setup_committee_post(setup_users):
+    user1, _ = setup_users
+
+    # Create a test committee
+    committee = Committee(name="Tech Committee", slug="tech-committee", description="A test committee")
+    db.session.add(committee)
+    db.session.commit()
+
+    # Create a post under that committee
+    post = Post(title="Test Post", content="This is a test post", user_id=user1.id, committee_id=committee.id)
+    db.session.add(post)
+    db.session.commit()
+
+    return post
+    
+# ✅ Test: Successfully post a comment on a committee post
+def test_committee_post_comment_success(client, setup_users, setup_committee_post):
+    user, _ = setup_users
+    post = setup_committee_post
+    login_user(client, user.id)
+
+    response = client.post(f'/committee-post/{post.id}/comment', json={'content': 'Great post!'})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['status'] == 'success'
+    assert data['content'] == 'Great post!'
+    assert data['score'] == 0
+
+
+# 🚫 Test: Reject empty comment content
+def test_committee_post_comment_empty(client, setup_users, setup_committee_post):
+    user, _ = setup_users
+    post = setup_committee_post
+    login_user(client, user.id)
+
+    response = client.post(f'/committee-post/{post.id}/comment', json={'content': ''})
+    assert response.status_code == 400
+    assert b'Empty comment' in response.data or b'No content' in response.data
+
+
+# 🔒 Test: Posting a comment requires login
+def test_committee_comment_requires_login(client, setup_committee_post):
+    post = setup_committee_post
+    response = client.post(f'/committee-post/{post.id}/comment', json={'content': 'Anon comment'})
+    assert response.status_code in (302, 401)  # Redirect or unauthorized
+
+
+# 🧪 Test: Comments are sorted by score descending
+def test_committee_comments_sorted_by_score(client, setup_users, setup_committee_post):
+    user1, user2 = setup_users
+    post = setup_committee_post
+
+    # Add comments with varying scores
+    c1 = Comment(content="Top comment", post_id=post.id, user_id=user1.id, score=5)
+    c2 = Comment(content="Second comment", post_id=post.id, user_id=user1.id, score=2)
+    c3 = Comment(content="New comment", post_id=post.id, user_id=user1.id, score=10)
+    db.session.add_all([c1, c2, c3])
+    db.session.commit()
+
+    login_user(client, user2.id)
+    response = client.get(f'/committee-post/{post.id}')
+    assert response.status_code == 200
+
+    # Ensure order is by descending score
+    assert response.data.find(b"New comment") < response.data.find(b"Top comment") < response.data.find(b"Second comment")
+
 
 
 

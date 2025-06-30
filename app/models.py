@@ -162,6 +162,8 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE', name='fk_comments_post_id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE', name='fk_comments_user_id'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='CASCADE', name='fk_comments_parent_id'), nullable=True)
+    score = db.Column(db.Integer, default=0)
+
 
     replies = db.relationship(
         'Comment',
