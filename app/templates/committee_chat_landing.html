@@ -22,41 +22,18 @@
 <div class="p-4 bg-slate-100">
   <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-    <!-- Tech Committee -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='techcommittee') }}"
+    {% for committee in committees %}
+    <a href="{{ url_for('routes.committee_ui', committee_name=committee.slug) }}"
        class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
       <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
-        <i class="fas fa-laptop-code"></i>
+        <i class="fas {{ committee.icon }}"></i>
       </div>
       <div>
-        <h3 class="text-lg font-semibold text-slate-800 mb-1">Tech Committee</h3>
-        <p class="text-sm text-slate-500">Discuss technical initiatives and new innovations.</p>
+        <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ committee.name }}</h3>
+        <p class="text-sm text-slate-500">{{ committee.description }}</p>
       </div>
     </a>
-
-    <!-- Marketing Committee -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='marketingcommittee') }}"
-       class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
-        <i class="fas fa-bullhorn"></i>
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-slate-800 mb-1">Marketing Committee</h3>
-        <p class="text-sm text-slate-500">Plan and strategize marketing campaigns and events.</p>
-      </div>
-    </a>
-
-    <!-- Events Committee -->
-    <a href="{{ url_for('routes.committee_ui', committee_name='eventscommittee') }}"
-       class="block bg-white rounded-xl shadow border border-slate-200 p-4 hover:shadow-md transition hover:border-indigo-400 flex gap-4 items-center">
-      <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl">
-        <i class="fas fa-calendar-alt"></i>
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-slate-800 mb-1">Events Committee</h3>
-        <p class="text-sm text-slate-500">Organize campus events and gatherings.</p>
-      </div>
-    </a>
+    {% endfor %}
 
   </div>
 </div>

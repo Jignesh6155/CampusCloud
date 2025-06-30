@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import pandas as pd
+import csv
 from datetime import datetime, timedelta
 from app.models import Meetup  # Make sure Meetup is imported
 from app.models import TutorAd
@@ -1105,7 +1106,19 @@ def download_units_csv():
 @bp.route('/committee-chat')
 @login_required
 def committee_chat():
-    committees = Committee.query.order_by(Committee.name.asc()).all()
+    csv_path = os.path.join(current_app.root_path, 'data', 'Committees_UWA.csv')  # ✅ Corrected path
+    committees = []
+
+    with open(csv_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            committees.append({
+                'name': row['name'],
+                'slug': row['slug'],
+                'description': row['description'],
+                'icon': row['icon']
+            })
+
     return render_template('committee_chat_landing.html', committees=committees)
 
 # 🔹 2. Committee Page — Show All Posts for This Committee
