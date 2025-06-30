@@ -1103,10 +1103,10 @@ def download_units_csv():
     return send_file('Units_CURTIN.csv', mimetype='text/csv', as_attachment=True)
 
 
+# 🔹 1. Committee Landing Page
 @bp.route('/committee-chat')
 @login_required
 def committee_chat():
-    # CSV path (make sure this is correct)
     csv_path = os.path.join(current_app.root_path, 'data', 'Committees_UWA.csv')
     new_committees = []
 
@@ -1114,7 +1114,6 @@ def committee_chat():
         reader = csv.DictReader(csvfile)
         for row in reader:
             slug = row['slug'].strip().lower()
-            # Check if already exists
             existing = Committee.query.filter_by(slug=slug).first()
             if not existing:
                 committee = Committee(
@@ -1130,11 +1129,11 @@ def committee_chat():
     except IntegrityError:
         db.session.rollback()
 
-    # Fetch all committees to render
     committees = Committee.query.order_by(Committee.name.asc()).all()
     return render_template('committee_chat_landing.html', committees=committees)
 
-# 🔹 2. Committee Page — Show All Posts for This Committee
+
+# 🔹 2. View All Posts in a Committee
 @bp.route('/committee/<committee_name>')
 @login_required
 def committee_ui(committee_name):
@@ -1142,7 +1141,8 @@ def committee_ui(committee_name):
     posts = Post.query.filter_by(committee_id=committee.id).order_by(Post.created_at.desc()).all()
     return render_template('committee_ui.html', committee=committee, posts=posts)
 
-# 🔹 3. Create Post in Committee
+
+# 🔹 3. Create Post in a Committee
 @bp.route('/committee/<committee_name>/create-post', methods=['POST'])
 @login_required
 def create_post_committee(committee_name):
@@ -1175,27 +1175,45 @@ def create_post_committee(committee_name):
     flash("Post created!", "success")
     return redirect(url_for("routes.committee_ui", committee_name=committee_name))
 
+
 # 🔹 4. View Individual Committee Post Thread
-@bp.route('/committee/<committee_name>/post/<int:post_id>')
+@bp.route('/committee-post/<int:post_id>')
 @login_required
-def committee_post_thread(committee_name, post_id):
+def committee_post_thread(post_id):
     post = Post.query.get_or_404(post_id)
     if not post.committee_id:
         abort(404)
 
-    comments = Comment.query.filter_by(post_id=post_id, parent_id=None).order_by(Comment.created_at.desc()).all()
+    comments = Comment.query.filter_by(post_id=post.id, parent_id=None).order_by(Comment.created_at.desc()).all()
     return render_template(
-        'committee_post_thread.html',
+        'committee_thread.html',
         post=post,
         comments=comments,
-        back_url=url_for("routes.committee_ui", committee_name=committee_name),
+        back_url=url_for("routes.committee_ui", committee_name=post.committee.slug),
         back_label=f"{post.committee.name} Committee"
     )
 
-# 🔹 5. Like a Committee Post
-@bp.route('/committee/<committee_name>/like/<int:post_id>', methods=['POST'])
+
+# 🔹 5. Post Comment on Committee Post
+@bp.route('/committee-post/<int:post_id>/comment', methods=['POST'])
 @login_required
-def like_committee_post(committee_name, post_id):
+def comment_on_committee_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    data = request.get_json()
+    content = data.get("content", "").strip()
+
+    if content:
+        comment = Comment(content=content, user_id=current_user.id, post_id=post.id)
+        db.session.add(comment)
+        db.session.commit()
+        return jsonify({'status': 'success'}), 200
+    return jsonify({'error': 'No content'}), 400
+
+
+# 🔹 6. Like a Committee Post
+@bp.route('/committee-post/<int:post_id>/like', methods=['POST'])
+@login_required
+def like_committee_post(post_id):
     post = Post.query.get_or_404(post_id)
 
     if current_user in post.likers:
@@ -1212,10 +1230,11 @@ def like_committee_post(committee_name, post_id):
         'liked': liked
     })
 
-# 🔹 6. Delete a Committee Post
-@bp.route('/committee/<committee_name>/delete/<int:post_id>', methods=['DELETE'])
+
+# 🔹 7. Delete Committee Post
+@bp.route('/committee-post/<int:post_id>/delete', methods=['DELETE'])
 @login_required
-def delete_committee_post(committee_name, post_id):
+def delete_committee_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403

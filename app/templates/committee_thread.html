@@ -5,9 +5,9 @@
 
     <!-- 🔙 Back to Committee -->
     <div class="mb-4">
-      <a href="{{ url_for('routes.committee_ui', committee_name=post.committee.slug) }}"
+      <a href="{{ back_url }}"
          class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">
-        <i class="fas fa-arrow-left"></i> Back to {{ post.committee.name }}
+        <i class="fas fa-arrow-left"></i> Back to {{ back_label }}
       </a>
     </div>
 
@@ -50,7 +50,17 @@
 
       <div id="commentsContainer" class="space-y-4">
         {% for comment in comments %}
-          {% include 'partials/comment.html' with context %}
+        <div class="border rounded-lg p-3 bg-slate-50 shadow-sm">
+          <div class="flex items-center gap-3 mb-1">
+            <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                 class="w-8 h-8 rounded-full border border-slate-300" />
+            <div>
+              <p class="font-medium text-sm text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</p>
+              <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+            </div>
+          </div>
+          <p class="text-slate-700 text-sm whitespace-pre-line ml-11">{{ comment.content }}</p>
+        </div>
         {% endfor %}
       </div>
     </div>
@@ -60,11 +70,13 @@
 <script>
   const commentForm = document.getElementById('commentForm');
   const postId = {{ post.id }};
+  const committeeSlug = "{{ post.committee.slug }}";  // ✅ Passed for correct endpoint
+
   commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const content = document.getElementById('commentContent').value.trim();
     if (content) {
-      const response = await fetch(`/post/${postId}/comment`, {
+      const response = await fetch(`/committee/${committeeSlug}/post/${postId}/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
