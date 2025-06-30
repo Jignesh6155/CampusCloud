@@ -373,10 +373,11 @@ function addAssignmentMsg(m) {
         </div>
       </div>
       <button id="collapse-btn-${m.id}" onclick="collapseThread('${m.id}')" class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
-        <span id="arrow-${m.id}">▾</span>
+        <span id="arrow-${m.id}">▸</span>
         <span id="reply-count-${m.id}">0</span> replies
       </button>
-      <div id="replies-for-${m.id}" class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2"></div>
+      <div id="replies-for-${m.id}" class="mt-2 pl-4 border-l-2 border-indigo-200 space-y-2 hidden"></div>
+      
     </div>
   `;
 
