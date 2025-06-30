@@ -49,7 +49,7 @@
       <div id="commentsContainer" class="space-y-4">
         {% import 'macros/thread_macro.html' as thread %}
         {% for comment in comments %}
-            {{ thread.render_comment(comment, current_user) }}
+            {{ thread.render_comment(comment, level=0, is_reply=False, current_user=current_user) }}
         {% endfor %}
       </div>
     </div>

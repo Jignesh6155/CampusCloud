@@ -1,66 +1,68 @@
-{% macro render_comment(comment, current_user) %}
-<div class="ml-2 border rounded-lg p-3 bg-slate-50 shadow-sm">
-  <div class="flex items-center gap-3 mb-1">
-    <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
-         class="w-8 h-8 rounded-full border border-slate-300" />
-    <div>
-      <p class="font-medium text-sm text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</p>
+{% macro render_comment(comment, level=0, is_reply=False, current_user=None) %}
+<div class="pl-{{ (level + 2) ~ '' }} py-2 border-l border-slate-200">
+  <div class="flex gap-2 items-start relative">
+    <a href="{{ url_for('routes.profile', user_id=comment.author.id) }}">
+      <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+           alt="Profile picture"
+           class="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0" />
+    </a>
+    <div class="flex-1 rounded-xl p-3 transition {{ level == 0 and 'bg-white shadow-lg hover:shadow-2xl' or 'bg-white shadow hover:shadow-md' }}">
+      <a href="{{ url_for('routes.profile', user_id=comment.author.id) }}" class="hover:underline">
+        <h4 class="text-sm font-semibold text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</h4>
+      </a>
       <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
-    </div>
-    {% if comment.user_id == current_user.id %}
-    <button onclick="deleteComment({{ comment.id }})"
-            class="ml-auto text-xs text-red-600 hover:underline">
-      Delete
-    </button>
-    {% endif %}
-  </div>
+      <p class="text-slate-700 text-sm mt-1">
+        {% if is_reply %}<span class="text-slate-500">Replying to {{ comment.parent.author.display_name }}</span><br>{% endif %}
+        {{ comment.content }}
+      </p>
+      <div class="flex gap-2 items-center mt-2 text-xs">
+        <button id="upvote-{{ comment.id }}"
+                onclick="voteComment({{ comment.id }}, 1)"
+                class="transition text-xs {% if comment.user_vote(current_user.id) == 1 %}text-green-600{% else %}text-slate-500{% endif %}">
+          <i class="fas fa-thumbs-up text-xs"></i>
+        </button>
+        <span id="comment-score-{{ comment.id }}" class="font-semibold text-slate-700">{{ comment.score }}</span>
+        <button id="downvote-{{ comment.id }}"
+                onclick="voteComment({{ comment.id }}, -1)"
+                class="transition text-xs {% if comment.user_vote(current_user.id) == -1 %}text-red-600{% else %}text-slate-500{% endif %}">
+          <i class="fas fa-thumbs-down text-xs"></i>
+        </button>
+      </div>
 
-  <div class="ml-11 text-slate-700 text-sm whitespace-pre-line">{{ comment.content }}</div>
-
-  <!-- 🔘 Vote & Reply -->
-  <div class="ml-11 mt-2 flex items-center gap-3 text-sm text-slate-500">
-    <button id="upvote-{{ comment.id }}"
-            class="hover:text-green-600 transition"
-            onclick="voteComment({{ comment.id }}, 1)">
-      <i class="fas fa-chevron-up"></i>
-    </button>
-    <span id="comment-score-{{ comment.id }}">{{ comment.score }}</span>
-    <button id="downvote-{{ comment.id }}"
-            class="hover:text-red-600 transition"
-            onclick="voteComment({{ comment.id }}, -1)">
-      <i class="fas fa-chevron-down"></i>
-    </button>
-
-    <button onclick="toggleReplyForm(this)" class="hover:underline ml-4">Reply</button>
-    <button onclick="openReportModal(event, {{ comment.id }}, 'comment')"
-            class="text-xs hover:underline text-slate-400 ml-2">Report</button>
-  </div>
-
-  <!-- 📝 Reply Form -->
-  <div class="replyForm hidden ml-11 mt-2">
-    <textarea rows="2"
-              class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
-              placeholder="Write a reply..."></textarea>
-    <div class="flex justify-end mt-1">
-      <button onclick="postReply(this, {{ comment.id }})"
-              class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1 rounded">
-        Reply
+      <!-- Report Button -->
+      <button onclick="openReportModal(event, {{ comment.id }}, 'comment')" class="absolute top-2 right-2 flex items-center gap-1 text-gray-500 hover:text-red-600 transition text-xs px-2 py-1">
+        <i class="fas fa-flag text-sm"></i>
       </button>
-    </div>
-  </div>
 
-  {% if comment.replies %}
-  <div class="mt-2 ml-11">
-    <button onclick="toggleReplies(this)"
-            class="text-xs text-indigo-600 hover:underline mb-2 flex items-center gap-1">
-      <i class="fas fa-caret-right transition-transform duration-200"></i> View Replies
-    </button>
-    <div class="ml-4 hidden">
-      {% for reply in comment.replies %}
-        {{ render_comment(reply, current_user) }}
-      {% endfor %}
+      <div class="flex justify-between items-center mt-2 text-xs text-slate-500">
+        <button onclick="toggleReplyForm(this)" class="hover:text-indigo-600 transition">Reply</button>
+        {% if current_user.id == comment.user_id %}
+        <button onclick="deleteComment({{ comment.id }})" class="text-red-500 hover:underline">Delete</button>
+        {% endif %}
+      </div>
+
+      <!-- Reply Form -->
+      <form class="replyForm mt-2 hidden flex flex-col gap-2">
+        <textarea rows="2" placeholder="Reply to this comment..."
+                  class="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-400 outline-none transition"></textarea>
+        <button type="button" onclick="postReply(this, {{ comment.id }})"
+                class="self-end bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-xs">Post Reply</button>
+      </form>
+
+      {% if comment.replies %}
+      <div class="ml-2 mt-2 border-l-2 border-slate-200 pl-2">
+        <button class="toggle-replies-btn text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition"
+                onclick="toggleReplies(this)">
+          <i class="fas fa-chevron-right transition-transform"></i>
+        </button>
+        <div class="replies space-y-2 mt-2 hidden">
+          {% for reply in comment.replies|sort(attribute='created_at') %}
+          {{ render_comment(reply, level + 2, true) }}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
 </div>
 {% endmacro %}
