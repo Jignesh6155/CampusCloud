@@ -7,6 +7,8 @@ from app.utils.domain import sanitize_domain
 from app.models import Forum
 from app.models import UnitMessage
 from app.models import Meetup
+from app.models import Comment, CommentVote, Post
+
 from app.models import Committee, Post, Comment
 
 from datetime import datetime, timedelta
@@ -964,25 +966,34 @@ def test_committee_comment_requires_login(client, setup_committee_post):
     response = client.post(f'/committee-post/{post.id}/comment', json={'content': 'Anon comment'})
     assert response.status_code in (302, 401)  # Redirect or unauthorized
 
-
 # 🧪 Test: Comments are sorted by score descending
 def test_committee_comments_sorted_by_score(client, setup_users, setup_committee_post):
     user1, user2 = setup_users
     post = setup_committee_post
 
-    # Add comments with varying scores
-    c1 = Comment(content="Top comment", post_id=post.id, user_id=user1.id, score=5)
-    c2 = Comment(content="Second comment", post_id=post.id, user_id=user1.id, score=2)
-    c3 = Comment(content="New comment", post_id=post.id, user_id=user1.id, score=10)
+    # Add comments
+    c1 = Comment(content="Top comment", post_id=post.id, user_id=user1.id)
+    c2 = Comment(content="Second comment", post_id=post.id, user_id=user1.id)
+    c3 = Comment(content="New comment", post_id=post.id, user_id=user1.id)
     db.session.add_all([c1, c2, c3])
+    db.session.flush()  # So we can access c1.id etc before commit
+
+    # Add simulated votes for score
+    db.session.add_all([
+        CommentVote(comment_id=c1.id, user_id=user2.id, vote=5),  # score = 5
+        CommentVote(comment_id=c2.id, user_id=user2.id, vote=2),  # score = 2
+        CommentVote(comment_id=c3.id, user_id=user2.id, vote=10), # score = 10
+    ])
     db.session.commit()
 
+    # Log in and get thread page
     login_user(client, user2.id)
     response = client.get(f'/committee-post/{post.id}')
     assert response.status_code == 200
 
     # Ensure order is by descending score
     assert response.data.find(b"New comment") < response.data.find(b"Top comment") < response.data.find(b"Second comment")
+
 
 
 
