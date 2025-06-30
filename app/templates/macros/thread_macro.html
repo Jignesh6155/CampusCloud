@@ -1,0 +1,66 @@
+{% macro render_comment(comment, current_user) %}
+<div class="ml-2 border rounded-lg p-3 bg-slate-50 shadow-sm">
+  <div class="flex items-center gap-3 mb-1">
+    <img src="{{ comment.author.profile_picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+         class="w-8 h-8 rounded-full border border-slate-300" />
+    <div>
+      <p class="font-medium text-sm text-slate-800">{{ comment.author.display_name or 'Anonymous' }}</p>
+      <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%b %d, %Y %I:%M %p') }}</p>
+    </div>
+    {% if comment.user_id == current_user.id %}
+    <button onclick="deleteComment({{ comment.id }})"
+            class="ml-auto text-xs text-red-600 hover:underline">
+      Delete
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="ml-11 text-slate-700 text-sm whitespace-pre-line">{{ comment.content }}</div>
+
+  <!-- 🔘 Vote & Reply -->
+  <div class="ml-11 mt-2 flex items-center gap-3 text-sm text-slate-500">
+    <button id="upvote-{{ comment.id }}"
+            class="hover:text-green-600 transition"
+            onclick="voteComment({{ comment.id }}, 1)">
+      <i class="fas fa-chevron-up"></i>
+    </button>
+    <span id="comment-score-{{ comment.id }}">{{ comment.score }}</span>
+    <button id="downvote-{{ comment.id }}"
+            class="hover:text-red-600 transition"
+            onclick="voteComment({{ comment.id }}, -1)">
+      <i class="fas fa-chevron-down"></i>
+    </button>
+
+    <button onclick="toggleReplyForm(this)" class="hover:underline ml-4">Reply</button>
+    <button onclick="openReportModal(event, {{ comment.id }}, 'comment')"
+            class="text-xs hover:underline text-slate-400 ml-2">Report</button>
+  </div>
+
+  <!-- 📝 Reply Form -->
+  <div class="replyForm hidden ml-11 mt-2">
+    <textarea rows="2"
+              class="w-full border border-slate-300 rounded px-2 py-1 text-sm"
+              placeholder="Write a reply..."></textarea>
+    <div class="flex justify-end mt-1">
+      <button onclick="postReply(this, {{ comment.id }})"
+              class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1 rounded">
+        Reply
+      </button>
+    </div>
+  </div>
+
+  {% if comment.replies %}
+  <div class="mt-2 ml-11">
+    <button onclick="toggleReplies(this)"
+            class="text-xs text-indigo-600 hover:underline mb-2 flex items-center gap-1">
+      <i class="fas fa-caret-right transition-transform duration-200"></i> View Replies
+    </button>
+    <div class="ml-4 hidden">
+      {% for reply in comment.replies %}
+        {{ render_comment(reply, current_user) }}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
