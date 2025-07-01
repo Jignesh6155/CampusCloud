@@ -98,19 +98,19 @@ class User(db.Model, UserMixin):
                 count += 1
         return count
 
-
 class Committee(db.Model):
     __tablename__ = 'committees'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
-    slug = db.Column(db.String(100), nullable=False, unique=True)  # ✅ Add this line
+    slug = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
+    icon = db.Column(db.String(100))           # ✅ New
+    image_url = db.Column(db.String(255))      # ✅ New
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     def __repr__(self):
         return f'<Committee {self.name}>'
-
 
 class Forum(db.Model):
     __tablename__ = 'forums'

@@ -1121,7 +1121,9 @@ def committee_chat():
                 committee = Committee(
                     name=row['name'].strip(),
                     slug=slug,
-                    description=row.get('description', '').strip()
+                    description=row.get('description', '').strip(),
+                    icon=row.get('icon', '').strip(),
+                    image_url=row.get('image_url', '').strip()
                 )
                 db.session.add(committee)
                 new_committees.append(committee)

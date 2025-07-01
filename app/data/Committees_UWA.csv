@@ -1,5 +1,6 @@
-name,slug,description,icon
-Tech Committee,techcommittee,Discuss technical initiatives and new innovations.,
-Marketing Committee,marketingcommittee,Plan and strategize marketing campaigns and events.,
-Events Committee,eventscommittee,Organize campus events and gatherings.,
-Dance Committee,dancecommittee,Dance enthusiasts at UWA
+name,slug,description,icon,image_url
+Tech Committee,techcommittee,Discuss technical initiatives and new innovations.,fa-microchip,/static/images/tech.png
+Marketing Committee,marketingcommittee,Plan and strategize marketing campaigns and events.,fa-bullhorn,/static/images/marketing.png
+Events Committee,eventscommittee,Organize campus events and gatherings.,fa-calendar,/static/images/events.png
+Dance Committee,dancecommittee,Dance enthusiasts at UWA,fa-music,https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZVNcLeW3LvoNEF4g-myCs0pipE8LwAqldkA&s
+New Committee, newcommittee, dance, fa-imagecool, https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZVNcLeW3LvoNEF4g-myCs0pipE8LwAqldkA&s
