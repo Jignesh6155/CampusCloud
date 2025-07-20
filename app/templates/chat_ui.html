@@ -441,20 +441,25 @@ function addGeneralMsg(m) {
       </svg>
     </button>`;
 
-  if (me) {
-    wrap.className = "flex justify-end items-center gap-2 pr-2";
-    wrap.innerHTML = `
-      <div class="relative max-w-md text-right group">
-        ${hasPreview ? `<div class="text-left">${preview}</div>` : ""}
-        <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
-          <button onclick="showDeleteModal('${m.id}')" class="absolute top-2 right-2 text-white/70 hover:text-white text-sm font-bold leading-none z-20 opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
-          <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
+    if (me) {
+      wrap.className = "flex justify-end items-start gap-2 pr-2";
+      wrap.innerHTML = `
+        <div class="flex flex-col items-end max-w-full space-y-1">
+          ${m.parent_id && messageCache[m.parent_id] ? `
+            <div class="bg-gray-100 border-l-4 border-indigo-300 text-gray-700 text-sm px-3 py-2 rounded-md w-full max-w-[75%] text-left">
+              <span class="font-semibold">${messageCache[m.parent_id].author}</span>: 
+              ${messageCache[m.parent_id].message.slice(0, 100)}
+            </div>
+          ` : ""}
+          <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md w-fit max-w-[80%]">
+            <button onclick="showDeleteModal('${m.id}')" class="absolute top-2 right-2 text-white/70 hover:text-white text-sm font-bold leading-none z-20 opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+            <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
+          </div>
+          <div class="text-xs text-gray-400">${t}</div>
         </div>
-        <div class="text-xs text-gray-400 mt-1 text-right">${t}</div>
-      </div>
-      ${replyBtn}
-    `;
-  } else {
+        ${replyBtn}
+      `;
+    } else {
     wrap.className = "flex items-start gap-2";
     wrap.innerHTML = `
       <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-10 h-10 rounded-full border border-gray-300 shadow-sm"/>
