@@ -425,49 +425,55 @@ function addGeneralMsg(m) {
     ? `${m.message.slice(0, MESSAGE_PREVIEW_LIMIT)}... <button id="toggle-btn-${m.id}" onclick="toggleMessage('${m.id}', \`${m.message.replace(/`/g, "\\`")}\`)" class="text-xs text-indigo-200 hover:underline">More</button>`
     : m.message;
 
-  const preview = m.parent_id && messageCache[m.parent_id]
-    ? `<div class="mb-1 px-3 py-2 rounded-lg bg-gray-100 border-l-4 border-indigo-300 text-gray-600">
+  const hasPreview = m.parent_id && messageCache[m.parent_id];
+  const preview = hasPreview
+    ? `<div class="mb-2 px-3 py-2 rounded-md bg-gray-100 border-l-4 border-indigo-300 text-gray-600 text-sm max-w-md">
          <span class="font-semibold">${messageCache[m.parent_id].author}</span>: 
-         ${messageCache[m.parent_id].message.slice(0, 120)}
+         ${messageCache[m.parent_id].message.slice(0, 100)}
        </div>`
     : "";
 
   const replyBtn = `
     <button onclick="setReplyTarget(${m.id}, \`${m.author}\`, \`${m.message.replace(/`/g,"\\`")}\`)"
-            class="text-xs text-indigo-200 hover:text-white mt-2 underline">
-      ↩ Reply
+            class="text-gray-400 hover:text-black mt-1 transition" title="Reply">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9l-5-5m0 0l5-5m-5 5h14" />
+      </svg>
     </button>`;
 
   if (me) {
-    wrap.className = "flex justify-end pr-2";
+    wrap.className = "flex justify-end items-center gap-2 pr-2";
     wrap.innerHTML = `
       <div class="relative max-w-md text-right group">
+        ${hasPreview ? `<div class="text-left">${preview}</div>` : ""}
         <div class="relative bg-indigo-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-md">
           <button onclick="showDeleteModal('${m.id}')" class="absolute top-2 right-2 text-white/70 hover:text-white text-sm font-bold leading-none z-20 opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
-          ${preview}
           <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
-          ${replyBtn}
         </div>
-        <div class="text-xs text-gray-400 mt-1">${t}</div>
-      </div>`;
+        <div class="text-xs text-gray-400 mt-1 text-right">${t}</div>
+      </div>
+      ${replyBtn}
+    `;
   } else {
-    wrap.className = "flex items-start gap-3";
+    wrap.className = "flex items-start gap-2";
     wrap.innerHTML = `
       <img src="${m.profile_picture || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-10 h-10 rounded-full border border-gray-300 shadow-sm"/>
-      <div>
-        <div class="bg-white border border-gray-200 px-5 py-3 rounded-2xl rounded-tl-none shadow-sm max-w-md">
-          <div class="font-semibold text-gray-800 text-sm mb-1">${m.author}</div>
-          ${preview}
-          <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
-          ${replyBtn}
+      <div class="flex items-start gap-2">
+        <div>
+          ${hasPreview ? preview : ""}
+          <div class="bg-white border border-gray-200 px-5 py-3 rounded-2xl rounded-tl-none shadow-sm max-w-md">
+            <div class="font-semibold text-gray-800 text-sm mb-1">${m.author}</div>
+            <p class="text-sm break-words" id="msg-text-${m.id}">${displayedText}</p>
+          </div>
+          <div class="text-xs text-gray-400 mt-1">${t}</div>
         </div>
-        <div class="text-xs text-gray-400 mt-1">${t}</div>
-      </div>`;
+        ${replyBtn}
+      </div>
+    `;
   }
 
   document.getElementById("general-messages").appendChild(wrap);
 }
-
 
 
 /* ========== SEND HANDLERS ========== */
